@@ -2,9 +2,10 @@
 
 目前技术栈
 
-后端 spring boot, spring security, spring data jpa, PostgreSQL
-前端 react，渲染markdown，latex和代码高亮的库，以及 charts，使用 tailwindcss 如果需要可以使用 shodcn 组件库
-通过 gradle 管理前后端模块
+前后端分离，通过 gradle 管理前后端模块
+后端 Koltin spring boot 4.x, spring security7.x, spring data jpa, PostgreSQL
+前端 typescript react，渲染markdown，latex和代码高亮的库，以及 charts，使用 tailwindcss 如果需要可以使用 shodcn 组件库
+
 
 ## 功能需求
 

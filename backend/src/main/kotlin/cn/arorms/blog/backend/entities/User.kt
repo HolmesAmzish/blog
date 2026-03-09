@@ -9,7 +9,7 @@ import java.time.LocalDateTime
  */
 @Entity
 @Table(name = "users")
-class User(
+data class User(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null,
@@ -21,7 +21,7 @@ class User(
     var email: String,
 
     @Column(nullable = false)
-    var password: String, // Encrypted password
+    var password: String,
 
     @Column(length = 100)
     var displayName: String? = null,

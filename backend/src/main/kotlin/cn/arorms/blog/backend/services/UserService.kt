@@ -1,20 +1,40 @@
 package cn.arorms.blog.backend.services
 
+import cn.arorms.blog.backend.dto.RegisterRequest
 import cn.arorms.blog.backend.entities.User
 import cn.arorms.blog.backend.enums.UserRole
 import cn.arorms.blog.backend.repositories.UserRepository
+import org.springframework.security.core.userdetails.UserDetails
+import org.springframework.security.core.userdetails.UserDetailsService
+import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 /**
  * Service class for User operations
+ * Implements UserDetailsService for Spring Security authentication
  */
 @Service
 class UserService(
     private val userRepository: UserRepository,
     private val passwordEncoder: PasswordEncoder
-) {
+) : UserDetailsService {
+    
+    /**
+     * Load user by username for Spring Security authentication
+     */
+    override fun loadUserByUsername(username: String): UserDetails {
+        val user = userRepository.findByUsername(username)
+            ?: throw UsernameNotFoundException("User not found with username: $username")
+        
+        return org.springframework.security.core.userdetails.User.builder()
+            .username(user.username)
+            .password(user.password)
+            .authorities(user.role.name)
+            .accountLocked(!user.isEnabled)
+            .build()
+    }
     
     fun findAll(): List<User> {
         return userRepository.findAll()
@@ -33,18 +53,26 @@ class UserService(
     }
     
     @Transactional
-    fun create(user: User): User {
-        if (userRepository.existsByUsername(user.username)) {
-            throw IllegalArgumentException("Username '${user.username}' already exists")
+    fun create(request: RegisterRequest): User {
+        if (userRepository.existsByUsername(request.username)) {
+            throw IllegalArgumentException("Username '${request.username}' already exists")
         }
-        if (userRepository.existsByEmail(user.email)) {
-            throw IllegalArgumentException("Email '${user.email}' already exists")
+        if (userRepository.existsByEmail(request.email)) {
+            throw IllegalArgumentException("Email '${request.email}' already exists")
         }
-        
+
         // Encode password before saving
-        user.password = passwordEncoder.encode(user.password ?: throw IllegalArgumentException("Password is required"))!!
+        val encodedPassword = passwordEncoder.encode(request.password)
+
+        val newUser = User(
+            username = request.username,
+            email = request.email,
+            // TODO: Why?
+            password = encodedPassword!!,
+            role = UserRole.USER
+        )
         
-        return userRepository.save(user)
+        return userRepository.save(newUser)
     }
     
     @Transactional
@@ -79,7 +107,8 @@ class UserService(
             throw IllegalArgumentException("Current password is incorrect")
         }
         
-        user.password = passwordEncoder.encode(newPassword)!!
+        val encodedNewPassword = passwordEncoder.encode(newPassword)
+        user.password = encodedNewPassword!!
         userRepository.save(user)
         return true
     }

@@ -40,35 +40,35 @@ class UserController(private val userService: UserService) {
         }
     }
     
-    @PostMapping
-    fun createUser(@RequestBody request: UserRequest): ResponseEntity<UserDTO> {
-        val user = User(
-            username = request.username,
-            email = request.email,
-            password = request.password ?: throw IllegalArgumentException("Password is required"),
-            displayName = request.displayName,
-            bio = request.bio,
-            avatar = request.avatar,
-            role = request.role
-        )
-        val savedUser = userService.create(user)
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedUser.toDTO())
-    }
-    
-    @PutMapping("/{id}")
-    fun updateUser(@PathVariable id: Long, @RequestBody request: UserRequest): ResponseEntity<UserDTO> {
-        val user = User(
-            username = request.username,
-            email = request.email,
-            password = request.password,
-            displayName = request.displayName,
-            bio = request.bio,
-            avatar = request.avatar,
-            role = request.role
-        )
-        val updatedUser = userService.update(id, user)
-        return ResponseEntity.ok(updatedUser.toDTO())
-    }
+//    @PostMapping
+//    fun createUser(@RequestBody request: UserRequest): ResponseEntity<UserDTO> {
+//        val user = User(
+//            username = request.username,
+//            email = request.email,
+//            password = request.password ?: throw IllegalArgumentException("Password is required"),
+//            displayName = request.displayName,
+//            bio = request.bio,
+//            avatar = request.avatar,
+//            role = request.role
+//        )
+//        val savedUser = userService.create(user)
+//        return ResponseEntity.status(HttpStatus.CREATED).body(savedUser.toDTO())
+//    }
+//
+//    @PutMapping("/{id}")
+//    fun updateUser(@PathVariable id: Long, @RequestBody request: UserRequest): ResponseEntity<UserDTO> {
+//        val user = User(
+//            username = request.username,
+//            email = request.email,
+//            password = request.password,
+//            displayName = request.displayName,
+//            bio = request.bio,
+//            avatar = request.avatar,
+//            role = request.role
+//        )
+//        val updatedUser = userService.update(id, user)
+//        return ResponseEntity.ok(updatedUser.toDTO())
+//    }
     
     @DeleteMapping("/{id}")
     fun deleteUser(@PathVariable id: Long): ResponseEntity<Void> {

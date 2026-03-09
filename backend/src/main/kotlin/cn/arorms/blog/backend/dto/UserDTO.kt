@@ -37,19 +37,3 @@ data class PasswordChangeRequest(
     val currentPassword: String,
     val newPassword: String
 )
-
-/**
- * Request object for login
- */
-data class LoginRequest(
-    val username: String,
-    val password: String
-)
-
-/**
- * Response object for login
- */
-data class LoginResponse(
-    val token: String,
-    val user: UserDTO
-)

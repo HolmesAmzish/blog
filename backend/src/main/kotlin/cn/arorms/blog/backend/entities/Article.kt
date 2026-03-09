@@ -10,7 +10,7 @@ import java.time.LocalDateTime
  */
 @Entity
 @Table(name = "articles")
-class Article(
+data class Article(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null,

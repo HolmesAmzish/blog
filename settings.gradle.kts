@@ -3,4 +3,4 @@ plugins {
 }
 rootProject.name = "blog"
 include("backend")
-include("frontend")
+// frontend is a standalone Node.js/React project, managed by npm separately
