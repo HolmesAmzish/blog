@@ -1,73 +1,113 @@
-# React + TypeScript + Vite
+# ARORMS Blog Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A technical blog frontend built with React, TypeScript, Tailwind CSS, and Vite.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Technical Minimalism Design**: Clean, modern UI inspired by aino.agency
+- **Glitch Loading Animation**: Character scrambling effect on page load
+- **ECharts Tree Visualization**: Interactive archive tree for blog posts
+- **React Query**: Efficient data fetching and caching
+- **TypeScript**: Strict type safety throughout the codebase
+- **Tailwind CSS**: Utility-first CSS framework
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- React 19
+- TypeScript 5
+- Vite 7
+- Tailwind CSS 4
+- TanStack Query (React Query)
+- React Router DOM
+- Axios
+- ECharts
+- Lucide React (icons)
 
-## Expanding the ESLint configuration
+## Getting Started
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Prerequisites
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- Node.js 18+
+- npm or yarn
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### Installation
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+1. Install dependencies:
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+2. Create environment file:
+```bash
+cp .env.example .env
 ```
+
+3. Update `.env` with your API URL:
+```
+VITE_API_URL=http://localhost:8080/api
+```
+
+### Development
+
+Start the development server:
+```bash
+npm run dev
+```
+
+### Build
+
+Build for production:
+```bash
+npm run build
+```
+
+### Preview
+
+Preview the production build:
+```bash
+npm run preview
+```
+
+## Project Structure
+
+```
+src/
+├── api/           # API client and endpoints
+├── components/    # React components
+│   ├── layout/    # Layout components (Header, Footer)
+│   └── ui/        # UI components (ArticleCard, LoadingScreen)
+├── features/      # Feature pages
+│   ├── article/   # Article list and detail pages
+│   ├── archive/   # Archive page with ECharts tree
+│   └── home/      # Home page
+├── hooks/         # Custom React hooks
+├── types/         # TypeScript type definitions
+├── App.tsx        # Main app component
+├── index.css      # Global styles
+└── main.tsx       # Entry point
+```
+
+## Design System
+
+### Colors
+- Primary: `#0047FF` (Blue)
+- Background: `#FFFFFF` (White)
+- Text: `#000000` (Black)
+- Secondary Text: `#6B7280` (Gray)
+
+### Typography
+- Headings: System font, bold, tight tracking
+- Body: System font, normal weight
+- Monospace: `ui-monospace`, `SFMono-Regular`, etc.
+
+### Borders
+- Hairline borders: `0.5px` width
+- Standard borders: `1px` width
+
+## API Integration
+
+The frontend communicates with a Spring Boot backend API. All API calls are centralized in the `src/api/` directory using Axios.
+
+## License
+
+MIT
