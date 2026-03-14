@@ -12,6 +12,14 @@ import { HomePage } from './features/home/HomePage';
 import { ArticleListPage } from './features/article/ArticleListPage';
 import { ArticleDetailPage } from './features/article/ArticleDetailPage';
 import { ArchivePage } from './features/archive/ArchivePage';
+import { AdminLoginPage } from './features/admin/AdminLoginPage';
+import { AdminDashboardPage } from './features/admin/AdminDashboardPage';
+import { AdminArticlesPage } from './features/admin/AdminArticlesPage';
+import { AdminArticleEditPage } from './features/admin/AdminArticleEditPage';
+import { AdminCategoriesPage } from './features/admin/AdminCategoriesPage';
+import { AdminTagsPage } from './features/admin/AdminTagsPage';
+import { AdminUsersPage } from './features/admin/AdminUsersPage';
+import { ProtectedRoute } from './components/admin/ProtectedRoute';
 
 // Create Query Client
 const queryClient = new QueryClient({
@@ -49,6 +57,66 @@ function App() {
               <Route path="/articles" element={<ArticleListPage />} />
               <Route path="/article/:slug" element={<ArticleDetailPage />} />
               <Route path="/archive" element={<ArchivePage />} />
+              
+              {/* Admin Routes */}
+              <Route path="/admin/login" element={<AdminLoginPage />} />
+              <Route
+                path="/admin"
+                element={
+                  <ProtectedRoute requireAdmin>
+                    <AdminDashboardPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/articles"
+                element={
+                  <ProtectedRoute requireAdmin>
+                    <AdminArticlesPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/articles/new"
+                element={
+                  <ProtectedRoute requireAdmin>
+                    <AdminArticleEditPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/articles/:id"
+                element={
+                  <ProtectedRoute requireAdmin>
+                    <AdminArticleEditPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/categories"
+                element={
+                  <ProtectedRoute requireAdmin>
+                    <AdminCategoriesPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/tags"
+                element={
+                  <ProtectedRoute requireAdmin>
+                    <AdminTagsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/users"
+                element={
+                  <ProtectedRoute requireAdmin>
+                    <AdminUsersPage />
+                  </ProtectedRoute>
+                }
+              />
+              
               <Route
                 path="/about"
                 element={

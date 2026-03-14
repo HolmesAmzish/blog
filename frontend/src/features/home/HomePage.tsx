@@ -28,14 +28,13 @@ export const HomePage: React.FC = () => {
                 </span>
               </div>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-black mb-6 leading-none">
-                ARORMS
-                <span className="text-[#0047FF]">.</span>
                 BLOG
+                <span className="text-[#0047FF]">.</span>
+                CACC
               </h1>
               <p className="text-sm text-gray-600 leading-relaxed mb-8 max-w-md font-mono">
                 Exploring the intersection of software architecture,
                 distributed systems, and elegant code.
-                A technical journal by a CS PhD.
               </p>
               <div className="flex gap-3">
                 <Link

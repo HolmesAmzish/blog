@@ -11,4 +11,17 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  server: {
+    host: '::',
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        // rewrite: (path) => path.replace(/^\/api/, '')
+      }
+    },
+    allowedHosts: [
+        'blog.arorms.cn'
+    ]
+  }
 })

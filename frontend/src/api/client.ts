@@ -4,7 +4,7 @@
  */
 import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+const API_BASE_URL = '/api';
 
 /**
  * Create configured axios instance

@@ -108,12 +108,26 @@ export interface UserDTO {
   username: string;
   email: string;
   displayName: string | null;
-  avatarUrl: string | null;
+  avatar: string | null;
   bio: string | null;
   role: UserRole;
-  language: Language;
+  isEnabled: boolean;
   createdAt: string | null;
-  updatedAt: string | null;
+}
+
+export interface UserRequest {
+  username: string;
+  email: string;
+  password: string | null;
+  displayName: string | null;
+  bio: string | null;
+  avatar: string | null;
+  role: UserRole;
+}
+
+export interface PasswordChangeRequest {
+  currentPassword: string;
+  newPassword: string;
 }
 
 // Auth DTOs
@@ -129,8 +143,19 @@ export interface RegisterRequest {
   displayName: string | null;
 }
 
+export interface LoginResponse {
+  accessToken: string;
+  tokenType: string;
+}
+
+export interface RegisterResponse {
+  message: string;
+  username: string;
+}
+
 export interface AuthResponse {
-  token: string;
+  accessToken: string;
+  tokenType: string;
   user: UserDTO;
 }
 

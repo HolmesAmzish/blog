@@ -48,14 +48,13 @@ export const Header: React.FC = () => {
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`
-                    px-4 py-2 text-[11px] font-mono uppercase tracking-wider
-                    border-[0.5px] transition-all duration-200
-                    ${isActive
-                      ? 'border-black bg-black text-white'
+                  className={[
+                    'px-4 py-2 text-[11px] font-mono uppercase tracking-wider',
+                    'border-[0.5px] transition-all duration-200',
+                    isActive
+                      ? 'border-black bg-black !text-white'
                       : 'border-transparent text-gray-600 hover:border-gray-200 hover:text-black'
-                    }
-                  `}
+                  ].join(' ')}
                 >
                   {item.label}
                 </Link>
@@ -89,14 +88,13 @@ export const Header: React.FC = () => {
                   key={item.path}
                   to={item.path}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`
-                    flex items-center gap-3 px-4 py-3 text-[11px] font-mono uppercase tracking-wider
-                    border-[0.5px] transition-all duration-200
-                    ${isActive
-                      ? 'border-black bg-black text-white'
+                  className={[
+                    'flex items-center gap-3 px-4 py-3 text-[11px] font-mono uppercase tracking-wider',
+                    'border-[0.5px] transition-all duration-200',
+                    isActive
+                      ? 'border-black bg-black !text-white'
                       : 'border-gray-100 text-gray-600 hover:border-gray-300'
-                    }
-                  `}
+                  ].join(' ')}
                 >
                   {item.icon}
                   {item.label}

@@ -10,7 +10,7 @@ interface LoadingScreenProps {
   duration?: number;
 }
 
-const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&*';
+const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&';
 
 /**
  * Scramble text effect
@@ -63,8 +63,8 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
   const [isVisible, setIsVisible] = useState(true);
   const [isScrambling, setIsScrambling] = useState(true);
 
-  const titleText = useScrambleText('ARORMS.BLOG', isScrambling, 40);
-  const subtitleText = useScrambleText('SYSTEM.INITIALIZING', isScrambling && progress > 30, 60);
+  const titleText = useScrambleText('BLOG OF CACCIATORE', isScrambling, 15);
+  const subtitleText = useScrambleText('INITIALIZING', isScrambling && progress > 20, 60);
 
   const completeLoading = useCallback(() => {
     setIsVisible(false);
