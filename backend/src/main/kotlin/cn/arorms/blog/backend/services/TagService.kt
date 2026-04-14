@@ -74,4 +74,8 @@ class TagService(
     fun getArticleCount(tagId: Long): Long {
         return articleTagRepository.findByTagId(tagId).size.toLong()
     }
+
+    fun findByArticleId(articleId: Long): List<cn.arorms.blog.backend.entities.ArticleTag> {
+        return articleTagRepository.findByArticleId(articleId)
+    }
 }

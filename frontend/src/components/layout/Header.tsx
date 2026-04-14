@@ -5,6 +5,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Archive, Home, FileText, User } from 'lucide-react';
 import { useState } from 'react';
+import { LanguageSwitcher } from '../ui/LanguageSwitcher';
 
 interface NavItem {
   path: string;
@@ -41,39 +42,48 @@ export const Header: React.FC = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-1">
-            {navItems.map((item) => {
-              const isActive = location.pathname === item.path;
-              return (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={[
-                    'px-4 py-2 text-[11px] font-mono uppercase tracking-wider',
-                    'border-[0.5px] transition-all duration-200',
-                    isActive
-                      ? 'border-black bg-black !text-white'
-                      : 'border-transparent text-gray-600 hover:border-gray-200 hover:text-black'
-                  ].join(' ')}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
-          </nav>
+          <div className="hidden md:flex items-center gap-4">
+            {/* Navigation Links */}
+            <nav className="flex items-center gap-1">
+              {navItems.map((item) => {
+                const isActive = location.pathname === item.path;
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className={[
+                      'px-4 py-2 text-[11px] font-mono uppercase tracking-wider',
+                      'border-[0.5px] transition-all duration-200',
+                      isActive
+                        ? 'border-black bg-black text-white'
+                        : 'border-transparent text-gray-600 hover:border-gray-200 hover:text-black'
+                    ].join(' ')}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </nav>
+
+            {/* Language Switcher */}
+            <LanguageSwitcher />
+          </div>
 
           {/* Mobile menu button */}
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 border-[0.5px] border-gray-200 hover:border-black transition-colors"
-            aria-label="Toggle menu"
-          >
-            {mobileMenuOpen ? (
-              <X className="w-5 h-5" />
-            ) : (
-              <Menu className="w-5 h-5" />
-            )}
-          </button>
+          <div className="flex items-center gap-2 md:hidden">
+            <LanguageSwitcher className="!p-1.5" />
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="p-2 border-[0.5px] border-gray-200 hover:border-black transition-colors"
+              aria-label="Toggle menu"
+            >
+              {mobileMenuOpen ? (
+                <X className="w-5 h-5" />
+              ) : (
+                <Menu className="w-5 h-5" />
+              )}
+            </button>
+          </div>
         </div>
       </div>
 

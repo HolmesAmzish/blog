@@ -31,7 +31,7 @@ export const useCategories = () => {
  * Hook for fetching category tree
  */
 export const useCategoryTree = () => {
-  return useQuery<CategoryDTO[], Error>({
+  return useQuery<CategoryDTO, Error>({
     queryKey: [CATEGORIES_QUERY_KEY, 'tree'],
     queryFn: fetchCategoryTree,
     staleTime: 10 * 60 * 1000,

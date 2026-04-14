@@ -102,8 +102,59 @@ export function AdminCategoriesPage() {
     deleteMutation.mutate(id);
   };
 
-  // Get top-level categories for parent selection
-  const topLevelCategories = categories?.filter((c) => !c.parentId) || [];
+  // Get all categories for parent selection (except self and children)
+  const getParentOptions = (currentCategory: CategoryDTO | null) => {
+    if (!categories) return [];
+
+    const excludeIds = new Set<number>();
+    if (currentCategory?.id) {
+      excludeIds.add(currentCategory.id);
+      // Also exclude all descendants
+      const descendants = getCategoryDescendants(currentCategory.id);
+      descendants.forEach((id) => excludeIds.add(id));
+    }
+
+    return categories.filter((c) => !excludeIds.has(c.id || -1));
+  };
+
+  // Get all descendant category IDs recursively
+  const getCategoryDescendants = (parentId: number): number[] => {
+    const children = categories?.filter((c) => c.parentId === parentId) || [];
+    let descendants: number[] = children.map((c) => c.id!).flat();
+    children.forEach((child) => {
+      descendants = descendants.concat(getCategoryDescendants(child.id!));
+    });
+    return descendants;
+  };
+
+  // Flatten categories for display (with indentation)
+  const flattenCategories = (
+    categoryList: CategoryDTO[],
+    depth: number = 0
+  ): { category: CategoryDTO; depth: number }[] => {
+    const result: { category: CategoryDTO; depth: number }[] = [];
+
+    // First, add all root categories (parentId is null)
+    const rootCategories = categoryList.filter((c) => c.parentId === null);
+    rootCategories.forEach((category) => {
+      result.push({ category, depth });
+      // Then recursively add children by finding categories with this parentId
+      const children = categoryList.filter((c) => c.parentId === category.id);
+      children.forEach((child) => {
+        result.push({ category: child, depth: depth + 1 });
+        // Add grandchildren
+        const grandchildren = categoryList.filter((c) => c.parentId === child.id);
+        grandchildren.forEach((grandchild) => {
+          result.push({ category: grandchild, depth: depth + 2 });
+        });
+      });
+    });
+
+    return result;
+  };
+
+  const parentOptions = getParentOptions(editingCategory);
+  const allCategoriesFlat = flattenCategories(categories || []);
 
   return (
     <AdminLayout>
@@ -115,7 +166,7 @@ export function AdminCategoriesPage() {
               CATEGORIES
             </h1>
             <p className="text-gray-500 text-sm font-mono mt-1">
-              Manage article categories
+              Manage article categories (unlimited depth)
             </p>
           </div>
           <button
@@ -127,27 +178,47 @@ export function AdminCategoriesPage() {
           </button>
         </div>
 
-        {/* Categories Grid */}
+        {/* Categories Tree View */}
         {isLoading ? (
           <div className="text-center py-12 text-gray-500 font-mono text-sm">
             Loading categories...
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {categories?.map((category) => (
-              <div key={category.id} className="bg-white border border-gray-200 hover:border-[#0047FF] transition-colors group">
-                <div className="p-6">
-                  <div className="flex items-start justify-between">
+          <div className="space-y-3">
+            {allCategoriesFlat.length === 0 ? (
+              <div className="text-center py-12 bg-white border border-gray-200">
+                <FolderTree size={48} className="mx-auto text-gray-300 mb-4" />
+                <p className="text-gray-500 font-mono text-sm mb-4">No categories found</p>
+                <button
+                  onClick={openCreateModal}
+                  className="px-4 py-2 bg-[#0047FF] text-white text-sm font-mono uppercase tracking-wider hover:bg-blue-700 transition-colors"
+                >
+                  Create First Category
+                </button>
+              </div>
+            ) : (
+              allCategoriesFlat.map(({ category, depth }) => (
+                <div
+                  key={category.id}
+                  className="bg-white border border-gray-200 hover:border-[#0047FF] transition-colors flex items-center"
+                >
+                  {/* Indentation for hierarchy */}
+                  <div className="w-8" style={{ width: `${depth * 24 + 8}px` }} />
+
+                  <div className="p-4 flex-1 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 bg-gray-100">
-                        <FolderTree size={20} className="text-gray-600" />
-                      </div>
+                      <FolderTree size={18} className="text-gray-600" />
                       <div>
                         <h3 className="text-sm font-mono font-bold text-black">
                           {category.name}
                         </h3>
-                        <p className="text-xs font-mono text-gray-500 mt-1">
+                        <p className="text-xs font-mono text-gray-500">
                           {category.slug}
+                          {category.parentId && (
+                            <span className="ml-2 text-gray-400">
+                              → {category.parentName}
+                            </span>
+                          )}
                         </p>
                       </div>
                     </div>
@@ -166,54 +237,15 @@ export function AdminCategoriesPage() {
                       </button>
                     </div>
                   </div>
-                  
-                  {category.description && (
-                    <p className="text-xs font-mono text-gray-500 mt-4 line-clamp-2">
-                      {category.description}
-                    </p>
-                  )}
 
-                  <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
-                    <span className="text-xs font-mono text-gray-400">
+                  <div className="px-4 py-2 bg-gray-50 border-l border-gray-100">
+                    <span className="text-xs font-mono text-gray-500">
                       {category.articleCount || 0} articles
                     </span>
-                    {category.parentName && (
-                      <span className="text-xs font-mono text-gray-400">
-                        Parent: {category.parentName}
-                      </span>
-                    )}
                   </div>
                 </div>
-
-                {/* Children */}
-                {category.children && category.children.length > 0 && (
-                  <div className="border-t border-gray-100 bg-gray-50 p-4">
-                    <p className="text-xs font-mono text-gray-500 mb-2">Subcategories:</p>
-                    <div className="flex flex-wrap gap-2">
-                      {category.children.map((child) => (
-                        <span key={child.id} className="px-2 py-1 bg-white border border-gray-200 text-xs font-mono text-gray-600">
-                          {child.name}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Empty State */}
-        {!isLoading && categories?.length === 0 && (
-          <div className="text-center py-12 bg-white border border-gray-200">
-            <FolderTree size={48} className="mx-auto text-gray-300 mb-4" />
-            <p className="text-gray-500 font-mono text-sm mb-4">No categories found</p>
-            <button
-              onClick={openCreateModal}
-              className="px-4 py-2 bg-[#0047FF] text-white text-sm font-mono uppercase tracking-wider hover:bg-blue-700 transition-colors"
-            >
-              Create First Category
-            </button>
+              ))
+            )}
           </div>
         )}
       </div>
@@ -283,14 +315,16 @@ export function AdminCategoriesPage() {
                   className="w-full border border-gray-200 px-3 py-2 text-sm font-mono focus:border-[#0047FF] focus:outline-none"
                 >
                   <option value="">None (Top Level)</option>
-                  {topLevelCategories
-                    .filter((c) => c.id !== editingCategory?.id)
-                    .map((cat) => (
-                      <option key={cat.id} value={String(cat.id)}>
-                        {cat.name}
-                      </option>
-                    ))}
+                  {parentOptions.map((cat) => (
+                    <option key={cat.id} value={String(cat.id)}>
+                      {cat.name}
+                      {cat.parentId && ` → ${cat.parentName}`}
+                    </option>
+                  ))}
                 </select>
+                <p className="text-xs text-gray-400 mt-1 font-mono">
+                  Select parent for subcategory (unlimited depth supported)
+                </p>
               </div>
 
               <div className="flex gap-3 pt-4">

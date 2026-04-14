@@ -12,6 +12,7 @@ import {
   deleteArticle,
 } from '../api/article';
 import type { ArticleRequest, ArticlePageResponse, ArticleDTO } from '../types';
+import { type SupportedLanguage } from '../context/LanguageContext';
 
 const ARTICLES_QUERY_KEY = 'articles';
 const ARTICLE_QUERY_KEY = 'article';
@@ -21,7 +22,7 @@ interface UseArticlesParams {
   size?: number;
   categoryId?: number;
   tagId?: number;
-  language?: string;
+  language?: SupportedLanguage;
 }
 
 /**

@@ -1,5 +1,4 @@
-### GET request to example server
-GET https://examples.http-client.intellij.net/get
-    ?generated-in=IntelliJ IDEA
-
-###
+### GET me
+GET http://localhost:8080/api/auth/me
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJzZWxmIiwic3ViIjoiQ2FjY2lhdG9yZSIsImV4cCI6MTc3MzU0MTcwOSwiaWF0IjoxNzczNDU1MzA5fQ.fCzz_cZ9nkvcgEJ4hRa2-np33Qpcc-ryGT_f9DLxd_M

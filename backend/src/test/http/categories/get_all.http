@@ -1,0 +1,5 @@
+### GET all categories
+GET http://localhost:8080/api/categories
+
+### GET category tree
+GET http://localhost:8080/api/categories/tree

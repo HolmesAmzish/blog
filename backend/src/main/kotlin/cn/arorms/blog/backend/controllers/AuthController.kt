@@ -4,6 +4,7 @@ import cn.arorms.blog.backend.dto.LoginRequest
 import cn.arorms.blog.backend.dto.LoginResponse
 import cn.arorms.blog.backend.dto.RegisterRequest
 import cn.arorms.blog.backend.dto.RegisterResponse
+import cn.arorms.blog.backend.dto.UserDTO
 import cn.arorms.blog.backend.entities.User
 import cn.arorms.blog.backend.enums.UserRole
 import cn.arorms.blog.backend.services.JwtService
@@ -12,6 +13,10 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.security.core.userdetails.UserDetails
+import org.springframework.security.oauth2.jwt.Jwt
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -52,5 +57,33 @@ class AuthController(
         val token = jwtService.generateToken(authentication)
         
         return ResponseEntity.ok(LoginResponse(accessToken = token))
+    }
+    
+    /**
+     * Get current authenticated user info
+     */
+    @GetMapping("/me")
+    fun getCurrentUser(@AuthenticationPrincipal jwt: Jwt): ResponseEntity<UserDTO> {
+        val username = jwt.subject
+
+        val user = userService.findByUsername(username)
+            ?: return ResponseEntity.status(404).build()
+
+        return ResponseEntity.ok(user.toDTO())
+    }
+    
+    // Extension function to convert User to UserDTO
+    private fun User.toDTO(): UserDTO {
+        return UserDTO(
+            id = this.id,
+            username = this.username,
+            email = this.email,
+            displayName = this.displayName,
+            bio = this.bio,
+            avatar = this.avatar,
+            role = this.role,
+            isEnabled = this.isEnabled,
+            createdAt = this.createdAt.toString()
+        )
     }
 }

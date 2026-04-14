@@ -9,7 +9,7 @@ import { AdminLayout } from '../../components/admin/AdminLayout';
 import { fetchArticleById, createArticle, updateArticle } from '../../api/article';
 import { fetchCategories } from '../../api/category';
 import { fetchTags } from '../../api/tag';
-import type { ArticleDTO, ArticleRequest, Language, ArticleStatus } from '../../types';
+import type { ArticleDTO, ArticleRequest } from '../../types';
 import { Save, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 
 const initialForm: ArticleRequest = {
@@ -175,7 +175,7 @@ export function AdminArticleEditPage() {
                 </label>
                 <textarea
                   name="summary"
-                  value={form.summary}
+                  value={form.summary ?? ''}
                   onChange={handleChange}
                   rows={3}
                   className="w-full font-mono text-gray-700 border-0 focus:outline-none resize-none"
@@ -195,7 +195,7 @@ export function AdminArticleEditPage() {
                 ) : (
                   <textarea
                     name="content"
-                    value={form.content}
+                    value={form.content ?? ''}
                     onChange={handleChange}
                     rows={20}
                     className="w-full font-mono text-sm text-gray-700 border-0 focus:outline-none resize-none"

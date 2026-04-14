@@ -6,11 +6,13 @@ import { useArticles } from '../../hooks/useArticles';
 import { ArticleCard } from '../../components/ui/ArticleCard';
 import { ArrowRight, Terminal } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from '../../context/TranslationContext';
 
 /**
  * HomePage - Landing page with latest articles
  */
 export const HomePage: React.FC = () => {
+  const { t } = useTranslation();
   const { data, isLoading, error } = useArticles({ page: 0, size: 6 });
 
   return (
@@ -24,7 +26,7 @@ export const HomePage: React.FC = () => {
               <div className="flex items-center gap-2 mb-4">
                 <Terminal className="w-4 h-4 text-[#0047FF]" />
                 <span className="text-[10px] font-mono uppercase tracking-wider text-gray-400">
-                  SYSTEM.INIT()
+                  {t('home.systemInit')}
                 </span>
               </div>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-black mb-6 leading-none">
@@ -33,22 +35,21 @@ export const HomePage: React.FC = () => {
                 CACC
               </h1>
               <p className="text-sm text-gray-600 leading-relaxed mb-8 max-w-md font-mono">
-                Exploring the intersection of software architecture,
-                distributed systems, and elegant code.
+                {t('home.heroDescription')}
               </p>
               <div className="flex gap-3">
                 <Link
                   to="/articles"
                   className="inline-flex items-center gap-2 px-6 py-3 bg-black text-white text-[11px] font-mono uppercase tracking-wider hover:bg-[#0047FF] transition-colors duration-200"
                 >
-                  READ ARTICLES
+                  {t('home.readArticles')}
                   <ArrowRight className="w-4 h-4" />
                 </Link>
                 <Link
                   to="/archive"
                   className="inline-flex items-center gap-2 px-6 py-3 border-[0.5px] border-gray-200 text-black text-[11px] font-mono uppercase tracking-wider hover:border-black transition-colors duration-200"
                 >
-                  VIEW ARCHIVE
+                  {t('home.viewArchive')}
                 </Link>
               </div>
             </div>
@@ -56,10 +57,10 @@ export const HomePage: React.FC = () => {
             {/* Right: Stats grid */}
             <div className="grid grid-cols-2 gap-[0.5px] bg-gray-200 border-[0.5px] border-gray-200">
               {[
-                { label: 'ARTICLES', value: '42' },
-                { label: 'CATEGORIES', value: '8' },
-                { label: 'TAGS', value: '24' },
-                { label: 'VIEWS', value: '12K' },
+                { label: 'home.stats.articles', value: '42' },
+                { label: 'home.stats.categories', value: '8' },
+                { label: 'home.stats.tags', value: '24' },
+                { label: 'home.stats.views', value: '12K' },
               ].map((stat) => (
                 <div
                   key={stat.label}
@@ -69,7 +70,7 @@ export const HomePage: React.FC = () => {
                     {stat.value}
                   </span>
                   <span className="text-[10px] font-mono uppercase tracking-wider text-gray-400">
-                    {stat.label}
+                    {t(stat.label)}
                   </span>
                 </div>
               ))}
@@ -88,14 +89,14 @@ export const HomePage: React.FC = () => {
                 //
               </span>
               <h2 className="text-lg font-bold tracking-tight text-black">
-                LATEST ARTICLES
+                {t('home.latestArticles')}
               </h2>
             </div>
             <Link
               to="/articles"
               className="text-[11px] font-mono text-gray-600 hover:text-[#0047FF] transition-colors flex items-center gap-1"
             >
-              VIEW ALL
+              {t('home.viewAll')}
               <ArrowRight className="w-3 h-3" />
             </Link>
           </div>

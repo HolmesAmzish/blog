@@ -8,6 +8,7 @@ import type {
   ArticleRequest,
   ArticlePageResponse,
 } from '../types';
+import { type SupportedLanguage } from '../context/LanguageContext';
 
 const BASE_PATH = '/articles';
 
@@ -19,7 +20,7 @@ export const fetchArticles = async (
   size: number = 10,
   categoryId?: number,
   tagId?: number,
-  language?: string
+  language?: SupportedLanguage
 ): Promise<ArticlePageResponse> => {
   const params = new URLSearchParams();
   params.append('page', page.toString());

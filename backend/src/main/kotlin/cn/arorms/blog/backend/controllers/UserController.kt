@@ -40,8 +40,8 @@ class UserController(private val userService: UserService) {
         }
     }
     
-//    @PostMapping
-//    fun createUser(@RequestBody request: UserRequest): ResponseEntity<UserDTO> {
+    @PostMapping
+    fun createUser(@RequestBody request: RegisterRequest): ResponseEntity<UserDTO> {
 //        val user = User(
 //            username = request.username,
 //            email = request.email,
@@ -51,10 +51,10 @@ class UserController(private val userService: UserService) {
 //            avatar = request.avatar,
 //            role = request.role
 //        )
-//        val savedUser = userService.create(user)
-//        return ResponseEntity.status(HttpStatus.CREATED).body(savedUser.toDTO())
-//    }
-//
+        val savedUser = userService.create(request)
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedUser.toDTO())
+    }
+
 //    @PutMapping("/{id}")
 //    fun updateUser(@PathVariable id: Long, @RequestBody request: UserRequest): ResponseEntity<UserDTO> {
 //        val user = User(
@@ -70,33 +70,33 @@ class UserController(private val userService: UserService) {
 //        return ResponseEntity.ok(updatedUser.toDTO())
 //    }
     
-    @DeleteMapping("/{id}")
-    fun deleteUser(@PathVariable id: Long): ResponseEntity<Void> {
-        userService.delete(id)
-        return ResponseEntity.noContent().build()
-    }
+//    @DeleteMapping("/{id}")
+//    fun deleteUser(@PathVariable id: Long): ResponseEntity<Void> {
+//        userService.delete(id)
+//        return ResponseEntity.noContent().build()
+//    }
     
-    @PutMapping("/{id}/password")
-    fun changePassword(
-        @PathVariable id: Long,
-        @RequestBody request: PasswordChangeRequest
-    ): ResponseEntity<Void> {
-        userService.updatePassword(id, request.currentPassword, request.newPassword)
-        return ResponseEntity.ok().build()
-    }
+//    @PutMapping("/{id}/password")
+//    fun changePassword(
+//        @PathVariable id: Long,
+//        @RequestBody request: PasswordChangeRequest
+//    ): ResponseEntity<Void> {
+//        userService.updatePassword(id, request.currentPassword, request.newPassword)
+//        return ResponseEntity.ok().build()
+//    }
     
-    @PutMapping("/{id}/role")
-    fun updateUserRole(@PathVariable id: Long, @RequestParam role: String?): ResponseEntity<UserDTO> {
-        val roleValue = role ?: throw IllegalArgumentException("Role is required")
-        val user = userService.updateRole(id, cn.arorms.blog.backend.enums.UserRole.valueOf(roleValue.uppercase()))
-        return ResponseEntity.ok(user.toDTO())
-    }
+//    @PutMapping("/{id}/role")
+//    fun updateUserRole(@PathVariable id: Long, @RequestParam role: String?): ResponseEntity<UserDTO> {
+//        val roleValue = role ?: throw IllegalArgumentException("Role is required")
+//        val user = userService.updateRole(id, cn.arorms.blog.backend.enums.UserRole.valueOf(roleValue.uppercase()))
+//        return ResponseEntity.ok(user.toDTO())
+//    }
     
-    @PutMapping("/{id}/enabled")
-    fun setUserEnabled(@PathVariable id: Long, @RequestParam enabled: Boolean): ResponseEntity<UserDTO> {
-        val user = userService.enableUser(id, enabled)
-        return ResponseEntity.ok(user.toDTO())
-    }
+//    @PutMapping("/{id}/enabled")
+//    fun setUserEnabled(@PathVariable id: Long, @RequestParam enabled: Boolean): ResponseEntity<UserDTO> {
+//        val user = userService.enableUser(id, enabled)
+//        return ResponseEntity.ok(user.toDTO())
+//    }
     
     // Extension function to convert User to UserDTO
     private fun User.toDTO(): UserDTO {

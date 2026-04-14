@@ -13,7 +13,7 @@ import {
   LogOut,
   ArrowLeft
 } from 'lucide-react';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '@/hooks/useAuth.ts';
 
 interface AdminLayoutProps {
   children: ReactNode;

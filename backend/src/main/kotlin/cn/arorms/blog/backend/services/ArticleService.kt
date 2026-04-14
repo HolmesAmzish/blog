@@ -4,6 +4,7 @@ import cn.arorms.blog.backend.entities.Article
 import cn.arorms.blog.backend.entities.ArticleTag
 import cn.arorms.blog.backend.enums.ArticleStatus
 import cn.arorms.blog.backend.enums.Language
+import cn.arorms.blog.backend.projections.ArticleListItem
 import cn.arorms.blog.backend.repositories.ArticleRepository
 import cn.arorms.blog.backend.repositories.ArticleTagRepository
 import cn.arorms.blog.backend.repositories.TagRepository
@@ -22,35 +23,35 @@ class ArticleService(
     private val tagRepository: TagRepository
 ) {
     
-    fun findAll(pageable: Pageable): Page<Article> {
-        return articleRepository.findAll(pageable)
+    fun findAll(pageable: Pageable): Page<ArticleListItem> {
+        return articleRepository.findAllListItem(pageable)
     }
-    
+
     fun findById(id: Long): Article? {
         return articleRepository.findById(id).orElse(null)
     }
-    
+
     fun findBySlug(slug: String): Article? {
         return articleRepository.findBySlug(slug)
     }
-    
-    fun findPublished(pageable: Pageable): Page<Article> {
+
+    fun findPublished(pageable: Pageable): Page<ArticleListItem> {
         return articleRepository.findByStatus(ArticleStatus.PUBLISHED, pageable)
     }
-    
-    fun findPublishedByLanguage(language: Language, pageable: Pageable): Page<Article> {
+
+    fun findPublishedByLanguage(language: Language, pageable: Pageable): Page<ArticleListItem> {
         return articleRepository.findByStatusAndLanguage(ArticleStatus.PUBLISHED, language, pageable)
     }
-    
-    fun findByCategory(categoryId: Long, pageable: Pageable): Page<Article> {
+
+    fun findByCategory(categoryId: Long, pageable: Pageable): Page<ArticleListItem> {
         return articleRepository.findByCategoryId(categoryId, pageable)
     }
-    
-    fun findByTag(tagId: Long, pageable: Pageable): Page<Article> {
+
+    fun findByTag(tagId: Long, pageable: Pageable): Page<ArticleListItem> {
         return articleRepository.findByTagId(tagId, pageable)
     }
-    
-    fun searchByTitle(keyword: String, pageable: Pageable): Page<Article> {
+
+    fun searchByTitle(keyword: String, pageable: Pageable): Page<ArticleListItem> {
         return articleRepository.findByStatusAndTitleContaining(ArticleStatus.PUBLISHED, keyword, pageable)
     }
     

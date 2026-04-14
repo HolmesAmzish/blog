@@ -69,7 +69,8 @@ class UserService(
             email = request.email,
             // TODO: Why?
             password = encodedPassword!!,
-            role = UserRole.USER
+            displayName = request.displayName,
+            role = UserRole.USER,
         )
         
         return userRepository.save(newUser)

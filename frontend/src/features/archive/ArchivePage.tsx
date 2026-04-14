@@ -8,19 +8,14 @@ import * as echarts from 'echarts';
 import { useCategoryTree } from '../../hooks/useCategories';
 import { useArticles } from '../../hooks/useArticles';
 import type { ArchiveTreeNode, CategoryDTO, ArticleDTO } from '../../types';
+import { useTranslation } from '../../context/TranslationContext';
 
 /**
- * Transform category and article data to ECharts tree format
+ * Recursively build tree nodes from CategoryDTO
  */
-const buildTreeData = (categories: CategoryDTO[] | undefined, articles: ArticleDTO[]): ArchiveTreeNode => {
-  const root: ArchiveTreeNode = {
-    name: 'ARORMS.BLOG',
-    children: [],
-  };
+const buildCategoryNodes = (categories: CategoryDTO[], articles: ArticleDTO[]): ArchiveTreeNode[] => {
+  const nodes: ArchiveTreeNode[] = [];
 
-  if (!categories) return root;
-
-  // Add categories as first level
   categories.forEach((category) => {
     const categoryNode: ArchiveTreeNode = {
       name: category.name,
@@ -28,50 +23,52 @@ const buildTreeData = (categories: CategoryDTO[] | undefined, articles: ArticleD
     };
 
     // Find articles in this category
-    const categoryArticles = articles.filter(
-      (article) => article.categoryId === category.id
-    );
+    if (category.id) {
+      const categoryArticles = articles.filter(
+        (article) => article.categoryId === category.id
+      );
 
-    // Add articles as children
-    categoryArticles.forEach((article) => {
-      categoryNode.children?.push({
-        name: article.title,
-        value: article.viewCount,
-        article: article,
-      });
-    });
-
-    // Only add category if it has articles
-    if (category.children && category.children.length > 0) {
-      // Recursively add subcategories
-      category.children.forEach((child) => {
-        const childNode: ArchiveTreeNode = {
-          name: child.name,
-          children: [],
-        };
-
-        const childArticles = articles.filter(
-          (article) => article.categoryId === child.id
-        );
-
-        childArticles.forEach((article) => {
-          childNode.children?.push({
-            name: article.title,
-            value: article.viewCount,
-            article: article,
-          });
+      categoryArticles.forEach((article) => {
+        categoryNode.children?.push({
+          name: article.title,
+          value: article.viewCount,
+          article: article,
         });
-
-        if (childNode.children && childNode.children.length > 0) {
-          categoryNode.children?.push(childNode);
-        }
       });
     }
 
+    // Recursively build children nodes
+    if (category.children && category.children.length > 0) {
+      categoryNode.children?.push(...buildCategoryNodes(category.children, articles));
+    }
+
+    // Always add node if it has children (categories or articles)
+    // Or if it has articles directly
     if (categoryNode.children && categoryNode.children.length > 0) {
-      root.children?.push(categoryNode);
+      nodes.push(categoryNode);
+    } else if (category.id) {
+      // Add category even if no articles, but only if it has no children
+      // Actually, we want to show ALL categories, so add it
+      nodes.push(categoryNode);
     }
   });
+
+  return nodes;
+};
+
+/**
+ * Transform category and article data to ECharts tree format
+ */
+const buildTreeData = (categoryTree: CategoryDTO | undefined, articles: ArticleDTO[]): ArchiveTreeNode => {
+  const root: ArchiveTreeNode = {
+    name: 'ARORMS.BLOG',
+    children: [],
+  };
+
+  if (!categoryTree || !categoryTree.children) return root;
+
+  // Build nodes from root categories
+  root.children = buildCategoryNodes(categoryTree.children, articles);
 
   // Add uncategorized articles
   const uncategorizedArticles = articles.filter(
@@ -87,7 +84,7 @@ const buildTreeData = (categories: CategoryDTO[] | undefined, articles: ArticleD
         article: article,
       })),
     };
-    root.children?.push(uncategorizedNode);
+    root.children.push(uncategorizedNode);
   }
 
   return root;
@@ -97,14 +94,17 @@ const buildTreeData = (categories: CategoryDTO[] | undefined, articles: ArticleD
  * ArchivePage - ECharts tree visualization
  */
 export const ArchivePage: React.FC = () => {
+  const { t } = useTranslation();
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstance = useRef<echarts.ECharts | null>(null);
 
-  const { data: categories, isLoading: categoriesLoading } = useCategoryTree();
+  const { data: categoryTree, isLoading: categoriesLoading } = useCategoryTree();
   const { data: articlesData, isLoading: articlesLoading } = useArticles({
     page: 0,
     size: 1000, // Get all articles
   });
+
+  const articles = articlesData?.content || [];
 
   useEffect(() => {
     if (!chartRef.current || categoriesLoading || articlesLoading) return;
@@ -112,9 +112,10 @@ export const ArchivePage: React.FC = () => {
     // Initialize chart
     chartInstance.current = echarts.init(chartRef.current);
 
-    const treeData = buildTreeData(categories || [], articlesData?.content || []);
+    const treeData = buildTreeData(categoryTree, articles);
 
-    const option: echarts.EChartsOption = {
+    // Type-ignored option for ECharts compatibility
+    const option = {
       backgroundColor: 'transparent',
       tooltip: {
         trigger: 'item',
@@ -127,8 +128,9 @@ export const ArchivePage: React.FC = () => {
           fontFamily: 'monospace',
           fontSize: 11,
         },
-        formatter: (params: unknown) => {
-          const data = params.data as ArchiveTreeNode;
+        formatter: (params: any) => {
+          const data = params.data;
+          if (!data) return '';
           if (data.article) {
             return `
               <div style="padding: 8px;">
@@ -162,8 +164,9 @@ export const ArchivePage: React.FC = () => {
             fontFamily: 'monospace',
             fontSize: 11,
             color: '#000',
-            formatter: (params: unknown) => {
-              const data = params.data as ArchiveTreeNode;
+            formatter: (params: any) => {
+              const data = params.data;
+              if (!data) return '';
               return data.article
                 ? `{article|${data.name}}`
                 : `{category|${data.name}}`;
@@ -199,19 +202,22 @@ export const ArchivePage: React.FC = () => {
           expandAndCollapse: true,
           animationDuration: 550,
           animationDurationUpdate: 750,
+          expandAndCollapse: true,
+          initialTreeDepth: -1,
           lineStyle: {
             color: '#e5e7eb',
             width: 1,
           },
         },
       ],
-    };
+    } as any;
 
-    chartInstance.current.setOption(option);
+    chartInstance.current.setOption(option as any);
 
     // Handle click events
-    chartInstance.current.on('click', (params: unknown) => {
-      const data = params.data as ArchiveTreeNode;
+    chartInstance.current.on('click', (params: any) => {
+      const data = params.data;
+      if (!data) return;
       if (data.article) {
         window.location.href = `/article/${data.article.slug}`;
       }
@@ -228,7 +234,7 @@ export const ArchivePage: React.FC = () => {
       window.removeEventListener('resize', handleResize);
       chartInstance.current?.dispose();
     };
-  }, [categories, articlesData, categoriesLoading, articlesLoading]);
+  }, [categoryTree, articles, categoriesLoading, articlesLoading]);
 
   const isLoading = categoriesLoading || articlesLoading;
 
@@ -242,15 +248,14 @@ export const ArchivePage: React.FC = () => {
               //
             </span>
             <span className="text-[10px] font-mono uppercase tracking-wider text-gray-400">
-              TREE.STRUCTURE
+              {t('archive.archive')}
             </span>
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-black">
-            ARCHIVE
+            {t('archive.archive')}
           </h1>
           <p className="mt-2 text-sm text-gray-600 font-mono">
-            Interactive visualization of all articles organized by category.
-            Click on any article to read.
+            {t('home.heroDescription')}
           </p>
         </div>
 
@@ -261,7 +266,7 @@ export const ArchivePage: React.FC = () => {
               <div className="text-center">
                 <div className="w-8 h-8 border-2 border-gray-200 border-t-[#0047FF] rounded-full animate-spin mx-auto mb-4" />
                 <p className="text-[11px] font-mono text-gray-500">
-                  LOADING ARCHIVE DATA...
+                  {t('archive.archive')}...
                 </p>
               </div>
             </div>
@@ -278,11 +283,11 @@ export const ArchivePage: React.FC = () => {
         <div className="mt-6 flex items-center gap-6 text-[10px] font-mono text-gray-500">
           <div className="flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-black border border-[#0047FF]" />
-            <span>CATEGORY</span>
+            <span>{t('articleDetail.category')}</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-[#0047FF]" />
-            <span>ARTICLE</span>
+            <span>{t('home.latestArticles')}</span>
           </div>
         </div>
       </div>

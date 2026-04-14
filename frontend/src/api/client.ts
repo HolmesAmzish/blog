@@ -35,8 +35,15 @@ const createAxiosClient = (): AxiosInstance => {
     (response) => response,
     (error) => {
       if (error.response?.status === 401) {
-        localStorage.removeItem('auth_token');
-        window.location.href = '/login';
+        // Only redirect to login for auth-related endpoints or admin endpoints
+        const requestUrl = error.config.url || '';
+        if (requestUrl.includes('/auth/me') || requestUrl.includes('/admin')) {
+          localStorage.removeItem('auth_token');
+          window.location.href = '/admin/login';
+        } else {
+          // For public endpoints, just remove the token but don't redirect
+          localStorage.removeItem('auth_token');
+        }
       }
       return Promise.reject(error);
     }

@@ -1,0 +1,17 @@
+POST http://localhost:8080/api/images/upload
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="file"; filename="CZ2025.JPG"
+Content-Type: image/jpeg
+
+< C:\Development\CZ2025.JPG
+--boundary
+Content-Disposition: form-data; name="uploaderId"
+
+1
+--boundary
+Content-Disposition: form-data; name="alt"
+
+--boundary--

@@ -15,10 +15,10 @@ export const fetchCategories = async (): Promise<CategoryDTO[]> => {
 };
 
 /**
- * Fetch category tree (hierarchical structure)
+ * Fetch category tree (hierarchical structure with unlimited depth)
  */
-export const fetchCategoryTree = async (): Promise<CategoryDTO[]> => {
-  return get<CategoryDTO[]>(`${BASE_PATH}/tree`);
+export const fetchCategoryTree = async (): Promise<CategoryDTO> => {
+  return get<CategoryDTO>(`${BASE_PATH}/tree`);
 };
 
 /**

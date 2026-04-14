@@ -14,13 +14,13 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/api/categories")
 class CategoryController(private val categoryService: CategoryService) {
-    
+
     @GetMapping
     fun getAllCategories(): ResponseEntity<List<CategoryDTO>> {
         val categories = categoryService.findAll()
         return ResponseEntity.ok(categories.map { it.toDTO() })
     }
-    
+
     @GetMapping("/{id}")
     fun getCategoryById(@PathVariable id: Long): ResponseEntity<CategoryDTO> {
         val category = categoryService.findById(id)
@@ -30,7 +30,7 @@ class CategoryController(private val categoryService: CategoryService) {
             ResponseEntity.notFound().build()
         }
     }
-    
+
     @GetMapping("/slug/{slug}")
     fun getCategoryBySlug(@PathVariable slug: String): ResponseEntity<CategoryDTO> {
         val category = categoryService.findBySlug(slug)
@@ -40,19 +40,13 @@ class CategoryController(private val categoryService: CategoryService) {
             ResponseEntity.notFound().build()
         }
     }
-    
-    @GetMapping("/roots")
-    fun getRootCategories(): ResponseEntity<List<CategoryDTO>> {
-        val categories = categoryService.findRootCategories()
-        return ResponseEntity.ok(categories.map { it.toDTOWithChildren() })
+
+    @GetMapping("/tree")
+    fun getCategoryTree(): ResponseEntity<CategoryDTO> {
+        val tree = categoryService.buildCategoryTree()
+        return ResponseEntity.ok(tree)
     }
-    
-    @GetMapping("/{id}/children")
-    fun getCategoryChildren(@PathVariable id: Long): ResponseEntity<List<CategoryDTO>> {
-        val children = categoryService.findChildren(id)
-        return ResponseEntity.ok(children.map { it.toDTO() })
-    }
-    
+
     @PostMapping
     fun createCategory(@RequestBody request: CategoryRequest): ResponseEntity<CategoryDTO> {
         val category = Category(
@@ -64,7 +58,7 @@ class CategoryController(private val categoryService: CategoryService) {
         val savedCategory = categoryService.create(category)
         return ResponseEntity.status(HttpStatus.CREATED).body(savedCategory.toDTO())
     }
-    
+
     @PutMapping("/{id}")
     fun updateCategory(@PathVariable id: Long, @RequestBody request: CategoryRequest): ResponseEntity<CategoryDTO> {
         val category = Category(
@@ -76,13 +70,13 @@ class CategoryController(private val categoryService: CategoryService) {
         val updatedCategory = categoryService.update(id, category)
         return ResponseEntity.ok(updatedCategory.toDTO())
     }
-    
+
     @DeleteMapping("/{id}")
     fun deleteCategory(@PathVariable id: Long): ResponseEntity<Void> {
         categoryService.delete(id)
         return ResponseEntity.noContent().build()
     }
-    
+
     // Extension function to convert Category to CategoryDTO (without children)
     private fun Category.toDTO(): CategoryDTO {
         return CategoryDTO(
@@ -96,7 +90,7 @@ class CategoryController(private val categoryService: CategoryService) {
             articleCount = this.id?.let { categoryService.getArticleCount(it) }
         )
     }
-    
+
     // Extension function to convert Category to CategoryDTO with children (for tree structure)
     private fun Category.toDTOWithChildren(): CategoryDTO {
         val children = this.id?.let { categoryService.findChildren(it) } ?: emptyList()
@@ -107,7 +101,7 @@ class CategoryController(private val categoryService: CategoryService) {
             slug = this.slug,
             parentId = this.parent?.id,
             parentName = this.parent?.name,
-            children = children.map { it.toDTO() },
+            children = children.map { it.toDTOWithChildren() },  // Recursively build children tree
             articleCount = this.id?.let { categoryService.getArticleCount(it) }
         )
     }

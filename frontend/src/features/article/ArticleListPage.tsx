@@ -7,19 +7,24 @@ import { useArticles } from '../../hooks/useArticles';
 import { useCategories } from '../../hooks/useCategories';
 import { ArticleCard } from '../../components/ui/ArticleCard';
 import { ChevronLeft, ChevronRight, Filter } from 'lucide-react';
+import { useTranslation } from '../../context/TranslationContext';
+import type { SupportedLanguage } from '../../context/LanguageContext';
 
 /**
  * ArticleListPage - Paginated article listing
  */
 export const ArticleListPage: React.FC = () => {
+  const { t } = useTranslation();
   const [page, setPage] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState<number | undefined>(undefined);
+  const [languageFilter, setLanguageFilter] = useState<SupportedLanguage | 'ALL'>('ALL');
   const size = 9;
 
   const { data, isLoading, error } = useArticles({
     page,
     size,
     categoryId: selectedCategory,
+    language: languageFilter === 'ALL' ? undefined : languageFilter,
   });
 
   const { data: categories } = useCategories();
@@ -36,21 +41,22 @@ export const ArticleListPage: React.FC = () => {
               //
             </span>
             <span className="text-[10px] font-mono uppercase tracking-wider text-gray-400">
-              INDEX
+              {t('articles.allArticles')}
             </span>
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-black">
-            ALL ARTICLES
+            {t('articles.allArticles')}
           </h1>
         </div>
 
-        {/* Category filter */}
-        {categories && categories.length > 0 && (
-          <div className="mb-8">
+        {/* Filters */}
+        <div className="mb-8 space-y-4">
+          {/* Category filter */}
+          <div>
             <div className="flex items-center gap-2 mb-3">
               <Filter className="w-3 h-3 text-gray-400" />
               <span className="text-[10px] font-mono uppercase tracking-wider text-gray-400">
-                FILTER BY CATEGORY
+                {t('articles.filterByCategory')}
               </span>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -68,9 +74,9 @@ export const ArticleListPage: React.FC = () => {
                   }
                 `}
               >
-                ALL
+                {t('articles.all')}
               </button>
-              {categories.map((category) => (
+              {categories?.map((category) => (
                 <button
                   key={category.id}
                   onClick={() => {
@@ -91,7 +97,57 @@ export const ArticleListPage: React.FC = () => {
               ))}
             </div>
           </div>
-        )}
+
+          {/* Language filter */}
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-gray-400">
+                Language
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => setLanguageFilter('ALL')}
+                className={`
+                  px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider
+                  border-[0.5px] transition-all duration-200
+                  ${languageFilter === 'ALL'
+                    ? 'border-black bg-black text-white'
+                    : 'border-gray-200 text-gray-600 hover:border-gray-400'
+                  }
+                `}
+              >
+                ALL
+              </button>
+              <button
+                onClick={() => setLanguageFilter('ZH')}
+                className={`
+                  px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider
+                  border-[0.5px] transition-all duration-200
+                  ${languageFilter === 'ZH'
+                    ? 'border-black bg-black text-white'
+                    : 'border-gray-200 text-gray-600 hover:border-gray-400'
+                  }
+                `}
+              >
+                中文
+              </button>
+              <button
+                onClick={() => setLanguageFilter('EN')}
+                className={`
+                  px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider
+                  border-[0.5px] transition-all duration-200
+                  ${languageFilter === 'EN'
+                    ? 'border-black bg-black text-white'
+                    : 'border-gray-200 text-gray-600 hover:border-gray-400'
+                  }
+                `}
+              >
+                English
+              </button>
+            </div>
+          </div>
+        </div>
 
         {/* Articles grid */}
         {isLoading ? (
@@ -110,13 +166,13 @@ export const ArticleListPage: React.FC = () => {
         ) : error ? (
           <div className="border-[0.5px] border-red-200 bg-red-50 p-6 text-center">
             <p className="text-sm text-red-600 font-mono">
-              ERROR: {error.message}
+              {t('articles.error')}: {error.message}
             </p>
           </div>
         ) : data?.content.length === 0 ? (
           <div className="border-[0.5px] border-gray-200 p-12 text-center">
             <p className="text-sm text-gray-500 font-mono">
-              NO ARTICLES FOUND
+              {t('articles.noArticles')}
             </p>
           </div>
         ) : (
@@ -171,7 +227,7 @@ export const ArticleListPage: React.FC = () => {
         {data && (
           <div className="mt-6 text-center">
             <p className="text-[10px] font-mono text-gray-400">
-              SHOWING {data.content.length} OF {data.totalElements} ARTICLES
+              {t('articles.showing')} {data.content.length} {t('articles.of')} {data.totalElements} {t('articles.articles')}
             </p>
           </div>
         )}

@@ -5,10 +5,12 @@ import cn.arorms.blog.backend.dto.ArticlePageResponse
 import cn.arorms.blog.backend.dto.ArticleRequest
 import cn.arorms.blog.backend.dto.TagDTO
 import cn.arorms.blog.backend.entities.Article
+import cn.arorms.blog.backend.entities.ArticleTag
 import cn.arorms.blog.backend.entities.Category
 import cn.arorms.blog.backend.entities.User
 import cn.arorms.blog.backend.enums.ArticleStatus
 import cn.arorms.blog.backend.enums.Language
+import cn.arorms.blog.backend.projections.ArticleListItem
 import cn.arorms.blog.backend.repositories.ArticleTagRepository
 import cn.arorms.blog.backend.services.ArticleService
 import cn.arorms.blog.backend.services.CategoryService
@@ -45,7 +47,7 @@ class ArticleController(
         val articlePage = articleService.findAll(pageable)
         
         val response = ArticlePageResponse(
-            content = articlePage.content.map { it.toDTO() },
+            content = articlePage.content.map { it.toListDTO() },
             totalElements = articlePage.totalElements,
             totalPages = articlePage.totalPages,
             currentPage = page,
@@ -72,7 +74,7 @@ class ArticleController(
         }
         
         val response = ArticlePageResponse(
-            content = articlePage.content.map { it.toDTO() },
+            content = articlePage.content.map { it.toListDTO() },
             totalElements = articlePage.totalElements,
             totalPages = articlePage.totalPages,
             currentPage = page,
@@ -113,7 +115,7 @@ class ArticleController(
         val articlePage = articleService.findByCategory(categoryId, pageable)
         
         val response = ArticlePageResponse(
-            content = articlePage.content.map { it.toDTO() },
+            content = articlePage.content.map { it.toListDTO() },
             totalElements = articlePage.totalElements,
             totalPages = articlePage.totalPages,
             currentPage = page,
@@ -132,7 +134,7 @@ class ArticleController(
         val articlePage = articleService.findByTag(tagId, pageable)
         
         val response = ArticlePageResponse(
-            content = articlePage.content.map { it.toDTO() },
+            content = articlePage.content.map { it.toListDTO() },
             totalElements = articlePage.totalElements,
             totalPages = articlePage.totalPages,
             currentPage = page,
@@ -151,7 +153,7 @@ class ArticleController(
         val articlePage = articleService.searchByTitle(keyword, pageable)
         
         val response = ArticlePageResponse(
-            content = articlePage.content.map { it.toDTO() },
+            content = articlePage.content.map { it.toListDTO() },
             totalElements = articlePage.totalElements,
             totalPages = articlePage.totalPages,
             currentPage = page,
@@ -236,22 +238,54 @@ class ArticleController(
         articleService.removeTagFromArticle(articleId, tagId)
         return ResponseEntity.noContent().build()
     }
-    
-    // Extension function to convert Article to ArticleDTO
-    private fun Article.toDTO(): ArticleDTO {
-        val articleTags = articleTagRepository.findByArticleId(this.id!!)
-        val tags = articleTags.mapNotNull { articleTag ->
-            articleTag.tag.let { tag ->
+
+    // Extension function to convert ArticleListItem to ArticleDTO (without content)
+    private fun ArticleListItem.toListDTO(): ArticleDTO {
+        val tags = articleTagRepository.findByArticleId(this.id!!)
+            .map { articleTag ->
                 TagDTO(
-                    id = tag.id,
-                    name = tag.name,
-                    description = tag.description,
-                    slug = tag.slug,
-                    articleCount = tagService.getArticleCount(tag.id!!)
+                    id = articleTag.tag.id,
+                    name = articleTag.tag.name,
+                    description = articleTag.tag.description,
+                    slug = articleTag.tag.slug,
+                    articleCount = tagService.getArticleCount(articleTag.tag.id!!)
                 )
             }
-        }
-        
+
+        return ArticleDTO(
+            id = this.id,
+            title = this.title,
+            summary = this.summary,
+            content = null,
+            originalContent = null,
+            slug = this.slug,
+            language = this.language,
+            status = this.status,
+            viewCount = this.viewCount,
+            categoryId = this.category?.id,
+            categoryName = this.category?.name,
+            authorId = this.author?.id,
+            authorName = this.author?.displayName ?: this.author?.username,
+            tags = tags,
+            createdAt = this.createdAt.toString(),
+            updatedAt = this.updatedAt.toString(),
+            publishedAt = this.publishedAt?.toString()
+        )
+    }
+
+    // Extension function to convert Article to ArticleDTO (with content)
+    private fun Article.toDTO(): ArticleDTO {
+        val tags = articleTagRepository.findByArticleId(this.id!!)
+            .map { articleTag ->
+                TagDTO(
+                    id = articleTag.tag.id,
+                    name = articleTag.tag.name,
+                    description = articleTag.tag.description,
+                    slug = articleTag.tag.slug,
+                    articleCount = tagService.getArticleCount(articleTag.tag.id!!)
+                )
+            }
+
         return ArticleDTO(
             id = this.id,
             title = this.title,

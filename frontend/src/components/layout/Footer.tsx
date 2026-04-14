@@ -2,7 +2,9 @@
  * Footer Component
  * Technical minimalism footer with grid layout
  */
-import { Github, Twitter, Mail, Rss } from 'lucide-react';
+import { GithubIcon, X, Mail } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useTranslation } from '../../context/TranslationContext';
 
 interface SocialLink {
   icon: React.ReactNode;
@@ -11,16 +13,17 @@ interface SocialLink {
 }
 
 const socialLinks: SocialLink[] = [
-  { icon: <Github className="w-4 h-4" />, href: 'https://github.com', label: 'GitHub' },
-  { icon: <Twitter className="w-4 h-4" />, href: 'https://twitter.com', label: 'Twitter' },
-  { icon: <Mail className="w-4 h-4" />, href: 'mailto:hello@arorms.blog', label: 'Email' },
-  { icon: <Rss className="w-4 h-4" />, href: '/rss', label: 'RSS' },
+  { icon: <GithubIcon className="w-4 h-4" />, href: 'https://github.com/HolmesAmzish', label: 'github' },
+  { icon: <X className="w-4 h-4" />, href: 'https://x.com/HolmesAmzish', label: 'x' },
+  { icon: <Mail className="w-4 h-4" />, href: 'mailto:HolmesAmzish86@gmail.com', label: 'email' },
+  // { icon: <Rss className="w-4 h-4" />, href: '/rss', label: 'RSS' },
 ];
 
 /**
  * Footer - Technical minimalism style
  */
 export const Footer: React.FC = () => {
+  const { t } = useTranslation();
   const currentYear = new Date().getFullYear();
 
   return (
@@ -34,25 +37,29 @@ export const Footer: React.FC = () => {
               ARORMS
             </h3>
             <p className="text-[11px] font-mono text-gray-500 leading-relaxed">
-              A technical blog exploring software architecture,
-              distributed systems, and the art of clean code.
+              {t('footer.brandDescription')}
             </p>
           </div>
 
           {/* Quick links */}
           <div>
             <h4 className="text-[10px] font-mono uppercase tracking-wider text-gray-400 mb-3">
-              NAVIGATION
+              {t('footer.navigation')}
             </h4>
             <ul className="space-y-2">
-              {['Home', 'Articles', 'Archive', 'About'].map((item) => (
-                <li key={item}>
-                  <a
-                    href={`/${item.toLowerCase()}`}
+              {[
+                { label: 'home', path: '/' },
+                { label: 'articles', path: '/articles' },
+                { label: 'archive', path: '/archive' },
+                { label: 'about', path: '/about' },
+              ].map((item) => (
+                <li key={item.path}>
+                  <Link
+                    to={item.path}
                     className="text-[11px] font-mono text-gray-600 hover:text-[#0047FF] transition-colors"
                   >
-                    {item.toUpperCase()}
-                  </a>
+                    {t(`nav.${item.label}`).toUpperCase()}
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -61,7 +68,7 @@ export const Footer: React.FC = () => {
           {/* Social links */}
           <div>
             <h4 className="text-[10px] font-mono uppercase tracking-wider text-gray-400 mb-3">
-              CONNECT
+              {t('footer.connect')}
             </h4>
             <div className="flex gap-2">
               {socialLinks.map((link) => (
@@ -71,7 +78,7 @@ export const Footer: React.FC = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="p-2 border-[0.5px] border-gray-200 text-gray-600 hover:border-[#0047FF] hover:text-[#0047FF] transition-all duration-200"
-                  aria-label={link.label}
+                  aria-label={t(`footer.${link.label}`)}
                 >
                   {link.icon}
                 </a>
@@ -83,10 +90,10 @@ export const Footer: React.FC = () => {
         {/* Bottom bar */}
         <div className="py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <p className="text-[10px] font-mono text-gray-400">
-            © {currentYear} ARORMS. ALL RIGHTS RESERVED.
+            © {currentYear} ARORMS. {t('footer.copyright')}
           </p>
           <p className="text-[10px] font-mono text-gray-400">
-            BUILT WITH REACT + SPRING BOOT
+            {t('footer.builtWith')}
           </p>
         </div>
       </div>

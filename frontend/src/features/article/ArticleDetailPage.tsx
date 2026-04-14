@@ -155,7 +155,7 @@ export const ArticleDetailPage: React.FC = () => {
                         {children}
                       </code>
                     ) : (
-                      <pre className="border-[0.5px] border-gray-200 bg-gray-50 p-4 overflow-x-auto mb-4">
+                      <pre className="border-[0.5px] border-gray-200 p-4 overflow-x-auto mb-4">
                         <code className={className}>{children}</code>
                       </pre>
                     );
