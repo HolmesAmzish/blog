@@ -1,4 +1,4 @@
-package cn.arorms.blog.backend.dto
+package cn.arorms.blog.backend.dtos
 
 /**
  * Data Transfer Object for Tag

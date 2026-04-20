@@ -5,31 +5,53 @@
 import { get, post, put, del } from './client';
 import type {
   ArticleDTO,
-  ArticleRequest,
+  ArticleCreateRequest,
+  ArticleUpdateRequest,
   ArticlePageResponse,
+  ArticleListItem,
 } from '../types';
 import { type SupportedLanguage } from '../context/LanguageContext';
 
 const BASE_PATH = '/articles';
 
 /**
- * Fetch paginated articles
+ * Fetch paginated articles (all status) - for admin
  */
 export const fetchArticles = async (
   page: number = 0,
   size: number = 10,
+  sortBy: string = 'createdAt',
+  sortDir: string = 'desc',
   categoryId?: number,
-  tagId?: number,
+  tagId?: number
+): Promise<ArticlePageResponse> => {
+  const params = new URLSearchParams();
+  params.append('page', page.toString());
+  params.append('size', size.toString());
+  params.append('sortBy', sortBy);
+  params.append('sortDir', sortDir);
+  if (categoryId) params.append('categoryId', categoryId.toString());
+  if (tagId) params.append('tagId', tagId.toString());
+
+  return get<ArticlePageResponse>(`${BASE_PATH}?${params.toString()}`);
+};
+
+/**
+ * Fetch paginated published articles - for users
+ */
+export const fetchPublishedArticles = async (
+  page: number = 0,
+  size: number = 10,
+  categoryId?: number,
   language?: SupportedLanguage
 ): Promise<ArticlePageResponse> => {
   const params = new URLSearchParams();
   params.append('page', page.toString());
   params.append('size', size.toString());
   if (categoryId) params.append('categoryId', categoryId.toString());
-  if (tagId) params.append('tagId', tagId.toString());
   if (language) params.append('language', language);
 
-  return get<ArticlePageResponse>(`${BASE_PATH}?${params.toString()}`);
+  return get<ArticlePageResponse>(`${BASE_PATH}/published?${params.toString()}`);
 };
 
 /**
@@ -49,15 +71,15 @@ export const fetchArticleBySlug = async (slug: string): Promise<ArticleDTO> => {
 /**
  * Create new article
  */
-export const createArticle = async (request: ArticleRequest): Promise<ArticleDTO> => {
-  return post<ArticleDTO, ArticleRequest>(BASE_PATH, request);
+export const createArticle = async (request: ArticleCreateRequest): Promise<ArticleDTO> => {
+  return post<ArticleDTO, ArticleCreateRequest>(BASE_PATH, request);
 };
 
 /**
  * Update existing article
  */
-export const updateArticle = async (id: number, request: ArticleRequest): Promise<ArticleDTO> => {
-  return put<ArticleDTO, ArticleRequest>(`${BASE_PATH}/${id}`, request);
+export const updateArticle = async (id: number, request: ArticleUpdateRequest): Promise<ArticleDTO> => {
+  return put<ArticleDTO, ArticleUpdateRequest>(`${BASE_PATH}/${id}`, request);
 };
 
 /**

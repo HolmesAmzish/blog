@@ -7,13 +7,39 @@ import { ArticleCard } from '../../components/ui/ArticleCard';
 import { ArrowRight, Terminal } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from '../../context/TranslationContext';
+import { useLanguage } from '../../context/LanguageContext';
+import { fetchSiteStatistics } from '../../api/siteStatistics';
+import { useQuery } from '@tanstack/react-query';
+import { useMemo } from 'react';
 
 /**
  * HomePage - Landing page with latest articles
  */
 export const HomePage: React.FC = () => {
   const { t } = useTranslation();
-  const { data, isLoading, error } = useArticles({ page: 0, size: 6 });
+  const { language } = useLanguage();
+  const { data, isLoading, error } = useArticles({ page: 0, size: 6, language });
+  const { data: statistics, isLoading: statsLoading } = useQuery({
+    queryKey: ['siteStatistics'],
+    queryFn: fetchSiteStatistics,
+    staleTime: 60 * 60 * 1000, // 1 hour
+  });
+
+  // Format number helper
+  const formatNumber = (num: number): string => {
+    if (num >= 1000) {
+      return `${(num / 1000).toFixed(1)}K`;
+    }
+    return num.toString();
+  };
+
+  // Stats data from API
+  const stats = statistics ? [
+    { label: 'home.stats.articles', value: statistics.totalArticles },
+    { label: 'home.stats.categories', value: statistics.totalCategories },
+    { label: 'home.stats.tags', value: statistics.totalTags },
+    { label: 'home.stats.views', value: formatNumber(statistics.totalArticleView) },
+  ] : [];
 
   return (
     <div className="min-h-screen">
@@ -56,12 +82,14 @@ export const HomePage: React.FC = () => {
 
             {/* Right: Stats grid */}
             <div className="grid grid-cols-2 gap-[0.5px] bg-gray-200 border-[0.5px] border-gray-200">
-              {[
-                { label: 'home.stats.articles', value: '42' },
-                { label: 'home.stats.categories', value: '8' },
-                { label: 'home.stats.tags', value: '24' },
-                { label: 'home.stats.views', value: '12K' },
-              ].map((stat) => (
+              {statsLoading ? (
+                [...Array(4)].map((_, i) => (
+                  <div key={i} className="bg-white p-6 flex flex-col items-center justify-center">
+                    <div className="h-8 w-16 bg-gray-100 mb-1 rounded animate-pulse" />
+                    <div className="h-3 w-20 bg-gray-100 rounded animate-pulse" />
+                  </div>
+                ))
+              ) : stats.map((stat) => (
                 <div
                   key={stat.label}
                   className="bg-white p-6 flex flex-col items-center justify-center"

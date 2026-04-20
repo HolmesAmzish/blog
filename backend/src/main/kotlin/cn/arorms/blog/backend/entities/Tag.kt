@@ -1,5 +1,6 @@
 package cn.arorms.blog.backend.entities
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import jakarta.persistence.*
 
 /**
@@ -15,12 +16,10 @@ class Tag(
     @Column(nullable = false, unique = true, length = 50)
     var name: String,
 
-    @Column(length = 100)
-    var description: String? = null,
-
     @Column(unique = true, length = 50)
     var slug: String,
 
-    @OneToMany(mappedBy = "tag", cascade = [CascadeType.ALL])
-    var articleTags: MutableSet<ArticleTag> = mutableSetOf()
+    @ManyToMany(mappedBy = "tags")
+    @JsonIgnore
+    var articles: MutableSet<Article> = mutableSetOf()
 )

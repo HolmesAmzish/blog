@@ -86,6 +86,17 @@ class GlobalExceptionHandler {
         )
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse)
     }
+
+    @ExceptionHandler(ResourceNotFoundException::class)
+    fun handleResourceNotFoundException(ex: ResourceNotFoundException): ResponseEntity<ErrorResponse> {
+        val errorResponse = ErrorResponse(
+            status = HttpStatus.NOT_FOUND.value(),
+            error = "Not Found",
+            message = ex.message ?: "Resource not found",
+            timestamp = LocalDateTime.now()
+        )
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse)
+    }
     
     /**
      * Standard error response DTO

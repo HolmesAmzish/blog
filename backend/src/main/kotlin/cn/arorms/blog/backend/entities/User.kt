@@ -1,6 +1,7 @@
 package cn.arorms.blog.backend.entities
 
 import cn.arorms.blog.backend.enums.UserRole
+import com.fasterxml.jackson.annotation.JsonIgnore
 import jakarta.persistence.*
 import java.time.LocalDateTime
 
@@ -9,7 +10,7 @@ import java.time.LocalDateTime
  */
 @Entity
 @Table(name = "users")
-data class User(
+class User(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null,
@@ -45,6 +46,7 @@ data class User(
     @Column(name = "updated_at")
     var updatedAt: LocalDateTime = LocalDateTime.now(),
 
+    @JsonIgnore
     @OneToMany(mappedBy = "author")
     var articles: MutableSet<Article> = mutableSetOf()
 ) {

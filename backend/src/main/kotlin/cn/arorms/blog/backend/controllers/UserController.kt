@@ -1,6 +1,6 @@
 package cn.arorms.blog.backend.controllers
 
-import cn.arorms.blog.backend.dto.*
+import cn.arorms.blog.backend.dtos.*
 import cn.arorms.blog.backend.entities.User
 import cn.arorms.blog.backend.services.UserService
 import org.springframework.http.HttpStatus

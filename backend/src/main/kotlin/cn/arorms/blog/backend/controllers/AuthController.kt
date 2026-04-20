@@ -1,12 +1,11 @@
 package cn.arorms.blog.backend.controllers
 
-import cn.arorms.blog.backend.dto.LoginRequest
-import cn.arorms.blog.backend.dto.LoginResponse
-import cn.arorms.blog.backend.dto.RegisterRequest
-import cn.arorms.blog.backend.dto.RegisterResponse
-import cn.arorms.blog.backend.dto.UserDTO
+import cn.arorms.blog.backend.dtos.LoginRequest
+import cn.arorms.blog.backend.dtos.LoginResponse
+import cn.arorms.blog.backend.dtos.RegisterRequest
+import cn.arorms.blog.backend.dtos.RegisterResponse
+import cn.arorms.blog.backend.dtos.UserDTO
 import cn.arorms.blog.backend.entities.User
-import cn.arorms.blog.backend.enums.UserRole
 import cn.arorms.blog.backend.services.JwtService
 import cn.arorms.blog.backend.services.UserService
 import org.springframework.http.HttpStatus
@@ -14,7 +13,6 @@ import org.springframework.http.ResponseEntity
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.annotation.AuthenticationPrincipal
-import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping

@@ -6,6 +6,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Archive, Home, FileText, User } from 'lucide-react';
 import { useState } from 'react';
 import { LanguageSwitcher } from '../ui/LanguageSwitcher';
+import { useTranslation } from '../../context/TranslationContext';
 
 interface NavItem {
   path: string;
@@ -14,10 +15,10 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { path: '/', label: 'HOME', icon: <Home className="w-4 h-4" /> },
-  { path: '/articles', label: 'ARTICLES', icon: <FileText className="w-4 h-4" /> },
-  { path: '/archive', label: 'ARCHIVE', icon: <Archive className="w-4 h-4" /> },
-  { path: '/about', label: 'ABOUT', icon: <User className="w-4 h-4" /> },
+  { path: '/', label: 'home', icon: <Home className="w-4 h-4" /> },
+  { path: '/articles', label: 'articles', icon: <FileText className="w-4 h-4" /> },
+  { path: '/archive', label: 'archive', icon: <Archive className="w-4 h-4" /> },
+  { path: '/about', label: 'about', icon: <User className="w-4 h-4" /> },
 ];
 
 /**
@@ -26,6 +27,7 @@ const navItems: NavItem[] = [
 export const Header: React.FC = () => {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { t } = useTranslation();
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b-[0.5px] border-gray-200">
@@ -59,7 +61,7 @@ export const Header: React.FC = () => {
                         : 'border-transparent text-gray-600 hover:border-gray-200 hover:text-black'
                     ].join(' ')}
                   >
-                    {item.label}
+                    {t(`nav.${item.label}`)}
                   </Link>
                 );
               })}
@@ -107,7 +109,7 @@ export const Header: React.FC = () => {
                   ].join(' ')}
                 >
                   {item.icon}
-                  {item.label}
+                  {t(`nav.${item.label}`)}
                 </Link>
               );
             })}

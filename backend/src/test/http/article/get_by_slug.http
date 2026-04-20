@@ -1,0 +1,2 @@
+### GET article by slug
+GET http://localhost:8080/api/articles/slug/hello

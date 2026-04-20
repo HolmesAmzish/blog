@@ -1,7 +1,6 @@
 package cn.arorms.blog.backend.services
 
 import cn.arorms.blog.backend.entities.Tag
-import cn.arorms.blog.backend.repositories.ArticleTagRepository
 import cn.arorms.blog.backend.repositories.TagRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -11,8 +10,7 @@ import org.springframework.transaction.annotation.Transactional
  */
 @Service
 class TagService(
-    private val tagRepository: TagRepository,
-    private val articleTagRepository: ArticleTagRepository
+    private val tagRepository: TagRepository
 ) {
     
     fun findAll(): List<Tag> {
@@ -21,6 +19,10 @@ class TagService(
     
     fun findById(id: Long): Tag? {
         return tagRepository.findById(id).orElse(null)
+    }
+
+    fun getTagsByIds(idList: List<Long>): List<Tag> {
+        return tagRepository.findAllById(idList)
     }
     
     fun findBySlug(slug: String): Tag? {
@@ -56,7 +58,6 @@ class TagService(
         
         existingTag.name = tag.name
         existingTag.slug = tag.slug
-        existingTag.description = tag.description
         
         return tagRepository.save(existingTag)
     }
@@ -66,16 +67,14 @@ class TagService(
         if (!tagRepository.existsById(id)) {
             throw IllegalArgumentException("Tag not found with id: $id")
         }
-        // Remove all article-tag associations first
-        articleTagRepository.findByTagId(id).forEach { articleTagRepository.delete(it) }
         tagRepository.deleteById(id)
     }
-    
-    fun getArticleCount(tagId: Long): Long {
-        return articleTagRepository.findByTagId(tagId).size.toLong()
-    }
-
-    fun findByArticleId(articleId: Long): List<cn.arorms.blog.backend.entities.ArticleTag> {
-        return articleTagRepository.findByArticleId(articleId)
-    }
+//
+//    fun getArticleCount(tagId: Long): Long {
+//        return articleTagRepository.findByTagId(tagId).size.toLong()
+//    }
+//
+//    fun findByArticleId(articleId: Long): List<cn.arorms.blog.backend.entities.ArticleTag> {
+//        return articleTagRepository.findByArticleId(articleId)
+//    }
 }

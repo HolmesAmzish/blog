@@ -1,4 +1,4 @@
-package cn.arorms.blog.backend.dto
+package cn.arorms.blog.backend.dtos
 
 import cn.arorms.blog.backend.enums.UserRole
 

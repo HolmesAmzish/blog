@@ -18,16 +18,15 @@ export function AdminArticlesPage() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<ArticleStatus | ''>('');
   const [categoryFilter, setCategoryFilter] = useState<number | ''>('');
-  
-  const { data: articlesData, isLoading } = useArticles({ page, size: 10 });
+
+  const { data: articlesData, isLoading } = useArticles({ page, size: 10, isAdmin: true });
   const { data: categories } = useCategories();
 
   const filteredArticles = articlesData?.content.filter((article) => {
-    const matchesSearch = search === '' || 
+    const matchesSearch = search === '' ||
       article.title.toLowerCase().includes(search.toLowerCase());
-    const matchesStatus = statusFilter === '' || article.status === statusFilter;
-    const matchesCategory = categoryFilter === '' || article.categoryId === categoryFilter;
-    return matchesSearch && matchesStatus && matchesCategory;
+    const matchesCategory = categoryFilter === '' || article.category?.id === categoryFilter;
+    return matchesSearch && matchesCategory;
   });
 
   return (

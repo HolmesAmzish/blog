@@ -8,23 +8,23 @@ import { useCategories } from '../../hooks/useCategories';
 import { ArticleCard } from '../../components/ui/ArticleCard';
 import { ChevronLeft, ChevronRight, Filter } from 'lucide-react';
 import { useTranslation } from '../../context/TranslationContext';
-import type { SupportedLanguage } from '../../context/LanguageContext';
+import { useLanguage } from '../../context/LanguageContext';
 
 /**
  * ArticleListPage - Paginated article listing
  */
 export const ArticleListPage: React.FC = () => {
   const { t } = useTranslation();
+  const { language } = useLanguage();
   const [page, setPage] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState<number | undefined>(undefined);
-  const [languageFilter, setLanguageFilter] = useState<SupportedLanguage | 'ALL'>('ALL');
   const size = 9;
 
   const { data, isLoading, error } = useArticles({
     page,
     size,
     categoryId: selectedCategory,
-    language: languageFilter === 'ALL' ? undefined : languageFilter,
+    language: language, // Use global language from context
   });
 
   const { data: categories } = useCategories();
@@ -95,56 +95,6 @@ export const ArticleListPage: React.FC = () => {
                   {category.name}
                 </button>
               ))}
-            </div>
-          </div>
-
-          {/* Language filter */}
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-[10px] font-mono uppercase tracking-wider text-gray-400">
-                Language
-              </span>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={() => setLanguageFilter('ALL')}
-                className={`
-                  px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider
-                  border-[0.5px] transition-all duration-200
-                  ${languageFilter === 'ALL'
-                    ? 'border-black bg-black text-white'
-                    : 'border-gray-200 text-gray-600 hover:border-gray-400'
-                  }
-                `}
-              >
-                ALL
-              </button>
-              <button
-                onClick={() => setLanguageFilter('ZH')}
-                className={`
-                  px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider
-                  border-[0.5px] transition-all duration-200
-                  ${languageFilter === 'ZH'
-                    ? 'border-black bg-black text-white'
-                    : 'border-gray-200 text-gray-600 hover:border-gray-400'
-                  }
-                `}
-              >
-                中文
-              </button>
-              <button
-                onClick={() => setLanguageFilter('EN')}
-                className={`
-                  px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider
-                  border-[0.5px] transition-all duration-200
-                  ${languageFilter === 'EN'
-                    ? 'border-black bg-black text-white'
-                    : 'border-gray-200 text-gray-600 hover:border-gray-400'
-                  }
-                `}
-              >
-                English
-              </button>
             </div>
           </div>
         </div>

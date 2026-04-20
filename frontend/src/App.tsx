@@ -2,16 +2,19 @@
  * App Component
  * Main application with routing and loading screen
  */
+import { useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { LanguageProvider } from './context/LanguageContext';
 import { TranslationProvider } from './context/TranslationContext';
 import { Header } from './components/layout/Header';
 import { Footer } from './components/layout/Footer';
+import { LoadingScreen } from './components/ui/LoadingScreen';
 import { HomePage } from './features/home/HomePage';
 import { ArticleListPage } from './features/article/ArticleListPage';
 import { ArticleDetailPage } from './features/article/ArticleDetailPage';
 import { ArchivePage } from './features/archive/ArchivePage';
+import { AboutPage } from './features/about/AboutPage';
 import { AdminLoginPage } from './features/admin/AdminLoginPage';
 import { AdminDashboardPage } from './features/admin/AdminDashboardPage';
 import { AdminArticlesPage } from './features/admin/AdminArticlesPage';
@@ -35,18 +38,20 @@ const queryClient = new QueryClient({
  * Main App Component
  */
 function App() {
+  const [loadingComplete, setLoadingComplete] = useState(false);
+
   return (
     <QueryClientProvider client={queryClient}>
       <LanguageProvider>
         <TranslationProvider>
           <BrowserRouter>
             {/* Loading Screen */}
-            {/*{!loadingComplete && (*/}
-            {/*  <LoadingScreen*/}
-            {/*    onComplete={() => setLoadingComplete(true)}*/}
-            {/*    duration={2000}*/}
-            {/*  />*/}
-            {/*)}*/}
+            {!loadingComplete && (
+              <LoadingScreen
+                onComplete={() => setLoadingComplete(true)}
+                duration={2000}
+              />
+            )}
 
             {/* Main Layout */}
             <div className="min-h-screen flex flex-col bg-white">
@@ -119,25 +124,7 @@ function App() {
 
                   <Route
                     path="/about"
-                    element={
-                      <div className="min-h-screen py-12">
-                        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-                          <div className="mb-8 pb-6 border-b-[0.5px] border-gray-200">
-                            <h1 className="text-3xl font-bold tracking-tight text-black">
-                              ABOUT
-                            </h1>
-                          </div>
-                          <div className="prose max-w-none">
-                            <p className="text-gray-600 leading-relaxed">
-                              This is a technical blog built with React, TypeScript,
-                              Tailwind CSS, and Spring Boot. It features a clean,
-                              minimal design inspired by technical documentation and
-                              modern web aesthetics.
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    }
+                    element={<AboutPage />}
                   />
                   <Route
                     path="*"

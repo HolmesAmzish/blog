@@ -1,13 +1,13 @@
 /**
  * Admin Categories Page
- * Category management with create, edit, delete functionality
+ * Category management with create functionality
  */
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AdminLayout } from '../../components/admin/AdminLayout';
-import { fetchCategories, createCategory, updateCategory, deleteCategory } from '../../api/category';
-import type { CategoryDTO, CategoryRequest } from '../../types';
-import { Plus, Edit, Trash2, FolderTree, X } from 'lucide-react';
+import { fetchCategories, createCategory, deleteCategory } from '../../api/category';
+import type { CategoryCreateRequest } from '../../types';
+import { Plus, Trash2, FolderTree, X } from 'lucide-react';
 
 /**
  * Admin Categories Page Component
@@ -15,12 +15,10 @@ import { Plus, Edit, Trash2, FolderTree, X } from 'lucide-react';
 export function AdminCategoriesPage() {
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<CategoryDTO | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
 
-  const [form, setForm] = useState<CategoryRequest>({
+  const [form, setForm] = useState<CategoryCreateRequest>({
     name: '',
-    description: '',
     slug: '',
     parentId: null,
   });
@@ -40,16 +38,6 @@ export function AdminCategoriesPage() {
     },
   });
 
-  // Update mutation
-  const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: CategoryRequest }) =>
-      updateCategory(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['categories'] });
-      closeModal();
-    },
-  });
-
   // Delete mutation
   const deleteMutation = useMutation({
     mutationFn: deleteCategory,
@@ -60,26 +48,13 @@ export function AdminCategoriesPage() {
   });
 
   const openCreateModal = () => {
-    setForm({ name: '', description: '', slug: '', parentId: null });
-    setEditingCategory(null);
-    setIsModalOpen(true);
-  };
-
-  const openEditModal = (category: CategoryDTO) => {
-    setForm({
-      name: category.name,
-      description: category.description || '',
-      slug: category.slug,
-      parentId: category.parentId,
-    });
-    setEditingCategory(category);
+    setForm({ name: '', slug: '', parentId: null });
     setIsModalOpen(true);
   };
 
   const closeModal = () => {
     setIsModalOpen(false);
-    setEditingCategory(null);
-    setForm({ name: '', description: '', slug: '', parentId: null });
+    setForm({ name: '', slug: '', parentId: null });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -91,40 +66,11 @@ export function AdminCategoriesPage() {
       slug: form.slug || form.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
     };
 
-    if (editingCategory && editingCategory.id) {
-      updateMutation.mutate({ id: editingCategory.id, data });
-    } else {
-      createMutation.mutate(data);
-    }
+    createMutation.mutate(data);
   };
 
   const handleDelete = (id: number) => {
     deleteMutation.mutate(id);
-  };
-
-  // Get all categories for parent selection (except self and children)
-  const getParentOptions = (currentCategory: CategoryDTO | null) => {
-    if (!categories) return [];
-
-    const excludeIds = new Set<number>();
-    if (currentCategory?.id) {
-      excludeIds.add(currentCategory.id);
-      // Also exclude all descendants
-      const descendants = getCategoryDescendants(currentCategory.id);
-      descendants.forEach((id) => excludeIds.add(id));
-    }
-
-    return categories.filter((c) => !excludeIds.has(c.id || -1));
-  };
-
-  // Get all descendant category IDs recursively
-  const getCategoryDescendants = (parentId: number): number[] => {
-    const children = categories?.filter((c) => c.parentId === parentId) || [];
-    let descendants: number[] = children.map((c) => c.id!).flat();
-    children.forEach((child) => {
-      descendants = descendants.concat(getCategoryDescendants(child.id!));
-    });
-    return descendants;
   };
 
   // Flatten categories for display (with indentation)
@@ -153,7 +99,6 @@ export function AdminCategoriesPage() {
     return result;
   };
 
-  const parentOptions = getParentOptions(editingCategory);
   const allCategoriesFlat = flattenCategories(categories || []);
 
   return (
@@ -166,7 +111,7 @@ export function AdminCategoriesPage() {
               CATEGORIES
             </h1>
             <p className="text-gray-500 text-sm font-mono mt-1">
-              Manage article categories (unlimited depth)
+              Manage article categories
             </p>
           </div>
           <button
@@ -178,8 +123,8 @@ export function AdminCategoriesPage() {
           </button>
         </div>
 
-        {/* Categories Tree View */}
-        {isLoading ? (
+        {/* Categories List View */}
+            {isLoading ? (
           <div className="text-center py-12 text-gray-500 font-mono text-sm">
             Loading categories...
           </div>
@@ -224,12 +169,6 @@ export function AdminCategoriesPage() {
                     </div>
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
-                        onClick={() => openEditModal(category)}
-                        className="p-2 text-gray-400 hover:text-[#0047FF] transition-colors"
-                      >
-                        <Edit size={16} />
-                      </button>
-                      <button
                         onClick={() => setDeleteConfirm(category.id as number)}
                         className="p-2 text-gray-400 hover:text-red-500 transition-colors"
                       >
@@ -250,13 +189,13 @@ export function AdminCategoriesPage() {
         )}
       </div>
 
-      {/* Create/Edit Modal */}
+      {/* Create Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 w-full max-w-md border border-gray-200">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-mono font-bold text-black">
-                {editingCategory ? 'EDIT CATEGORY' : 'NEW CATEGORY'}
+                NEW CATEGORY
               </h2>
               <button onClick={closeModal} className="p-1 hover:bg-gray-100">
                 <X size={20} className="text-gray-500" />
@@ -294,19 +233,6 @@ export function AdminCategoriesPage() {
 
               <div>
                 <label className="block text-xs font-mono text-gray-500 uppercase tracking-wider mb-2">
-                  Description
-                </label>
-                <textarea
-                  value={form.description || ''}
-                  onChange={(e) => setForm({ ...form, description: e.target.value })}
-                  rows={3}
-                  className="w-full border border-gray-200 px-3 py-2 text-sm font-mono focus:border-[#0047FF] focus:outline-none resize-none"
-                  placeholder="Category description..."
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-mono text-gray-500 uppercase tracking-wider mb-2">
                   Parent Category
                 </label>
                 <select
@@ -315,15 +241,14 @@ export function AdminCategoriesPage() {
                   className="w-full border border-gray-200 px-3 py-2 text-sm font-mono focus:border-[#0047FF] focus:outline-none"
                 >
                   <option value="">None (Top Level)</option>
-                  {parentOptions.map((cat) => (
+                  {categories?.map((cat) => (
                     <option key={cat.id} value={String(cat.id)}>
                       {cat.name}
-                      {cat.parentId && ` → ${cat.parentName}`}
                     </option>
                   ))}
                 </select>
                 <p className="text-xs text-gray-400 mt-1 font-mono">
-                  Select parent for subcategory (unlimited depth supported)
+                  Leave empty for top-level category
                 </p>
               </div>
 
@@ -337,14 +262,10 @@ export function AdminCategoriesPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={createMutation.isPending || updateMutation.isPending}
+                  disabled={createMutation.isPending}
                   className="flex-1 px-4 py-2 bg-[#0047FF] text-white text-sm font-mono uppercase tracking-wider hover:bg-blue-700 transition-colors disabled:opacity-50"
                 >
-                  {createMutation.isPending || updateMutation.isPending
-                    ? 'Saving...'
-                    : editingCategory
-                    ? 'Update'
-                    : 'Create'}
+                  {createMutation.isPending ? 'Saving...' : 'Create'}
                 </button>
               </div>
             </form>

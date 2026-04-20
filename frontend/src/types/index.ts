@@ -46,7 +46,6 @@ export interface TagRequest {
 export interface CategoryDTO {
   id: number | null;
   name: string;
-  description: string | null;
   slug: string;
   parentId: number | null;
   parentName: string | null;
@@ -54,11 +53,17 @@ export interface CategoryDTO {
   articleCount: number | null;
 }
 
-export interface CategoryRequest {
+export interface CategoryCreateRequest {
   name: string;
-  description: string | null;
   slug: string;
   parentId: number | null;
+}
+
+// Author interface (for Article entity)
+export interface AuthorDTO {
+  id: number | null;
+  username: string;
+  displayName: string | null;
 }
 
 // Article DTOs
@@ -67,26 +72,22 @@ export interface ArticleDTO {
   title: string;
   summary: string | null;
   content: string | null;
-  originalContent: string | null;
   slug: string;
   language: Language;
   status: ArticleStatus;
   viewCount: number;
-  categoryId: number | null;
-  categoryName: string | null;
-  authorId: number | null;
-  authorName: string | null;
+  category: CategoryDTO | null;
+  author: AuthorDTO | null;
   tags: TagDTO[];
   createdAt: string | null;
   updatedAt: string | null;
   publishedAt: string | null;
 }
 
-export interface ArticleRequest {
+export interface ArticleCreateRequest {
   title: string;
   summary: string | null;
   content: string | null;
-  originalContent: string | null;
   slug: string;
   language: Language;
   status: ArticleStatus;
@@ -94,8 +95,33 @@ export interface ArticleRequest {
   tagIds: number[];
 }
 
+export interface ArticleUpdateRequest {
+  id: number;
+  title: string;
+  summary: string | null;
+  content: string | null;
+  slug: string;
+  language: Language;
+  status: ArticleStatus;
+  categoryId: number | null;
+  tagIds: number[];
+}
+
+// Article ListItem for list views
+export interface ArticleListItem {
+  id: number;
+  slug: string;
+  title: string;
+  summary: string | null;
+  viewCount: number;
+  createdAt: string | null;
+  updatedAt: string | null;
+  category: CategoryDTO | null;
+  tags: TagDTO[];
+}
+
 export interface ArticlePageResponse {
-  content: ArticleDTO[];
+  content: ArticleListItem[];
   totalElements: number;
   totalPages: number;
   currentPage: number;
@@ -176,4 +202,14 @@ export interface ArchiveTreeNode {
   value?: number;
   children?: ArchiveTreeNode[];
   article?: ArticleDTO;
+}
+
+// Site Statistics
+export interface SiteStatistics {
+  id: number;
+  viewDate: string;
+  totalArticleView: number;
+  totalArticles: number;
+  totalCategories: number;
+  totalTags: number;
 }

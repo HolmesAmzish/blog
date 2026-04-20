@@ -1,4 +1,4 @@
-package cn.arorms.blog.backend.dto
+package cn.arorms.blog.backend.dtos
 
 /**
  * DTO for login request

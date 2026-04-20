@@ -1,3 +1,6 @@
+0.0.3
+1. add article filter search
+
 0.0.2
 1. add CORS config
 2. add jwt header authentication

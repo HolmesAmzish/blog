@@ -1,7 +1,9 @@
 package cn.arorms.blog.backend.services
 
-import cn.arorms.blog.backend.dto.CategoryDTO
+import cn.arorms.blog.backend.dtos.CategoryDto
+import cn.arorms.blog.backend.dtos.CategoryCreateRequest
 import cn.arorms.blog.backend.entities.Category
+import cn.arorms.blog.backend.exception.ResourceNotFoundException
 import cn.arorms.blog.backend.repositories.ArticleRepository
 import cn.arorms.blog.backend.repositories.CategoryRepository
 import org.springframework.stereotype.Service
@@ -16,16 +18,21 @@ class CategoryService(
     private val articleRepository: ArticleRepository
 ) {
 
-    fun findAll(): List<Category> {
-        return categoryRepository.findAll()
+    fun findAll(): List<CategoryDto> {
+        val categories = categoryRepository.findAll()
+        return categories.map { it.toDto() }
     }
 
-    fun findById(id: Long): Category? {
-        return categoryRepository.findById(id).orElse(null)
+    fun findById(id: Long): CategoryDto {
+        val category = categoryRepository.findById(id)
+            .orElseThrow { ResourceNotFoundException("Category not found with id: $id") }
+        return category.toDto()
     }
 
-    fun findBySlug(slug: String): Category? {
-        return categoryRepository.findBySlug(slug)
+    fun findBySlug(slug: String): CategoryDto {
+        val category = categoryRepository.findBySlug(slug)
+            ?: throw ResourceNotFoundException("Category not found with slug: $slug")
+        return category.toDto()
     }
 
     fun findRootCategories(): List<Category> {
@@ -39,51 +46,73 @@ class CategoryService(
     /**
      * Build full category tree with unlimited depth
      */
-    fun buildCategoryTree(): CategoryDTO {
+    fun buildCategoryTree(): Category {
         val rootCategories = findRootCategories()
-        val children = rootCategories.map { it.toDTOWithChildren() }
+        val children = rootCategories.map { buildTree(it) }
 
-        return CategoryDTO(
+        return Category(
             id = null,
             name = "ARORMS.BLOG",
-            description = null,
             slug = "root",
-            parentId = null,
-            parentName = null,
-            children = children,
-            articleCount = null
+            parent = null,
+            children = children.toMutableSet(),
+            articles = mutableSetOf()
+        )
+    }
+
+    private fun buildTree(category: Category): Category {
+        val children = findChildren(category.id!!)
+        val childTrees = children.map { buildTree(it) }
+
+        return Category(
+            id = category.id,
+            name = category.name,
+            slug = category.slug,
+            parent = category.parent,
+            children = childTrees.toMutableSet(),
+            articles = category.articles
         )
     }
 
     @Transactional
-    fun create(category: Category): Category {
-        if (categoryRepository.existsByName(category.name)) {
-            throw IllegalArgumentException("Category with name '${category.name}' already exists")
+    fun create(request: CategoryCreateRequest): Category {
+        if (categoryRepository.existsByName(request.name)) {
+            throw IllegalArgumentException("Category with name '${request.name}' already exists")
         }
-        if (categoryRepository.existsBySlug(category.slug)) {
-            throw IllegalArgumentException("Category with slug '${category.slug}' already exists")
+        if (categoryRepository.existsBySlug(request.slug)) {
+            throw IllegalArgumentException("Category with slug '${request.slug}' already exists")
         }
+        val parent = request.parentId?.let { id ->
+            categoryRepository.findById(id).orElseThrow {
+                ResourceNotFoundException("Parent category with id $id not found")
+            }
+        }
+        val category = Category(
+            name = request.name,
+            slug = request.slug,
+            parent = parent
+        )
         return categoryRepository.save(category)
     }
 
     @Transactional
-    fun update(id: Long, category: Category): Category {
+    fun update(id: Long, request: CategoryDto): CategoryDto {
         val existingCategory = categoryRepository.findById(id)
             .orElseThrow { IllegalArgumentException("Category not found with id: $id") }
 
-        if (category.name != existingCategory.name && categoryRepository.existsByName(category.name)) {
-            throw IllegalArgumentException("Category with name '${category.name}' already exists")
+        if (request.name != existingCategory.name && categoryRepository.existsByName(request.name)) {
+            throw IllegalArgumentException("Category with name '${request.name}' already exists")
         }
-        if (category.slug != existingCategory.slug && categoryRepository.existsBySlug(category.slug)) {
-            throw IllegalArgumentException("Category with slug '${category.slug}' already exists")
+        if (request.slug != existingCategory.slug && categoryRepository.existsBySlug(request.slug)) {
+            throw IllegalArgumentException("Category with slug '${request.slug}' already exists")
         }
 
-        existingCategory.name = category.name
-        existingCategory.slug = category.slug
-        existingCategory.description = category.description
-        existingCategory.parent = category.parent
+        existingCategory.name = request.name
+        existingCategory.slug = request.slug
+        existingCategory.parent = request.parentId?.let { categoryRepository.getReferenceById(it) }
 
-        return categoryRepository.save(existingCategory)
+        val savedCategory = categoryRepository.save(existingCategory)
+        return savedCategory.toDto()
     }
 
     @Transactional
@@ -109,32 +138,12 @@ class CategoryService(
         return articleRepository.findByCategoryId(categoryId, org.springframework.data.domain.Pageable.unpaged()).totalElements
     }
 
-    // Extension function to convert Category to CategoryDTO (without children)
-    private fun Category.toDTO(): CategoryDTO {
-        return CategoryDTO(
-            id = this.id,
-            name = this.name,
-            description = this.description,
-            slug = this.slug,
-            parentId = this.parent?.id,
-            parentName = this.parent?.name,
-            children = emptyList(),
-            articleCount = this.id?.let { getArticleCount(it) }
-        )
-    }
-
-    // Extension function to convert Category to CategoryDTO with children (for tree structure)
-    private fun Category.toDTOWithChildren(): CategoryDTO {
-        val children = this.id?.let { findChildren(it) } ?: emptyList()
-        return CategoryDTO(
-            id = this.id,
-            name = this.name,
-            description = this.description,
-            slug = this.slug,
-            parentId = this.parent?.id,
-            parentName = this.parent?.name,
-            children = children.map { it.toDTOWithChildren() },  // Recursively build children tree
-            articleCount = this.id?.let { getArticleCount(it) }
+    private fun Category.toDto(): CategoryDto {
+        return CategoryDto(
+            id = id,
+            name = name,
+            slug = slug,
+            parentId = parent?.id,
         )
     }
 }

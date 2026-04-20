@@ -7,13 +7,13 @@ import { useEffect, useRef } from 'react';
 import * as echarts from 'echarts';
 import { useCategoryTree } from '../../hooks/useCategories';
 import { useArticles } from '../../hooks/useArticles';
-import type { ArchiveTreeNode, CategoryDTO, ArticleDTO } from '../../types';
+import type { ArchiveTreeNode, CategoryDTO, ArticleListItem } from '../../types';
 import { useTranslation } from '../../context/TranslationContext';
 
 /**
  * Recursively build tree nodes from CategoryDTO
  */
-const buildCategoryNodes = (categories: CategoryDTO[], articles: ArticleDTO[]): ArchiveTreeNode[] => {
+const buildCategoryNodes = (categories: CategoryDTO[], articles: ArticleListItem[]): ArchiveTreeNode[] => {
   const nodes: ArchiveTreeNode[] = [];
 
   categories.forEach((category) => {
@@ -25,7 +25,7 @@ const buildCategoryNodes = (categories: CategoryDTO[], articles: ArticleDTO[]): 
     // Find articles in this category
     if (category.id) {
       const categoryArticles = articles.filter(
-        (article) => article.categoryId === category.id
+        (article) => article.category?.id === category.id
       );
 
       categoryArticles.forEach((article) => {
@@ -72,7 +72,7 @@ const buildTreeData = (categoryTree: CategoryDTO | undefined, articles: ArticleD
 
   // Add uncategorized articles
   const uncategorizedArticles = articles.filter(
-    (article) => !article.categoryId
+    (article) => !article.category
   );
 
   if (uncategorizedArticles.length > 0) {

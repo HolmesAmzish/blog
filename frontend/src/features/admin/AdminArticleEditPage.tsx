@@ -9,14 +9,13 @@ import { AdminLayout } from '../../components/admin/AdminLayout';
 import { fetchArticleById, createArticle, updateArticle } from '../../api/article';
 import { fetchCategories } from '../../api/category';
 import { fetchTags } from '../../api/tag';
-import type { ArticleDTO, ArticleRequest } from '../../types';
+import type { ArticleDTO, ArticleCreateRequest, ArticleUpdateRequest } from '../../types';
 import { Save, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 
-const initialForm: ArticleRequest = {
+const initialForm: ArticleCreateRequest = {
   title: '',
   summary: '',
   content: '',
-  originalContent: '',
   slug: '',
   language: 'ZH',
   status: 'DRAFT',
@@ -29,7 +28,16 @@ export function AdminArticleEditPage() {
   const navigate = useNavigate();
   const isEdit = !!id;
 
-  const [form, setForm] = useState<ArticleRequest>(initialForm);
+  const [form, setForm] = useState<ArticleCreateRequest | ArticleUpdateRequest>({
+    title: '',
+    summary: '',
+    content: '',
+    slug: '',
+    language: 'ZH',
+    status: 'DRAFT',
+    categoryId: null,
+    tagIds: [],
+  } as ArticleCreateRequest);
   const [previewMode, setPreviewMode] = useState(false);
 
   // Fetch article if editing
@@ -54,26 +62,26 @@ export function AdminArticleEditPage() {
   useEffect(() => {
     if (article) {
       setForm({
+        id: article.id as number,
         title: article.title,
         summary: article.summary || '',
         content: article.content || '',
-        originalContent: article.originalContent || '',
         slug: article.slug,
         language: article.language,
         status: article.status,
-        categoryId: article.categoryId,
+        categoryId: article.category?.id ?? null,
         tagIds: article.tags?.map((t) => t.id as number) || [],
-      });
+      } as ArticleUpdateRequest);
     }
   }, [article]);
 
   // Create/Update mutation
   const mutation = useMutation({
-    mutationFn: (data: ArticleRequest) => {
+    mutationFn: (data: ArticleCreateRequest | ArticleUpdateRequest) => {
       if (isEdit) {
-        return updateArticle(Number(id), data);
+        return updateArticle(Number(id), data as ArticleUpdateRequest);
       }
-      return createArticle(data);
+      return createArticle(data as ArticleCreateRequest);
     },
     onSuccess: () => {
       navigate('/admin/articles');

@@ -3,7 +3,7 @@
  * Maps to backend CategoryController
  */
 import { get, post, put, del } from './client';
-import type { CategoryDTO, CategoryRequest } from '../types';
+import type { CategoryDTO, CategoryCreateRequest } from '../types';
 
 const BASE_PATH = '/categories';
 
@@ -38,15 +38,15 @@ export const fetchCategoryBySlug = async (slug: string): Promise<CategoryDTO> =>
 /**
  * Create new category
  */
-export const createCategory = async (request: CategoryRequest): Promise<CategoryDTO> => {
-  return post<CategoryDTO, CategoryRequest>(BASE_PATH, request);
+export const createCategory = async (request: CategoryCreateRequest): Promise<CategoryDTO> => {
+  return post<CategoryDTO, CategoryCreateRequest>(BASE_PATH, request);
 };
 
 /**
- * Update existing category
+ * Update existing category (uses Category entity directly)
  */
-export const updateCategory = async (id: number, request: CategoryRequest): Promise<CategoryDTO> => {
-  return put<CategoryDTO, CategoryRequest>(`${BASE_PATH}/${id}`, request);
+export const updateCategory = async (id: number, request: CategoryDTO): Promise<CategoryDTO> => {
+  return put<CategoryDTO, CategoryDTO>(`${BASE_PATH}/${id}`, request);
 };
 
 /**

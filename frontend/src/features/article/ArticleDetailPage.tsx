@@ -87,12 +87,12 @@ export const ArticleDetailPage: React.FC = () => {
         {/* Article header */}
         <header className="mb-8 pb-8 border-b-[0.5px] border-gray-200">
           {/* Category */}
-          {article.categoryName && (
+          {article.category?.name && (
             <Link
-              to={`/category/${article.categoryId}`}
+              to={`/category/${article.category.id}`}
               className="inline-block px-3 py-1 text-[10px] font-mono uppercase tracking-wider border-[0.5px] border-gray-200 text-gray-600 hover:border-[#0047FF] hover:text-[#0047FF] transition-colors mb-4"
             >
-              {article.categoryName}
+              {article.category.name}
             </Link>
           )}
 
@@ -111,10 +111,10 @@ export const ArticleDetailPage: React.FC = () => {
               <Eye className="w-3 h-3" />
               {article.viewCount.toString().padStart(4, '0')} VIEWS
             </span>
-            {article.authorName && (
+            {article.author?.displayName && (
               <span className="flex items-center gap-1">
                 <User className="w-3 h-3" />
-                {article.authorName.toUpperCase()}
+                {article.author.displayName.toUpperCase()}
               </span>
             )}
           </div>

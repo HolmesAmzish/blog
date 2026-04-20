@@ -1,5 +1,6 @@
 package cn.arorms.blog.backend.entities
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import jakarta.persistence.*
 
 /**
@@ -15,19 +16,19 @@ class Category(
     @Column(nullable = false, unique = true, length = 50)
     var name: String,
 
-    @Column(length = 200)
-    var description: String? = null,
-
     @Column(unique = true, length = 50)
     var slug: String,
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnore
     @JoinColumn(name = "parent_id")
     var parent: Category? = null,
 
     @OneToMany(mappedBy = "parent", cascade = [CascadeType.ALL])
+//    @JsonIgnore
     var children: MutableSet<Category> = mutableSetOf(),
 
     @OneToMany(mappedBy = "category")
+    @JsonIgnore
     var articles: MutableSet<Article> = mutableSetOf()
 )

@@ -5,16 +5,18 @@
  */
 import { Link } from 'react-router-dom';
 import { Calendar, Eye, Tag } from 'lucide-react';
-import type { ArticleDTO } from '../../types';
+import type { ArticleDTO, ArticleListItem } from '../../types';
 
 interface ArticleCardProps {
-  article: ArticleDTO;
+  article: ArticleDTO | ArticleListItem;
 }
 
 /**
  * Format date to readable string
  */
-const formatDate = (dateString: string | null): string => {
+const formatDate = (article: ArticleDTO | ArticleListItem): string => {
+  // Try publishedAt first, then createdAt, then updatedAt
+  const dateString = article.publishedAt || article.createdAt || article.updatedAt;
   if (!dateString) return '---';
   const date = new Date(dateString);
   return date.toLocaleDateString('en-US', {
@@ -38,15 +40,15 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
         <div className="flex items-center gap-4 mb-4 text-[10px] font-mono uppercase tracking-wider text-gray-500">
           <span className="flex items-center gap-1">
             <Calendar className="w-3 h-3" />
-            {formatDate(article.publishedAt || article.createdAt)}
+            {formatDate(article)}
           </span>
           <span className="flex items-center gap-1">
             <Eye className="w-3 h-3" />
-            {article.viewCount.toString().padStart(4, '0')}
+            {(article.viewCount || 0).toString().padStart(4, '0')}
           </span>
-          {article.categoryName && (
+          {article.category?.name && (
             <span className="px-2 py-0.5 border-[0.5px] border-gray-200">
-              {article.categoryName}
+              {article.category.name}
             </span>
           )}
         </div>

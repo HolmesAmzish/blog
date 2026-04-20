@@ -1,6 +1,6 @@
 package cn.arorms.blog.backend.services
 
-import cn.arorms.blog.backend.dto.RegisterRequest
+import cn.arorms.blog.backend.dtos.RegisterRequest
 import cn.arorms.blog.backend.entities.User
 import cn.arorms.blog.backend.enums.UserRole
 import cn.arorms.blog.backend.repositories.UserRepository
