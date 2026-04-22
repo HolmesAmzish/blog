@@ -4,12 +4,13 @@
  */
 import type { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  FileText, 
-  FolderTree, 
-  Tags, 
-  Users, 
+import {
+  LayoutDashboard,
+  FileText,
+  FolderTree,
+  Tags,
+  Users,
+  Image,
   LogOut,
   ArrowLeft
 } from 'lucide-react';
@@ -27,6 +28,7 @@ const navItems = [
   { path: '/admin/articles', label: 'Articles', icon: FileText },
   { path: '/admin/categories', label: 'Categories', icon: FolderTree },
   { path: '/admin/tags', label: 'Tags', icon: Tags },
+  { path: '/admin/images', label: 'Images', icon: Image },
   { path: '/admin/users', label: 'Users', icon: Users },
 ];
 

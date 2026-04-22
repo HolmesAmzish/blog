@@ -22,6 +22,7 @@ import { AdminArticleEditPage } from './features/admin/AdminArticleEditPage';
 import { AdminCategoriesPage } from './features/admin/AdminCategoriesPage';
 import { AdminTagsPage } from './features/admin/AdminTagsPage';
 import { AdminUsersPage } from './features/admin/AdminUsersPage';
+import { AdminImagesPage } from './features/admin/AdminImagesPage';
 import { ProtectedRoute } from './components/admin/ProtectedRoute';
 
 // Create Query Client
@@ -118,6 +119,14 @@ function App() {
                     element={
                       <ProtectedRoute requireAdmin>
                         <AdminUsersPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/images"
+                    element={
+                      <ProtectedRoute requireAdmin>
+                        <AdminImagesPage />
                       </ProtectedRoute>
                     }
                   />

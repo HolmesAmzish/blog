@@ -190,11 +190,23 @@ export interface AuthResponse {
 export interface ImageDTO {
   id: number | null;
   filename: string;
-  originalName: string;
-  contentType: string;
+  originalFilename: string;
+  mimeType: string;
   size: number;
   url: string;
-  uploadedAt: string | null;
+  alt: string | null;
+  uploaderId: number | null;
+  uploaderName: string | null;
+  createdAt: string | null;
+}
+
+export interface ImagePageResponse {
+  content: ImageDTO[];
+  total: number;
+  page: number;
+  size: number;
+  totalPages: number;
+  isLast: boolean;
 }
 
 // Tree node for archive visualization
