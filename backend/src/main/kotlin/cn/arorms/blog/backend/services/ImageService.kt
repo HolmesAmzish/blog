@@ -1,9 +1,12 @@
 package cn.arorms.blog.backend.services
 
 import cn.arorms.blog.backend.entities.Image
+import cn.arorms.blog.backend.exception.ResourceNotFoundException
 import cn.arorms.blog.backend.repositories.ImageRepository
 import cn.arorms.blog.backend.repositories.UserRepository
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
@@ -12,6 +15,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
+import kotlin.jvm.optionals.getOrNull
 
 /**
  * Service class for Image operations
@@ -27,16 +31,19 @@ class ImageService(
     private val allowedTypes = listOf("image/jpeg", "image/png", "image/gif", "image/webp")
     private val maxFileSize: Long = 10 * 1024 * 1024 // 10MB
     
-    fun findAll(): List<Image> {
-        return imageRepository.findAll()
+    fun findAll(pageable: Pageable): Page<Image> {
+        return imageRepository.findAll(pageable)
+    }
+
+
+    
+    fun findById(id: Long): Image {
+        return imageRepository.findById(id).getOrNull()
+            ?: throw ResourceNotFoundException("Image not found with id $id")
     }
     
-    fun findById(id: Long): Image? {
-        return imageRepository.findById(id).orElse(null)
-    }
-    
-    fun findByUploader(uploaderId: Long): List<Image> {
-        return imageRepository.findByUploaderId(uploaderId)
+    fun findByUploader(uploaderId: Long, pageable: Pageable): Page<Image> {
+        return imageRepository.findByUploaderId(uploaderId, pageable)
     }
     
     @Transactional
@@ -89,8 +96,7 @@ class ImageService(
     
     @Transactional
     fun updateAlt(id: Long, alt: String?): Image {
-        val image = imageRepository.findById(id)
-            .orElseThrow { IllegalArgumentException("Image not found with id: $id") }
+        val image = imageRepository.findById(id).getOrNull() ?: throw ResourceNotFoundException("Image not found with id $id")
         image.alt = alt
         return imageRepository.save(image)
     }

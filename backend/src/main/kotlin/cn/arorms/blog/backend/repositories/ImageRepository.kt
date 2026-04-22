@@ -1,6 +1,8 @@
 package cn.arorms.blog.backend.repositories
 
 import cn.arorms.blog.backend.entities.Image
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 
@@ -9,8 +11,8 @@ import org.springframework.stereotype.Repository
  */
 @Repository
 interface ImageRepository : JpaRepository<Image, Long> {
-    
+
     fun findByFilename(filename: String): Image?
     
-    fun findByUploaderId(uploaderId: Long): List<Image>
+    fun findByUploaderId(uploaderId: Long, pageable: Pageable): Page<Image>
 }

@@ -31,7 +31,7 @@ const buildCategoryNodes = (categories: CategoryDTO[], articles: ArticleListItem
       categoryArticles.forEach((article) => {
         categoryNode.children?.push({
           name: article.title,
-          value: article.viewCount,
+          value: article.viewCount ?? 0,
           article: article,
         });
       });

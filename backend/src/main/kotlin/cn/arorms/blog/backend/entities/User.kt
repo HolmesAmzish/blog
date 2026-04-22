@@ -21,6 +21,7 @@ class User(
     @Column(nullable = false, unique = true, length = 100)
     var email: String,
 
+    @JsonIgnore
     @Column(nullable = false)
     var password: String,
 

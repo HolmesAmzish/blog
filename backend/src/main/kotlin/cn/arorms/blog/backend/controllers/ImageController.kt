@@ -1,9 +1,12 @@
 package cn.arorms.blog.backend.controllers
 
+import cn.arorms.blog.backend.dtos.PageResponse
 import cn.arorms.blog.backend.entities.Image
 import cn.arorms.blog.backend.services.ImageService
 import org.springframework.core.io.Resource
 import org.springframework.core.io.UrlResource
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -19,25 +22,38 @@ import org.springframework.web.multipart.MultipartFile
 class ImageController(private val imageService: ImageService) {
     
     @GetMapping
-    fun getAllImages(): ResponseEntity<List<ImageResponse>> {
-        val images = imageService.findAll()
-        return ResponseEntity.ok(images.map { it.toResponse() })
+    fun getAllImages(
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam(defaultValue = "10") size: Int,
+        @RequestParam(defaultValue = "createdAt") sortBy: String,
+        @RequestParam(defaultValue = "desc") sortDir: String
+    ): ResponseEntity<PageResponse<Image>> {
+        val sort = if (sortDir == "asc") Sort.by(sortBy).ascending() else Sort.by(sortBy).descending()
+        val pageable = PageRequest.of(page, size, sort)
+        val page = imageService.findAll(pageable)
+        val pageResponse = PageResponse.fromPage(page)
+        return ResponseEntity.ok(pageResponse)
     }
     
     @GetMapping("/{id}")
-    fun getImageById(@PathVariable id: Long): ResponseEntity<ImageResponse> {
+    fun getImageById(@PathVariable id: Long): ResponseEntity<Image> {
         val image = imageService.findById(id)
-        return if (image != null) {
-            ResponseEntity.ok(image.toResponse())
-        } else {
-            ResponseEntity.notFound().build()
-        }
+        return ResponseEntity.ok(image)
     }
     
     @GetMapping("/uploader/{uploaderId}")
-    fun getImagesByUploader(@PathVariable uploaderId: Long): ResponseEntity<List<ImageResponse>> {
-        val images = imageService.findByUploader(uploaderId)
-        return ResponseEntity.ok(images.map { it.toResponse() })
+    fun getImagesByUploader(
+        @PathVariable uploaderId: Long,
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam(defaultValue = "10") size: Int,
+        @RequestParam(defaultValue = "createdAt") sortBy: String,
+        @RequestParam(defaultValue = "desc") sortDir: String
+    ): ResponseEntity<PageResponse<Image>> {
+        val sort = if (sortDir == "asc") Sort.by(sortBy).ascending() else Sort.by(sortBy).descending()
+        val pageable = PageRequest.of(page, size, sort)
+        val page = imageService.findByUploader(uploaderId, pageable)
+        val pageResponse = PageResponse.fromPage(page)
+        return ResponseEntity.ok(pageResponse)
     }
     
     @PostMapping("/upload")

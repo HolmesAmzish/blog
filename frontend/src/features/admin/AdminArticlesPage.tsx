@@ -8,7 +8,6 @@ import { useArticles } from '../../hooks/useArticles';
 import { useCategories } from '../../hooks/useCategories';
 import { AdminLayout } from '../../components/admin/AdminLayout';
 import { Plus, Search, Edit, Trash2, Eye, ArrowUpDown } from 'lucide-react';
-import type { ArticleStatus } from '../../types';
 
 /**
  * Admin Articles Page Component
@@ -16,7 +15,7 @@ import type { ArticleStatus } from '../../types';
 export function AdminArticlesPage() {
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<ArticleStatus | ''>('');
+  const [statusFilter, setStatusFilter] = useState<string | ''>('');
   const [categoryFilter, setCategoryFilter] = useState<number | ''>('');
 
   const { data: articlesData, isLoading } = useArticles({ page, size: 10, isAdmin: true });
@@ -69,7 +68,7 @@ export function AdminArticlesPage() {
             {/* Status Filter */}
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as ArticleStatus | '')}
+              onChange={(e) => setStatusFilter(e.target.value as string | '')}
               className="px-4 py-2 border border-gray-200 text-sm font-mono focus:outline-none focus:border-[#0047FF] bg-white"
             >
               <option value="">All Status</option>
@@ -149,21 +148,23 @@ export function AdminArticlesPage() {
                     </p>
                   </div>
                   <div className="col-span-2 text-sm font-mono text-gray-600">
-                    {article.categoryName || '—'}
+                    {article.category?.name || '—'}
                   </div>
                   <div className="col-span-2">
                     <span className={`px-2 py-1 text-xs font-mono uppercase ${
-                      article.status === 'PUBLISHED' 
+                      article.status === 'PUBLISHED'
                         ? 'bg-green-100 text-green-700'
                         : article.status === 'DRAFT'
                         ? 'bg-yellow-100 text-yellow-700'
+                        : article.status === 'ARCHIVED'
+                        ? 'bg-gray-100 text-gray-700'
                         : 'bg-gray-100 text-gray-700'
                     }`}>
-                      {article.status}
+                      {article.status || '—'}
                     </span>
                   </div>
                   <div className="col-span-1 text-sm font-mono text-gray-600">
-                    {article.viewCount}
+                    {article.viewCount || 0}
                   </div>
                   <div className="col-span-2 flex items-center justify-end gap-2">
                     <Link

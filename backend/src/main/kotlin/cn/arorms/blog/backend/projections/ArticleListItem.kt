@@ -2,6 +2,7 @@ package cn.arorms.blog.backend.projections
 
 import cn.arorms.blog.backend.entities.Category
 import cn.arorms.blog.backend.entities.Tag
+import cn.arorms.blog.backend.enums.ArticleStatus
 import java.time.LocalDateTime
 
 interface ArticleListItem {
@@ -9,7 +10,8 @@ interface ArticleListItem {
     val slug: String
     val title: String
     val summary: String?
-    val viewCount: Int
+    val status: String?
+    val viewCount: Int?
     val createdAt: LocalDateTime?
     val updatedAt: LocalDateTime?
     val category: Category?

@@ -14,9 +14,11 @@ class CorsConfig : WebMvcConfigurer {
     override fun addCorsMappings(corsRegistry: CorsRegistry) {
         corsRegistry.addMapping("/**") // Apply to all endpoints
             .allowedOrigins("http://localhost:5173",
+                "http://localhost:8000",
                 "http://192.168.0.190:5173",
                 "http://192.168.0.111:5173",
-                "http://blog.arorms.cn")
+                "http://blog.arorms.cn",
+                "https://blog.arorms.cn",)
             .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
             .allowedHeaders("*")
             .allowCredentials(true)

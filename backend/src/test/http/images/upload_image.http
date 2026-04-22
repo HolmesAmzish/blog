@@ -1,5 +1,5 @@
 POST http://localhost:8080/api/images/upload
-Authorization: Bearer {{token}}
+Authorization: Bearer {{access_token}}
 Content-Type: multipart/form-data; boundary=boundary
 
 --boundary

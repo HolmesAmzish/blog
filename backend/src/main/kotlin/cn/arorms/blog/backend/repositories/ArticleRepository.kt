@@ -28,6 +28,7 @@ interface ArticleRepository : JpaRepository<Article, Long> {
           OR a.summary ILIKE CONCAT('%', CAST(:keyword AS string), '%')
       )
       AND a.language = :lang
+      AND a.status = 'PUBLISHED'
     """)
     fun findAllPublished(
         lang: Language,

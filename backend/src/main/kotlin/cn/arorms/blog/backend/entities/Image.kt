@@ -1,5 +1,6 @@
 package cn.arorms.blog.backend.entities
 
+import com.fasterxml.jackson.annotation.JsonIncludeProperties
 import jakarta.persistence.*
 import java.time.LocalDateTime
 
@@ -31,6 +32,7 @@ class Image(
     @Column(length = 500)
     var alt: String? = null, // Alt text for accessibility
 
+    @JsonIncludeProperties("id", "username", "displayName")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "uploader_id")
     var uploader: User? = null,

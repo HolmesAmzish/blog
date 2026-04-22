@@ -113,7 +113,8 @@ export interface ArticleListItem {
   slug: string;
   title: string;
   summary: string | null;
-  viewCount: number;
+  status: string | null;
+  viewCount: number | null;
   createdAt: string | null;
   updatedAt: string | null;
   category: CategoryDTO | null;
