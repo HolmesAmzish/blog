@@ -3,7 +3,7 @@
  * Manages authentication state and operations
  */
 import { useState, useEffect, useCallback } from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import * as authApi from '../api/auth';
 import type { LoginRequest, RegisterRequest, UserDTO } from '../types';
@@ -26,7 +26,7 @@ export function useAuth() {
   // Login mutation
   const loginMutation = useMutation({
     mutationFn: async (request: LoginRequest) => {
-      const response = await authApi.login(request);
+      await authApi.login(request);
       // After successful login, fetch user info
       const userInfo = await authApi.fetchCurrentUser();
       return userInfo;
@@ -40,7 +40,7 @@ export function useAuth() {
   // Register mutation
   const registerMutation = useMutation({
     mutationFn: (request: RegisterRequest) => authApi.register(request),
-    onSuccess: (response) => {
+    onSuccess: () => {
       // Registration successful - user needs to login
       navigate('/admin/login');
     },

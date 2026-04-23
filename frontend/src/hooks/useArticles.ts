@@ -12,7 +12,7 @@ import {
   updateArticle,
   deleteArticle,
 } from '../api/article';
-import type { ArticleCreateRequest, ArticlePageResponse, ArticleDTO } from '../types';
+import type { ArticleCreateRequest, ArticleUpdateRequest, ArticlePageResponse, ArticleDTO } from '../types';
 import { type SupportedLanguage } from '../context/LanguageContext';
 
 const ARTICLES_QUERY_KEY = 'articles';
@@ -103,7 +103,7 @@ export const useCreateArticle = () => {
 export const useUpdateArticle = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<ArticleDTO, Error, { id: number; request: ArticleCreateRequest }>({
+  return useMutation<ArticleDTO, Error, { id: number; request: ArticleUpdateRequest }>({
     mutationFn: ({ id, request }) => updateArticle(id, request),
     onSuccess: (_, variables) => {
       // Invalidate specific article and articles list

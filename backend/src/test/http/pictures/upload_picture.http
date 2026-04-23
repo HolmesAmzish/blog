@@ -1,4 +1,5 @@
-POST http://localhost:8080/api/images/upload
+### Upload Picture
+POST http://localhost:8080/api/pictures/upload
 Authorization: Bearer {{access_token}}
 Content-Type: multipart/form-data; boundary=boundary
 

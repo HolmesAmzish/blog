@@ -1,13 +1,13 @@
 /**
- * Admin Images Page
- * Image management with upload and view functionality
+ * Admin Pictures Page
+ * Picture management with upload and view functionality
  */
 import { useState, useRef } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { AdminLayout } from '../../components/admin/AdminLayout';
-import { fetchImages, deleteImage, updateImageAlt } from '../../api/image';
-import { useImages } from '../../hooks/useImages';
-import type { ImageDTO } from '../../types';
+import { deletePicture, updatePictureAlt } from '../../api/picture';
+import { usePictures } from '../../hooks/usePictures';
+import type { PictureDTO } from '../../types';
 import {
   Plus,
   Trash2,
@@ -16,18 +16,14 @@ import {
   Image as ImageIcon,
   Copy,
   Check,
-  Download,
 } from 'lucide-react';
-import { useTranslation } from '../../context/TranslationContext';
 
 /**
- * Admin Images Page Component
+ * Admin Pictures Page Component
  */
-export function AdminImagesPage() {
-  const { t } = useTranslation();
+export function AdminPicturesPage() {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(0);
-  const [size, setSize] = useState(12);
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
   const [editingAlt, setEditingAlt] = useState<{ id: number; alt: string } | null>(
     null
@@ -38,14 +34,14 @@ export function AdminImagesPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadAlt, setUploadAlt] = useState('');
 
-  // Fetch images
-  const { data: imagesData, isLoading } = useImages(page, size);
+  // Fetch pictures
+  const { data: picturesData, isLoading } = usePictures(page, 12);
 
   // Delete mutation
   const deleteMutation = useMutation({
-    mutationFn: deleteImage,
+    mutationFn: deletePicture,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['images'] });
+      queryClient.invalidateQueries({ queryKey: ['pictures'] });
       setDeleteConfirm(null);
     },
   });
@@ -53,9 +49,9 @@ export function AdminImagesPage() {
   // Update alt mutation
   const updateAltMutation = useMutation({
     mutationFn: ({ id, alt }: { id: number; alt: string }) =>
-      updateImageAlt(id, alt),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['images'] });
+      updatePictureAlt(id, alt),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pictures'] });
       setEditingAlt(null);
     },
   });
@@ -86,7 +82,7 @@ export function AdminImagesPage() {
 
     // Use fetch directly for multipart/form-data with auth
     const token = localStorage.getItem('auth_token');
-    fetch('/api/images/upload', {
+    fetch('/api/pictures/upload', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,
@@ -98,7 +94,7 @@ export function AdminImagesPage() {
         return res.json();
       })
       .then(() => {
-        queryClient.invalidateQueries({ queryKey: ['images'] });
+        queryClient.invalidateQueries({ queryKey: ['pictures'] });
         setSelectedFile(null);
         setUploadAlt('');
         if (fileInputRef.current) fileInputRef.current.value = '';
@@ -109,7 +105,7 @@ export function AdminImagesPage() {
       });
   };
 
-  // Copy image URL to clipboard
+  // Copy picture URL to clipboard
   const copyToClipboard = (url: string, id: number) => {
     navigator.clipboard.writeText(url).then(() => {
       setCopiedId(id);
@@ -117,14 +113,18 @@ export function AdminImagesPage() {
     });
   };
 
-  // Get full image URL
-  const getImageUrl = (image: ImageDTO) => {
-    // Check if url is already a full path or just a filename
-    if (image.url.startsWith('http')) {
-      return image.url;
+  // Get picture URL (original or thumbnail)
+  const getPictureUrl = (picture: PictureDTO, thumbnail = false) => {
+    // Use thumbnail if available and requested
+    if (thumbnail && picture.thumbnailUrl) {
+      return picture.thumbnailUrl;
     }
-    // Try /uploads first, then /api/images/files
-    return `/uploads/${image.filename}`;
+
+    // Return original picture URL
+    if (picture.url.startsWith('http')) {
+      return picture.url;
+    }
+    return `/uploads/${picture.filename}`;
   };
 
   return (
@@ -134,10 +134,10 @@ export function AdminImagesPage() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-2xl font-bold text-black font-mono tracking-tight">
-              IMAGES
+              PICTURES
             </h1>
             <p className="text-gray-500 text-sm font-mono mt-1">
-              Manage uploaded images
+              Manage uploaded pictures
             </p>
           </div>
 
@@ -203,54 +203,55 @@ export function AdminImagesPage() {
           </div>
         )}
 
-        {/* Images Grid */}
+        {/* Pictures Grid */}
         {isLoading ? (
           <div className="text-center py-12 text-gray-500 font-mono text-sm">
-            Loading images...
+            Loading pictures...
           </div>
-        ) : imagesData?.content.length === 0 ? (
+        ) : picturesData?.content.length === 0 ? (
           <div className="text-center py-12 bg-white border border-gray-200 rounded-lg">
             <ImageIcon size={48} className="mx-auto text-gray-300 mb-4" />
-            <p className="text-gray-500 font-mono text-sm mb-4">No images found</p>
+            <p className="text-gray-500 font-mono text-sm mb-4">No pictures found</p>
             <p className="text-xs font-mono text-gray-400">
-              Upload images to use in your articles
+              Upload pictures to use in your articles
             </p>
           </div>
         ) : (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
-              {imagesData?.content.map((image) => (
+              {picturesData?.content.map((picture) => (
                 <div
-                  key={image.id}
+                  key={picture.id}
                   className="bg-white border border-gray-200 hover:border-[#0047FF] transition-colors group rounded-lg overflow-hidden"
                 >
-                  {/* Image Preview */}
+                  {/* Picture Preview */}
                   <div className="aspect-video bg-gray-50 relative overflow-hidden">
                     <img
-                      src={getImageUrl(image)}
-                      alt={image.alt || 'Image'}
+                      src={getPictureUrl(picture, true)}
+                      alt={picture.alt || 'Picture'}
                       className="w-full h-full object-cover"
+                      loading="lazy"
                       onError={(e) => {
                         (e.target as HTMLImageElement).src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="%23e5e7eb" stroke-width="2"%3E%3Crect x="3" y="3" width="18" height="18" rx="2" ry="2"/%3E%3Ccircle cx="8.5" cy="8.5" r="1.5"/%3E%3Cpolyline points="21 15 16 10 5 21"/%3E%3C/svg%3E';
                       }}
                     />
                     <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
                       <button
-                        onClick={() => copyToClipboard(getImageUrl(image), image.id as number)}
+                        onClick={() => copyToClipboard(getPictureUrl(picture, false), picture.id as number)}
                         className="p-2 bg-white bg-opacity-90 rounded-full text-gray-700 hover:text-[#0047FF] transition-colors"
                         title="Copy URL"
                       >
-                        {copiedId === image.id ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
+                        {copiedId === picture.id ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
                       </button>
                       <button
-                        onClick={() => setEditingAlt({ id: image.id as number, alt: image.alt || '' })}
+                        onClick={() => setEditingAlt({ id: picture.id as number, alt: picture.alt || '' })}
                         className="p-2 bg-white bg-opacity-90 rounded-full text-gray-700 hover:text-[#0047FF] transition-colors"
                         title="Edit Alt"
                       >
                         <Edit size={16} />
                       </button>
                       <button
-                        onClick={() => setDeleteConfirm(image.id)}
+                        onClick={() => setDeleteConfirm(picture.id)}
                         className="p-2 bg-white bg-opacity-90 rounded-full text-gray-700 hover:text-red-500 transition-colors"
                         title="Delete"
                       >
@@ -259,17 +260,17 @@ export function AdminImagesPage() {
                     </div>
                   </div>
 
-                  {/* Image Info */}
+                  {/* Picture Info */}
                   <div className="p-3">
-                    <p className="text-xs font-mono text-gray-500 truncate mb-2" title={image.originalFilename}>
-                      {image.originalFilename}
+                    <p className="text-xs font-mono text-gray-500 truncate mb-2" title={picture.originalFilename}>
+                      {picture.originalFilename}
                     </p>
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] font-mono text-gray-400">
-                        {(image.size / 1024).toFixed(0)} KB
+                        {(picture.size / 1024).toFixed(0)} KB
                       </span>
                       <span className="text-[10px] font-mono text-gray-300">
-                        {image.mimeType.split('/')[1].toUpperCase()}
+                        {picture.mimeType.split('/')[1].toUpperCase()}
                       </span>
                     </div>
                   </div>
@@ -278,14 +279,14 @@ export function AdminImagesPage() {
             </div>
 
             {/* Pagination */}
-            {imagesData && imagesData.totalPages > 1 && (
+            {picturesData && picturesData.totalPages > 1 && (
               <div className="flex items-center justify-between pt-4 border-t border-gray-200">
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-mono text-gray-500">
-                    Page {imagesData.page + 1} of {imagesData.totalPages}
+                    Page {picturesData.page + 1} of {picturesData.totalPages}
                   </span>
                   <span className="text-xs font-mono text-gray-400">
-                    {imagesData.total} images
+                    {picturesData.total} pictures
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -297,8 +298,8 @@ export function AdminImagesPage() {
                     Previous
                   </button>
                   <button
-                    onClick={() => setPage((p) => Math.min(imagesData.totalPages - 1, p + 1))}
-                    disabled={page >= imagesData.totalPages - 1}
+                    onClick={() => setPage((p) => Math.min(picturesData.totalPages - 1, p + 1))}
+                    disabled={page >= picturesData.totalPages - 1}
                     className="px-3 py-1.5 text-xs font-mono border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Next
@@ -336,7 +337,7 @@ export function AdminImagesPage() {
               }
               rows={3}
               className="w-full border border-gray-200 px-3 py-2 text-sm font-mono focus:border-[#0047FF] focus:outline-none resize-none mb-4"
-              placeholder="Describe this image..."
+              placeholder="Describe this picture..."
             />
 
             <div className="flex gap-3">
@@ -365,10 +366,10 @@ export function AdminImagesPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 w-full max-w-sm border border-gray-200 rounded-lg">
             <h2 className="text-lg font-mono font-bold text-black mb-4">
-              DELETE IMAGE
+              DELETE PICTURE
             </h2>
             <p className="text-sm font-mono text-gray-600 mb-6">
-              Are you sure you want to delete this image? This action cannot be
+              Are you sure you want to delete this picture? This action cannot be
               undone.
             </p>
             <div className="flex gap-3">

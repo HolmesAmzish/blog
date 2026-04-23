@@ -8,7 +8,6 @@ import type {
   ArticleCreateRequest,
   ArticleUpdateRequest,
   ArticlePageResponse,
-  ArticleListItem,
 } from '../types';
 import { type SupportedLanguage } from '../context/LanguageContext';
 

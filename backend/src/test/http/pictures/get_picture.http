@@ -1,0 +1,8 @@
+### GET Picture metadata
+GET http://localhost:8080/api/pictures/1
+
+### GET all pictures
+GET http://localhost:8080/api/pictures
+
+### GET pictures by uploader
+GET http://localhost:8080/api/pictures/uploader/1

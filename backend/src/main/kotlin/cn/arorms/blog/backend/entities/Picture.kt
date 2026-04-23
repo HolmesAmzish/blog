@@ -8,8 +8,8 @@ import java.time.LocalDateTime
  * Image entity for resource management
  */
 @Entity
-@Table(name = "images")
-class Image(
+@Table(name = "pictures")
+class Picture(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null,
@@ -28,6 +28,9 @@ class Image(
 
     @Column(nullable = false, length = 500)
     var url: String, // Access URL
+
+    @Column(length = 500)
+    var thumbnailUrl: String? = null, // Thumbnail URL
 
     @Column(length = 500)
     var alt: String? = null, // Alt text for accessibility

@@ -12,17 +12,6 @@ import { fetchTags } from '../../api/tag';
 import type { ArticleDTO, ArticleCreateRequest, ArticleUpdateRequest } from '../../types';
 import { Save, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 
-const initialForm: ArticleCreateRequest = {
-  title: '',
-  summary: '',
-  content: '',
-  slug: '',
-  language: 'ZH',
-  status: 'DRAFT',
-  categoryId: null,
-  tagIds: [],
-};
-
 export function AdminArticleEditPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();

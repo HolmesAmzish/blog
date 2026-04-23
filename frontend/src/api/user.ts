@@ -2,8 +2,8 @@
  * User API
  * Corresponds to backend UserController
  */
-import { get, post, put, del } from './client';
-import type { UserDTO, UserRequest, PasswordChangeRequest } from '../types';
+import { get, put, del } from './client';
+import type { UserDTO, PasswordChangeRequest } from '../types';
 
 const BASE_URL = '/users';
 

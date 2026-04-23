@@ -12,7 +12,7 @@ import {
   Users,
   Image,
   LogOut,
-  ArrowLeft
+  ArrowLeft,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth.ts';
 
@@ -28,7 +28,7 @@ const navItems = [
   { path: '/admin/articles', label: 'Articles', icon: FileText },
   { path: '/admin/categories', label: 'Categories', icon: FolderTree },
   { path: '/admin/tags', label: 'Tags', icon: Tags },
-  { path: '/admin/images', label: 'Images', icon: Image },
+  { path: '/admin/pictures', label: 'Pictures', icon: Image },
   { path: '/admin/users', label: 'Users', icon: Users },
 ];
 

@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 import { useArticles } from '../../hooks/useArticles';
 import { useCategories } from '../../hooks/useCategories';
 import { AdminLayout } from '../../components/admin/AdminLayout';
-import { Plus, Search, Edit, Trash2, Eye, ArrowUpDown } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Eye } from 'lucide-react';
 
 /**
  * Admin Articles Page Component

@@ -7,7 +7,7 @@ import { useCategories } from '../../hooks/useCategories';
 import { useTags } from '../../hooks/useTags';
 import { useUsers } from '../../hooks/useUsers';
 import { AdminLayout } from '../../components/admin/AdminLayout';
-import { FileText, FolderTree, Tags, Users, Eye, TrendingUp } from 'lucide-react';
+import { FileText, FolderTree, Tags, Users, Eye } from 'lucide-react';
 
 /**
  * Stat Card Component
@@ -47,13 +47,13 @@ function StatCard({
  */
 export function AdminDashboardPage() {
   const { data: articlesData, isLoading: articlesLoading } = useArticles({ page: 0, size: 100 });
-  const { data: categories, isLoading: categoriesLoading } = useCategories();
-  const { data: tags, isLoading: tagsLoading } = useTags();
-  const { data: users, isLoading: usersLoading } = useUsers();
+  const { data: categories } = useCategories();
+  const { data: tags } = useTags();
+  const { data: users } = useUsers();
 
   const totalArticles = articlesData?.totalElements || 0;
   const publishedArticles = articlesData?.content.filter(a => a.status === 'PUBLISHED').length || 0;
-  const totalViews = articlesData?.content.reduce((sum, a) => sum + a.viewCount, 0) || 0;
+  const totalViews = articlesData?.content.reduce((sum, a) => sum + (a.viewCount || 0), 0) || 0;
 
   return (
     <AdminLayout>
@@ -162,7 +162,7 @@ export function AdminDashboardPage() {
                       {article.title}
                     </p>
                     <p className="text-xs font-mono text-gray-500 mt-1">
-                      {article.categoryName || 'Uncategorized'} • {article.viewCount} views
+                      {article.category?.name || 'Uncategorized'} • {article.viewCount} views
                     </p>
                   </div>
                   <span className={`px-2 py-1 text-xs font-mono uppercase ${

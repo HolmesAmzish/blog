@@ -15,8 +15,10 @@ interface ArticleCardProps {
  * Format date to readable string
  */
 const formatDate = (article: ArticleDTO | ArticleListItem): string => {
-  // Try publishedAt first, then createdAt, then updatedAt
-  const dateString = article.publishedAt || article.createdAt || article.updatedAt;
+  // publishedAt only exists on ArticleDTO, use createdAt/updatedAt for ArticleListItem
+  const dateString = 'publishedAt' in article && article.publishedAt
+    ? article.publishedAt
+    : article.createdAt || article.updatedAt;
   if (!dateString) return '---';
   const date = new Date(dateString);
   return date.toLocaleDateString('en-US', {

@@ -22,7 +22,7 @@ import { AdminArticleEditPage } from './features/admin/AdminArticleEditPage';
 import { AdminCategoriesPage } from './features/admin/AdminCategoriesPage';
 import { AdminTagsPage } from './features/admin/AdminTagsPage';
 import { AdminUsersPage } from './features/admin/AdminUsersPage';
-import { AdminImagesPage } from './features/admin/AdminImagesPage';
+import { AdminPicturesPage } from './features/admin/AdminPicturesPage';
 import { ProtectedRoute } from './components/admin/ProtectedRoute';
 
 // Create Query Client
@@ -123,10 +123,10 @@ function App() {
                     }
                   />
                   <Route
-                    path="/admin/images"
+                    path="/admin/pictures"
                     element={
                       <ProtectedRoute requireAdmin>
-                        <AdminImagesPage />
+                        <AdminPicturesPage />
                       </ProtectedRoute>
                     }
                   />

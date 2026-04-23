@@ -11,7 +11,7 @@ import {
   updateCategory,
   deleteCategory,
 } from '../api/category';
-import type { CategoryDTO, CategoryRequest } from '../types';
+import type { CategoryDTO, CategoryCreateRequest } from '../types';
 
 const CATEGORIES_QUERY_KEY = 'categories';
 const CATEGORY_QUERY_KEY = 'category';
@@ -74,7 +74,7 @@ export const useCategoryBySlug = (slug: string | null) => {
 export const useCreateCategory = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<CategoryDTO, Error, CategoryRequest>({
+  return useMutation<CategoryDTO, Error, CategoryCreateRequest>({
     mutationFn: createCategory,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [CATEGORIES_QUERY_KEY] });
@@ -88,10 +88,10 @@ export const useCreateCategory = () => {
 export const useUpdateCategory = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<CategoryDTO, Error, { id: number; request: CategoryRequest }>({
+  return useMutation<CategoryDTO, Error, { id: number; request: CategoryDTO }>({
     mutationFn: ({ id, request }) => updateCategory(id, request),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: [CATEGORY_QUERY_KEY, variables.id] });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [CATEGORY_QUERY_KEY] });
       queryClient.invalidateQueries({ queryKey: [CATEGORIES_QUERY_KEY] });
     },
   });

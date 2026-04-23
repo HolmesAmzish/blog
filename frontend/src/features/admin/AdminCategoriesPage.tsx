@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AdminLayout } from '../../components/admin/AdminLayout';
 import { fetchCategories, createCategory, deleteCategory } from '../../api/category';
-import type { CategoryCreateRequest } from '../../types';
+import type { CategoryDTO, CategoryCreateRequest } from '../../types';
 import { Plus, Trash2, FolderTree, X } from 'lucide-react';
 
 /**

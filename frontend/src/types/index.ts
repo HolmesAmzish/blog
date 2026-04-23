@@ -186,22 +186,23 @@ export interface AuthResponse {
   user: UserDTO;
 }
 
-// Image DTOs
-export interface ImageDTO {
+// Picture DTOs
+export interface PictureDTO {
   id: number | null;
   filename: string;
   originalFilename: string;
   mimeType: string;
   size: number;
   url: string;
+  thumbnailUrl: string | null;
   alt: string | null;
   uploaderId: number | null;
   uploaderName: string | null;
   createdAt: string | null;
 }
 
-export interface ImagePageResponse {
-  content: ImageDTO[];
+export interface PicturePageResponse {
+  content: PictureDTO[];
   total: number;
   page: number;
   size: number;
@@ -214,7 +215,7 @@ export interface ArchiveTreeNode {
   name: string;
   value?: number;
   children?: ArchiveTreeNode[];
-  article?: ArticleDTO;
+  article?: ArticleDTO | ArticleListItem;
 }
 
 // Site Statistics

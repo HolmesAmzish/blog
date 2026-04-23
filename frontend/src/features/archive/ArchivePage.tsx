@@ -59,7 +59,7 @@ const buildCategoryNodes = (categories: CategoryDTO[], articles: ArticleListItem
 /**
  * Transform category and article data to ECharts tree format
  */
-const buildTreeData = (categoryTree: CategoryDTO | undefined, articles: ArticleDTO[]): ArchiveTreeNode => {
+const buildTreeData = (categoryTree: CategoryDTO | undefined, articles: ArticleListItem[]): ArchiveTreeNode => {
   const root: ArchiveTreeNode = {
     name: 'ARORMS.BLOG',
     children: [],
@@ -70,7 +70,7 @@ const buildTreeData = (categoryTree: CategoryDTO | undefined, articles: ArticleD
   // Build nodes from root categories
   root.children = buildCategoryNodes(categoryTree.children, articles);
 
-  // Add uncategorized articles
+  // Add uncategorized articles (filter by article.category which exists on ArticleListItem)
   const uncategorizedArticles = articles.filter(
     (article) => !article.category
   );
@@ -80,7 +80,7 @@ const buildTreeData = (categoryTree: CategoryDTO | undefined, articles: ArticleD
       name: 'UNCATEGORIZED',
       children: uncategorizedArticles.map((article) => ({
         name: article.title,
-        value: article.viewCount,
+        value: article.viewCount ?? 0,
         article: article,
       })),
     };
@@ -202,7 +202,6 @@ export const ArchivePage: React.FC = () => {
           expandAndCollapse: true,
           animationDuration: 550,
           animationDurationUpdate: 750,
-          expandAndCollapse: true,
           initialTreeDepth: -1,
           lineStyle: {
             color: '#e5e7eb',

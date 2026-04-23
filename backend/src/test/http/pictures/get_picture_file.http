@@ -1,0 +1,5 @@
+### GET Picture file
+GET http://localhost:8080/api/pictures/files/a5bb7b95-3056-4f7e-9791-aa0ac2a2d8f9.JPG
+
+### GET Picture thumbnail
+GET http://localhost:8080/uploads/thumbnails/thumb_dbc90786-cd0a-49c7-beb3-d251ce6571c9.JPG

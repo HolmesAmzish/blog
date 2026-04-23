@@ -10,7 +10,6 @@ import { useTranslation } from '../../context/TranslationContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { fetchSiteStatistics } from '../../api/siteStatistics';
 import { useQuery } from '@tanstack/react-query';
-import { useMemo } from 'react';
 
 /**
  * HomePage - Landing page with latest articles

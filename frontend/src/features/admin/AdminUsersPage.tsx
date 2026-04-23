@@ -5,7 +5,7 @@
 import { useState } from 'react';
 import { useUsers, useDeleteUser, useUpdateUserRole, useSetUserEnabled } from '../../hooks/useUsers';
 import { AdminLayout } from '../../components/admin/AdminLayout';
-import { Plus, Edit, Trash2, User, Shield, UserCheck, UserX } from 'lucide-react';
+import { Plus, Edit, Trash2, User, UserCheck, UserX } from 'lucide-react';
 import type { UserRole } from '../../types';
 
 /**
