@@ -5,20 +5,33 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AdminLayout } from '../../components/admin/AdminLayout';
-import { fetchCategories, createCategory, deleteCategory } from '../../api/category';
-import type { CategoryDTO, CategoryCreateRequest } from '../../types';
-import { Plus, Trash2, FolderTree, X } from 'lucide-react';
+import { fetchCategoryEntities, createCategory, updateCategory, deleteCategory } from '../../api/category';
+import type { CategoryEntity, CategoryUpsertRequest } from '../../types';
+import { Language } from '../../types';
+import { Plus, Edit, Trash2, FolderTree, X } from 'lucide-react';
+import { getLocalizedName } from '../../utils/i18n';
+import { useLanguage } from '../../context/LanguageContext';
+
+type CategoryForm = {
+  nameZh: string;
+  nameEn: string;
+  slug: string;
+  parentId: number | null;
+};
 
 /**
  * Admin Categories Page Component
  */
 export function AdminCategoriesPage() {
   const queryClient = useQueryClient();
+  const { language } = useLanguage();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<CategoryEntity | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
 
-  const [form, setForm] = useState<CategoryCreateRequest>({
-    name: '',
+  const [form, setForm] = useState<CategoryForm>({
+    nameZh: '',
+    nameEn: '',
     slug: '',
     parentId: null,
   });
@@ -26,7 +39,7 @@ export function AdminCategoriesPage() {
   // Fetch categories
   const { data: categories, isLoading } = useQuery({
     queryKey: ['categories'],
-    queryFn: fetchCategories,
+    queryFn: fetchCategoryEntities,
   });
 
   // Create mutation
@@ -47,52 +60,80 @@ export function AdminCategoriesPage() {
     },
   });
 
+  // Update mutation
+  const updateMutation = useMutation({
+    mutationFn: (data: CategoryUpsertRequest) => updateCategory(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['categories'] });
+      closeModal();
+    },
+  });
+
   const openCreateModal = () => {
-    setForm({ name: '', slug: '', parentId: null });
+    setForm({ nameZh: '', nameEn: '', slug: '', parentId: null });
+    setEditingCategory(null);
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (category: CategoryEntity) => {
+    setForm({
+      nameZh: category.names.ZH || '',
+      nameEn: category.names.EN || '',
+      slug: category.slug,
+      parentId: category.parent?.id ?? null,
+    });
+    setEditingCategory(category);
     setIsModalOpen(true);
   };
 
   const closeModal = () => {
     setIsModalOpen(false);
-    setForm({ name: '', slug: '', parentId: null });
+    setEditingCategory(null);
+    setForm({ nameZh: '', nameEn: '', slug: '', parentId: null });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name.trim()) return;
+    if (!form.nameZh.trim() && !form.nameEn.trim()) return;
 
-    const data = {
-      ...form,
-      slug: form.slug || form.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+    const names: Record<Language, string> = { ZH: '', EN: '' };
+    if (form.nameZh.trim()) names.ZH = form.nameZh;
+    if (form.nameEn.trim()) names.EN = form.nameEn;
+
+    const primaryName = form.nameZh.trim() || form.nameEn.trim();
+    const data: CategoryUpsertRequest = {
+      id: editingCategory?.id ?? null,
+      names,
+      slug: form.slug || primaryName.toLowerCase().replace(/[^a-z0-9一-龥]+/g, '-'),
+      parentId: form.parentId,
     };
 
-    createMutation.mutate(data);
+    if (editingCategory?.id) {
+      updateMutation.mutate(data);
+    } else {
+      createMutation.mutate(data);
+    }
   };
 
   const handleDelete = (id: number) => {
     deleteMutation.mutate(id);
   };
 
-  // Flatten categories for display (with indentation)
+  // Build hierarchical categories for display
   const flattenCategories = (
-    categoryList: CategoryDTO[],
+    categoryList: CategoryEntity[],
     depth: number = 0
-  ): { category: CategoryDTO; depth: number }[] => {
-    const result: { category: CategoryDTO; depth: number }[] = [];
+  ): { category: CategoryEntity; depth: number }[] => {
+    const result: { category: CategoryEntity; depth: number }[] = [];
 
-    // First, add all root categories (parentId is null)
-    const rootCategories = categoryList.filter((c) => c.parentId === null);
+    // Get root categories (no parent)
+    const rootCategories = categoryList.filter((c) => !c.parent?.id);
     rootCategories.forEach((category) => {
       result.push({ category, depth });
-      // Then recursively add children by finding categories with this parentId
-      const children = categoryList.filter((c) => c.parentId === category.id);
+      // Find children
+      const children = categoryList.filter((c) => c.parent?.id === category.id);
       children.forEach((child) => {
-        result.push({ category: child, depth: depth + 1 });
-        // Add grandchildren
-        const grandchildren = categoryList.filter((c) => c.parentId === child.id);
-        grandchildren.forEach((grandchild) => {
-          result.push({ category: grandchild, depth: depth + 2 });
-        });
+        result.push(...flattenCategories([child], depth + 1));
       });
     });
 
@@ -145,7 +186,7 @@ export function AdminCategoriesPage() {
               allCategoriesFlat.map(({ category, depth }) => (
                 <div
                   key={category.id}
-                  className="bg-white border border-gray-200 hover:border-[#0047FF] transition-colors flex items-center"
+                  className="bg-white border border-gray-200 hover:border-[#0047FF] transition-colors flex items-center group"
                 >
                   {/* Indentation for hierarchy */}
                   <div className="w-8" style={{ width: `${depth * 24 + 8}px` }} />
@@ -155,19 +196,23 @@ export function AdminCategoriesPage() {
                       <FolderTree size={18} className="text-gray-600" />
                       <div>
                         <h3 className="text-sm font-mono font-bold text-black">
-                          {category.name}
+                          {getLocalizedName(category.names, language)}
                         </h3>
                         <p className="text-xs font-mono text-gray-500">
                           {category.slug}
-                          {category.parentId && (
-                            <span className="ml-2 text-gray-400">
-                              → {category.parentName}
-                            </span>
-                          )}
+                        </p>
+                        <p className="text-xs font-mono text-gray-400 mt-1">
+                          ZH: {category.names.ZH || '-'} | EN: {category.names.EN || '-'}
                         </p>
                       </div>
                     </div>
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={() => openEditModal(category)}
+                        className="p-2 text-gray-400 hover:text-[#0047FF] transition-colors"
+                      >
+                        <Edit size={16} />
+                      </button>
                       <button
                         onClick={() => setDeleteConfirm(category.id as number)}
                         className="p-2 text-gray-400 hover:text-red-500 transition-colors"
@@ -175,12 +220,6 @@ export function AdminCategoriesPage() {
                         <Trash2 size={16} />
                       </button>
                     </div>
-                  </div>
-
-                  <div className="px-4 py-2 bg-gray-50 border-l border-gray-100">
-                    <span className="text-xs font-mono text-gray-500">
-                      {category.articleCount || 0} articles
-                    </span>
                   </div>
                 </div>
               ))
@@ -195,7 +234,7 @@ export function AdminCategoriesPage() {
           <div className="bg-white p-6 w-full max-w-md border border-gray-200">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-mono font-bold text-black">
-                NEW CATEGORY
+                {editingCategory ? 'EDIT CATEGORY' : 'NEW CATEGORY'}
               </h2>
               <button onClick={closeModal} className="p-1 hover:bg-gray-100">
                 <X size={20} className="text-gray-500" />
@@ -205,15 +244,27 @@ export function AdminCategoriesPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-xs font-mono text-gray-500 uppercase tracking-wider mb-2">
-                  Name *
+                  Chinese Name (中文)
                 </label>
                 <input
                   type="text"
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  value={form.nameZh}
+                  onChange={(e) => setForm({ ...form, nameZh: e.target.value })}
                   className="w-full border border-gray-200 px-3 py-2 text-sm font-mono focus:border-[#0047FF] focus:outline-none"
-                  placeholder="Category name"
-                  required
+                  placeholder="中文名称"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-mono text-gray-500 uppercase tracking-wider mb-2">
+                  English Name (English)
+                </label>
+                <input
+                  type="text"
+                  value={form.nameEn}
+                  onChange={(e) => setForm({ ...form, nameEn: e.target.value })}
+                  className="w-full border border-gray-200 px-3 py-2 text-sm font-mono focus:border-[#0047FF] focus:outline-none"
+                  placeholder="English name"
                 />
               </div>
 
@@ -241,9 +292,9 @@ export function AdminCategoriesPage() {
                   className="w-full border border-gray-200 px-3 py-2 text-sm font-mono focus:border-[#0047FF] focus:outline-none"
                 >
                   <option value="">None (Top Level)</option>
-                  {categories?.map((cat) => (
+                  {categories?.filter((cat) => cat.id !== editingCategory?.id).map((cat) => (
                     <option key={cat.id} value={String(cat.id)}>
-                      {cat.name}
+                      {getLocalizedName(cat.names, language)}
                     </option>
                   ))}
                 </select>
@@ -262,10 +313,10 @@ export function AdminCategoriesPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={createMutation.isPending}
+                  disabled={createMutation.isPending || updateMutation.isPending || (!form.nameZh.trim() && !form.nameEn.trim())}
                   className="flex-1 px-4 py-2 bg-[#0047FF] text-white text-sm font-mono uppercase tracking-wider hover:bg-blue-700 transition-colors disabled:opacity-50"
                 >
-                  {createMutation.isPending ? 'Saving...' : 'Create'}
+                  {createMutation.isPending || updateMutation.isPending ? 'Saving...' : editingCategory ? 'Update' : 'Create'}
                 </button>
               </div>
             </form>

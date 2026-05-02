@@ -1,6 +1,8 @@
 package cn.arorms.blog.backend.controllers
 
-import cn.arorms.blog.backend.dtos.*
+import cn.arorms.blog.backend.dto.*
+import cn.arorms.blog.backend.dto.requests.RegisterRequest
+import cn.arorms.blog.backend.dto.responses.UserVo
 import cn.arorms.blog.backend.entities.User
 import cn.arorms.blog.backend.services.UserService
 import org.springframework.http.HttpStatus
@@ -15,13 +17,13 @@ import org.springframework.web.bind.annotation.*
 class UserController(private val userService: UserService) {
     
     @GetMapping
-    fun getAllUsers(): ResponseEntity<List<UserDTO>> {
+    fun getAllUsers(): ResponseEntity<List<UserVo>> {
         val users = userService.findAll()
         return ResponseEntity.ok(users.map { it.toDTO() })
     }
     
     @GetMapping("/{id}")
-    fun getUserById(@PathVariable id: Long): ResponseEntity<UserDTO> {
+    fun getUserById(@PathVariable id: Long): ResponseEntity<UserVo> {
         val user = userService.findById(id)
         return if (user != null) {
             ResponseEntity.ok(user.toDTO())
@@ -31,7 +33,7 @@ class UserController(private val userService: UserService) {
     }
     
     @GetMapping("/username/{username}")
-    fun getUserByUsername(@PathVariable username: String): ResponseEntity<UserDTO> {
+    fun getUserByUsername(@PathVariable username: String): ResponseEntity<UserVo> {
         val user = userService.findByUsername(username)
         return if (user != null) {
             ResponseEntity.ok(user.toDTO())
@@ -41,7 +43,7 @@ class UserController(private val userService: UserService) {
     }
     
     @PostMapping
-    fun createUser(@RequestBody request: RegisterRequest): ResponseEntity<UserDTO> {
+    fun createUser(@RequestBody request: RegisterRequest): ResponseEntity<UserVo> {
 //        val user = User(
 //            username = request.username,
 //            email = request.email,
@@ -99,8 +101,8 @@ class UserController(private val userService: UserService) {
 //    }
     
     // Extension function to convert User to UserDTO
-    private fun User.toDTO(): UserDTO {
-        return UserDTO(
+    private fun User.toDTO(): UserVo {
+        return UserVo(
             id = this.id,
             username = this.username,
             email = this.email,
@@ -109,7 +111,7 @@ class UserController(private val userService: UserService) {
             avatar = this.avatar,
             role = this.role,
             isEnabled = this.isEnabled,
-            createdAt = this.createdAt.toString()
+            createdAt = this.createdAt
         )
     }
 }

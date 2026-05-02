@@ -1,0 +1,8 @@
+### GET article by ID (admin)
+GET http://localhost:8080/api/articles/4
+
+### GET article by slug (public - EN)
+GET http://localhost:8080/api/articles/slug/hello
+
+### GET article by slug (public - ZH)
+GET http://localhost:8080/api/articles/slug/test-article?language=ZH

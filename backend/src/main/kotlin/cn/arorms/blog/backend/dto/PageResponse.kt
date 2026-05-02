@@ -1,4 +1,4 @@
-package cn.arorms.blog.backend.dtos;
+package cn.arorms.blog.backend.dto;
 
 import org.springframework.data.domain.Page
 

@@ -2,6 +2,8 @@ package cn.arorms.blog.backend.repositories
 
 import cn.arorms.blog.backend.entities.Category
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Query
+import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 
 /**
@@ -9,14 +11,13 @@ import org.springframework.stereotype.Repository
  */
 @Repository
 interface CategoryRepository : JpaRepository<Category, Long> {
-    
-    fun findByName(name: String): Category?
-    
+
+    @Query(value = "SELECT c.id, c.names ->> cast(:lang as text), c.slug, c.parent_id FROM categories c", nativeQuery = true)
+    fun findAllLocalized(@Param("lang") lang: String): List<Array<Any>>
+
     fun findBySlug(slug: String): Category?
-    
+
     fun findByParentId(parentId: Long?): List<Category>
-    
-    fun existsByName(name: String): Boolean
-    
+
     fun existsBySlug(slug: String): Boolean
 }

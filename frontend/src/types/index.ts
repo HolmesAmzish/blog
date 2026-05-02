@@ -27,36 +27,52 @@ export const UserRole = {
 
 export type UserRole = typeof UserRole[keyof typeof UserRole];
 
-// Tag DTOs
-export interface TagDTO {
-  id: number | null;
-  name: string;
-  description: string | null;
-  slug: string;
-  articleCount: number | null;
+// Article Translation
+export interface ArticleTranslation {
+  language: Language;
+  title: string;
+  summary: string | null;
+  content: string | null;
 }
 
-export interface TagRequest {
+export interface ArticleTranslationUpsertRequest {
+  id: number | null;
+  language: Language | null;
+  title: string;
+  summary: string | null;
+  content: string | null;
+}
+
+// Tag DTOs
+export interface TagUpsertRequest {
+  id: number | null;
   name: string;
-  description: string | null;
   slug: string;
 }
 
 // Category DTOs
 export interface CategoryDTO {
   id: number | null;
-  name: string;
+  names: Record<Language, string>;
   slug: string;
   parentId: number | null;
   parentName: string | null;
   children: CategoryDTO[];
-  articleCount: number | null;
 }
 
-export interface CategoryCreateRequest {
-  name: string;
+export interface CategoryUpsertRequest {
+  id: number | null;
+  names: Record<Language, string>;
   slug: string;
   parentId: number | null;
+}
+
+// CategoryEntity - matches backend Category entity (raw entity data)
+export interface CategoryEntity {
+  id: number | null;
+  names: Record<Language, string>;
+  slug: string;
+  parent: { id: number | null } | null;
 }
 
 // Author interface (for Article entity)
@@ -66,45 +82,35 @@ export interface AuthorDTO {
   displayName: string | null;
 }
 
-// Article DTOs
+// Article DTOs - multilingual with translations map
 export interface ArticleDTO {
   id: number | null;
-  title: string;
-  summary: string | null;
-  content: string | null;
   slug: string;
-  language: Language;
   status: ArticleStatus;
   viewCount: number;
+  translations: Record<Language, ArticleTranslation>;
   category: CategoryDTO | null;
   author: AuthorDTO | null;
-  tags: TagDTO[];
+  tags: TagVo[];
   createdAt: string | null;
   updatedAt: string | null;
-  publishedAt: string | null;
 }
 
 export interface ArticleCreateRequest {
-  title: string;
-  summary: string | null;
-  content: string | null;
   slug: string;
-  language: Language;
   status: ArticleStatus;
   categoryId: number | null;
   tagIds: number[];
+  translations: Array<ArticleTranslationUpsertRequest>;
 }
 
 export interface ArticleUpdateRequest {
   id: number;
-  title: string;
-  summary: string | null;
-  content: string | null;
   slug: string;
-  language: Language;
   status: ArticleStatus;
   categoryId: number | null;
   tagIds: number[];
+  translations: Array<ArticleTranslationUpsertRequest>;
 }
 
 // Article ListItem for list views
@@ -117,8 +123,46 @@ export interface ArticleListItem {
   viewCount: number | null;
   createdAt: string | null;
   updatedAt: string | null;
-  category: CategoryDTO | null;
-  tags: TagDTO[];
+  category: CategoryVo | null;
+  tags: Array<TagVo> | null;
+}
+
+// ArticleVo - matches backend ArticleVo (article detail)
+export interface ArticleVo {
+  id: number;
+  slug: string;
+  createdAt: string;
+  updatedAt: string;
+  viewCount: number;
+  title: string;
+  summary: string;
+  content: string;
+  language: Language;
+  category: CategoryVo | null;
+  tags: Array<TagVo>;
+}
+
+// CategoryVo - matches backend CategoryVo
+export interface CategoryVo {
+  id: number | null;
+  name: string;
+  slug: string;
+  parentId: number | null;
+}
+
+// TagVo - matches backend TagVo
+export interface TagVo {
+  id: number | null;
+  name: string;
+  slug: string;
+}
+
+// CategoryTreeNode - matches backend CategoryTreeNode
+export interface CategoryTreeNode {
+  id: number;
+  name: string;
+  slug: string;
+  children: Array<CategoryTreeNode>;
 }
 
 export interface ArticlePageResponse {

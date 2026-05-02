@@ -12,7 +12,7 @@ import {
   updateArticle,
   deleteArticle,
 } from '../api/article';
-import type { ArticleCreateRequest, ArticleUpdateRequest, ArticlePageResponse, ArticleDTO } from '../types';
+import type { ArticleCreateRequest, ArticleUpdateRequest, ArticlePageResponse, ArticleDTO, ArticleVo } from '../types';
 import { type SupportedLanguage } from '../context/LanguageContext';
 
 const ARTICLES_QUERY_KEY = 'articles';
@@ -33,13 +33,13 @@ interface UseArticlesParams {
  * When isAdmin is false, fetches only published articles
  */
 export const useArticles = (params: UseArticlesParams = {}) => {
-  const { page = 0, size = 10, categoryId, language, isAdmin = false } = params;
+  const { page = 0, size = 10, categoryId, tagId, language, isAdmin = false } = params;
 
   if (isAdmin) {
     // Fetch all articles for admin
     return useQuery<ArticlePageResponse, Error>({
-      queryKey: [ARTICLES_QUERY_KEY, { page, size, categoryId, isAdmin }],
-      queryFn: () => fetchArticles(page, size, 'createdAt', 'desc', categoryId),
+      queryKey: [ARTICLES_QUERY_KEY, { page, size, categoryId, tagId, language, isAdmin }],
+      queryFn: () => fetchArticles(page, size, 'createdAt', 'desc', categoryId, tagId, language),
       staleTime: 5 * 60 * 1000,
     });
   } else {
@@ -70,12 +70,12 @@ export const useArticleById = (id: number | null) => {
 /**
  * Hook for fetching single article by slug
  */
-export const useArticleBySlug = (slug: string | null) => {
-  return useQuery<ArticleDTO, Error>({
-    queryKey: [ARTICLE_QUERY_KEY, 'slug', slug],
+export const useArticleBySlug = (slug: string | null, language?: SupportedLanguage) => {
+  return useQuery<ArticleVo, Error>({
+    queryKey: [ARTICLE_QUERY_KEY, 'slug', slug, language],
     queryFn: () => {
       if (!slug) throw new Error('Article slug is required');
-      return fetchArticleBySlug(slug);
+      return fetchArticleBySlug(slug, language);
     },
     enabled: slug !== null && slug !== '',
     staleTime: 5 * 60 * 1000,

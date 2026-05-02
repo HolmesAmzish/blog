@@ -1,11 +1,12 @@
 package cn.arorms.blog.backend.entities
 
+import cn.arorms.blog.backend.enums.Language
 import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.annotation.JsonIncludeProperties
 import jakarta.persistence.*
+import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.type.SqlTypes
 
-/**
- * Category entity for article classification
- */
 @Entity
 @Table(name = "categories")
 class Category(
@@ -13,19 +14,20 @@ class Category(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null,
 
-    @Column(nullable = false, unique = true, length = 50)
-    var name: String,
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "names", columnDefinition = "jsonb")
+    var names: MutableMap<Language, String> = mutableMapOf(),
 
     @Column(unique = true, length = 50)
     var slug: String,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JsonIgnore
     @JoinColumn(name = "parent_id")
+    @JsonIncludeProperties("id")
     var parent: Category? = null,
 
     @OneToMany(mappedBy = "parent", cascade = [CascadeType.ALL])
-//    @JsonIgnore
+    @JsonIgnore
     var children: MutableSet<Category> = mutableSetOf(),
 
     @OneToMany(mappedBy = "category")

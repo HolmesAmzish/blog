@@ -1,0 +1,14 @@
+### GET all articles (admin - EN title)
+GET http://localhost:8080/api/articles
+
+### GET all articles with pagination
+GET http://localhost:8080/api/articles?page=0&size=5&sortBy=createdAt&sortDir=desc
+
+### GET published articles (public)
+GET http://localhost:8080/api/articles/published
+
+### GET published articles with filter
+GET http://localhost:8080/api/articles/published?language=ZH
+
+### GET published articles with keyword search
+GET http://localhost:8080/api/articles/published?keyword=AI&language=EN

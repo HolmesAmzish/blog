@@ -2,10 +2,9 @@ package cn.arorms.blog.backend.entities
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import jakarta.persistence.*
+import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.type.SqlTypes
 
-/**
- * Tag entity for article categorization
- */
 @Entity
 @Table(name = "tags")
 class Tag(
@@ -13,7 +12,7 @@ class Tag(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null,
 
-    @Column(nullable = false, unique = true, length = 50)
+    @Column(length = 100)
     var name: String,
 
     @Column(unique = true, length = 50)

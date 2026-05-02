@@ -1,6 +1,6 @@
 package cn.arorms.blog.backend.services
 
-import cn.arorms.blog.backend.dtos.RegisterRequest
+import cn.arorms.blog.backend.dto.requests.RegisterRequest
 import cn.arorms.blog.backend.entities.User
 import cn.arorms.blog.backend.enums.UserRole
 import cn.arorms.blog.backend.repositories.UserRepository
@@ -46,6 +46,7 @@ class UserService(
     
     fun findByUsername(username: String): User? {
         return userRepository.findByUsername(username)
+            ?: throw UsernameNotFoundException("User not found with username: $username")
     }
     
     fun findByEmail(email: String): User? {

@@ -11,7 +11,7 @@ import {
   updateCategory,
   deleteCategory,
 } from '../api/category';
-import type { CategoryDTO, CategoryCreateRequest } from '../types';
+import type { CategoryVo, CategoryTreeNode, CategoryUpsertRequest } from '../types';
 
 const CATEGORIES_QUERY_KEY = 'categories';
 const CATEGORY_QUERY_KEY = 'category';
@@ -20,7 +20,7 @@ const CATEGORY_QUERY_KEY = 'category';
  * Hook for fetching all categories
  */
 export const useCategories = () => {
-  return useQuery<CategoryDTO[], Error>({
+  return useQuery<CategoryVo[], Error>({
     queryKey: [CATEGORIES_QUERY_KEY],
     queryFn: fetchCategories,
     staleTime: 10 * 60 * 1000, // 10 minutes - categories rarely change
@@ -31,7 +31,7 @@ export const useCategories = () => {
  * Hook for fetching category tree
  */
 export const useCategoryTree = () => {
-  return useQuery<CategoryDTO, Error>({
+  return useQuery<CategoryTreeNode, Error>({
     queryKey: [CATEGORIES_QUERY_KEY, 'tree'],
     queryFn: fetchCategoryTree,
     staleTime: 10 * 60 * 1000,
@@ -74,7 +74,7 @@ export const useCategoryBySlug = (slug: string | null) => {
 export const useCreateCategory = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<CategoryDTO, Error, CategoryCreateRequest>({
+  return useMutation<CategoryDTO, Error, CategoryUpsertRequest>({
     mutationFn: createCategory,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [CATEGORIES_QUERY_KEY] });
@@ -88,8 +88,8 @@ export const useCreateCategory = () => {
 export const useUpdateCategory = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<CategoryDTO, Error, { id: number; request: CategoryDTO }>({
-    mutationFn: ({ id, request }) => updateCategory(id, request),
+  return useMutation<CategoryDTO, Error, CategoryUpsertRequest>({
+    mutationFn: (data) => updateCategory(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [CATEGORY_QUERY_KEY] });
       queryClient.invalidateQueries({ queryKey: [CATEGORIES_QUERY_KEY] });

@@ -4,6 +4,7 @@
  */
 import { useParams, Link } from 'react-router-dom';
 import { useArticleBySlug } from '../../hooks/useArticles';
+import { useLanguage } from '../../context/LanguageContext';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -31,7 +32,8 @@ const formatDate = (dateString: string | null): string => {
  */
 export const ArticleDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
-  const { data: article, isLoading, error } = useArticleBySlug(slug ?? null);
+  const { language } = useLanguage();
+  const { data: article, isLoading, error } = useArticleBySlug(slug ?? null, language);
 
   if (isLoading) {
     return (
@@ -72,6 +74,8 @@ export const ArticleDetailPage: React.FC = () => {
     );
   }
 
+  const categoryName = article.category?.name || null;
+
   return (
     <div className="min-h-screen py-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -87,25 +91,25 @@ export const ArticleDetailPage: React.FC = () => {
         {/* Article header */}
         <header className="mb-8 pb-8 border-b-[0.5px] border-gray-200">
           {/* Category */}
-          {article.category?.name && (
+          {categoryName && (
             <Link
-              to={`/category/${article.category.id}`}
+              to={`/category/${article.category?.id}`}
               className="inline-block px-3 py-1 text-[10px] font-mono uppercase tracking-wider border-[0.5px] border-gray-200 text-gray-600 hover:border-[#0047FF] hover:text-[#0047FF] transition-colors mb-4"
             >
-              {article.category.name}
+              {categoryName}
             </Link>
           )}
 
           {/* Title */}
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-black mb-6 leading-tight">
-            {article.title}
+            {article.title || 'Untitled'}
           </h1>
 
           {/* Meta info */}
           <div className="flex flex-wrap items-center gap-4 text-[11px] font-mono text-gray-500">
             <span className="flex items-center gap-1">
               <Calendar className="w-3 h-3" />
-              {formatDate(article.publishedAt || article.createdAt)}
+              {formatDate(article.createdAt)}
             </span>
             <span className="flex items-center gap-1">
               <Eye className="w-3 h-3" />
@@ -198,7 +202,7 @@ export const ArticleDetailPage: React.FC = () => {
         </article>
 
         {/* Tags */}
-        {article.tags.length > 0 && (
+        {article.tags?.length > 0 && (
           <div className="mt-12 pt-8 border-t-[0.5px] border-gray-200">
             <div className="flex items-center gap-2 mb-3">
               <Tag className="w-4 h-4 text-gray-400" />
@@ -207,7 +211,7 @@ export const ArticleDetailPage: React.FC = () => {
               </span>
             </div>
             <div className="flex flex-wrap gap-2">
-              {article.tags.map((tag) => (
+              {article.tags?.map((tag) => (
                 <Link
                   key={tag.id}
                   to={`/tag/${tag.slug}`}

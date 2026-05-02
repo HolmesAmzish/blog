@@ -4,7 +4,7 @@
  */
 import { useQuery } from '@tanstack/react-query';
 import { fetchTags, fetchTagBySlug } from '../api/tag';
-import type { TagDTO } from '../types';
+import type { TagVo } from '../types';
 
 const TAGS_KEY = 'tags';
 
@@ -12,7 +12,7 @@ const TAGS_KEY = 'tags';
  * Hook to fetch all tags
  */
 export const useTags = () => {
-  return useQuery<TagDTO[], Error>({
+  return useQuery<TagVo[], Error>({
     queryKey: [TAGS_KEY],
     queryFn: fetchTags,
   });
@@ -22,7 +22,7 @@ export const useTags = () => {
  * Hook to fetch a tag by slug
  */
 export const useTagBySlug = (slug: string | null) => {
-  return useQuery<TagDTO, Error>({
+  return useQuery<TagVo, Error>({
     queryKey: [TAGS_KEY, 'slug', slug],
     queryFn: () => fetchTagBySlug(slug!),
     enabled: !!slug,

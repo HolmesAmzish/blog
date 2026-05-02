@@ -1,10 +1,10 @@
 package cn.arorms.blog.backend.controllers
 
-import cn.arorms.blog.backend.dtos.LoginRequest
-import cn.arorms.blog.backend.dtos.LoginResponse
-import cn.arorms.blog.backend.dtos.RegisterRequest
-import cn.arorms.blog.backend.dtos.RegisterResponse
-import cn.arorms.blog.backend.dtos.UserDTO
+import cn.arorms.blog.backend.dto.requests.LoginRequest
+import cn.arorms.blog.backend.dto.requests.RegisterRequest
+import cn.arorms.blog.backend.dto.responses.LoginResponse
+import cn.arorms.blog.backend.dto.responses.RegisterResponse
+import cn.arorms.blog.backend.dto.responses.UserVo
 import cn.arorms.blog.backend.entities.User
 import cn.arorms.blog.backend.services.JwtService
 import cn.arorms.blog.backend.services.UserService
@@ -61,27 +61,26 @@ class AuthController(
      * Get current authenticated user info
      */
     @GetMapping("/me")
-    fun getCurrentUser(@AuthenticationPrincipal jwt: Jwt): ResponseEntity<UserDTO> {
+    fun getCurrentUser(@AuthenticationPrincipal jwt: Jwt): ResponseEntity<UserVo> {
         val username = jwt.subject
 
         val user = userService.findByUsername(username)
             ?: return ResponseEntity.status(404).build()
 
-        return ResponseEntity.ok(user.toDTO())
+        return ResponseEntity.ok(toUserVo(user))
     }
-    
-    // Extension function to convert User to UserDTO
-    private fun User.toDTO(): UserDTO {
-        return UserDTO(
-            id = this.id,
-            username = this.username,
-            email = this.email,
-            displayName = this.displayName,
-            bio = this.bio,
-            avatar = this.avatar,
-            role = this.role,
-            isEnabled = this.isEnabled,
-            createdAt = this.createdAt.toString()
+
+    fun toUserVo(user: User): UserVo {
+        return UserVo(
+            id = user.id,
+            username = user.username,
+            email = user.email,
+            displayName = user.displayName,
+            isEnabled = user.isEnabled,
+            createdAt = user.createdAt,
+            bio = user.bio,
+            avatar = user.avatar,
+            role = user.role,
         )
     }
 }

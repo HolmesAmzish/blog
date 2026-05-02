@@ -1,5 +1,8 @@
-### GET Picture file
-GET http://localhost:8080/api/pictures/files/a5bb7b95-3056-4f7e-9791-aa0ac2a2d8f9.JPG
+### Get Picture
+GET {{baseUrl}}/uploads/22982f45-2527-425a-9808-7feae0e10f2b.JPG
 
 ### GET Picture thumbnail
-GET http://localhost:8080/uploads/thumbnails/thumb_dbc90786-cd0a-49c7-beb3-d251ce6571c9.JPG
+GET {{baseUrl}}/uploads/thumbnails/thumb_22982f45-2527-425a-9808-7feae0e10f2b.JPG
+
+### GET Picture file by api
+GET {{baseUrl}}/api/pictures/files/a5bb7b95-3056-4f7e-9791-aa0ac2a2d8f9.JPG

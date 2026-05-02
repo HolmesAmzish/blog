@@ -1,6 +1,6 @@
 package cn.arorms.blog.backend.controllers
 
-import cn.arorms.blog.backend.dtos.PageResponse
+import cn.arorms.blog.backend.dto.PageResponse
 import cn.arorms.blog.backend.entities.Picture
 import cn.arorms.blog.backend.services.PictureService
 import org.springframework.core.io.Resource

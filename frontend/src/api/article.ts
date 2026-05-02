@@ -5,6 +5,7 @@
 import { get, post, put, del } from './client';
 import type {
   ArticleDTO,
+  ArticleVo,
   ArticleCreateRequest,
   ArticleUpdateRequest,
   ArticlePageResponse,
@@ -22,7 +23,8 @@ export const fetchArticles = async (
   sortBy: string = 'createdAt',
   sortDir: string = 'desc',
   categoryId?: number,
-  tagId?: number
+  tagId?: number,
+  language?: SupportedLanguage
 ): Promise<ArticlePageResponse> => {
   const params = new URLSearchParams();
   params.append('page', page.toString());
@@ -31,6 +33,7 @@ export const fetchArticles = async (
   params.append('sortDir', sortDir);
   if (categoryId) params.append('categoryId', categoryId.toString());
   if (tagId) params.append('tagId', tagId.toString());
+  if (language) params.append('language', language);
 
   return get<ArticlePageResponse>(`${BASE_PATH}?${params.toString()}`);
 };
@@ -63,8 +66,11 @@ export const fetchArticleById = async (id: number): Promise<ArticleDTO> => {
 /**
  * Fetch single article by slug
  */
-export const fetchArticleBySlug = async (slug: string): Promise<ArticleDTO> => {
-  return get<ArticleDTO>(`${BASE_PATH}/slug/${slug}`);
+export const fetchArticleBySlug = async (slug: string, language?: SupportedLanguage): Promise<ArticleVo> => {
+  const params = new URLSearchParams();
+  if (language) params.append('language', language);
+  const queryString = params.toString();
+  return get<ArticleVo>(`${BASE_PATH}/slug/${slug}${queryString ? `?${queryString}` : ''}`);
 };
 
 /**

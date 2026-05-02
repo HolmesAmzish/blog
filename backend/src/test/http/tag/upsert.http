@@ -1,0 +1,29 @@
+### CREATE tag (requires auth)
+POST http://localhost:8080/api/tags
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "names": {
+    "EN": "New Tag",
+    "ZH": "新标签"
+  },
+  "slug": "new-tag"
+}
+
+### UPDATE tag (requires auth)
+PUT http://localhost:8080/api/tags/1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "names": {
+    "EN": "Updated Tag",
+    "ZH": "更新的标签"
+  },
+  "slug": "updated-tag"
+}
+
+### DELETE tag (requires auth)
+DELETE http://localhost:8080/api/tags/1
+Authorization: Bearer {{token}}

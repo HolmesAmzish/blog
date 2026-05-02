@@ -8,6 +8,8 @@ import { useArticles } from '../../hooks/useArticles';
 import { useCategories } from '../../hooks/useCategories';
 import { AdminLayout } from '../../components/admin/AdminLayout';
 import { Plus, Search, Edit, Trash2, Eye } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext';
+import { getLocalizedName } from '../../utils/i18n';
 
 /**
  * Admin Articles Page Component
@@ -20,6 +22,7 @@ export function AdminArticlesPage() {
 
   const { data: articlesData, isLoading } = useArticles({ page, size: 10, isAdmin: true });
   const { data: categories } = useCategories();
+  const { language } = useLanguage();
 
   const filteredArticles = articlesData?.content.filter((article) => {
     const matchesSearch = search === '' ||
@@ -86,7 +89,7 @@ export function AdminArticlesPage() {
               <option value="">All Categories</option>
               {categories?.map((cat) => (
                 <option key={cat.id} value={cat.id!}>
-                  {cat.name}
+                  {getLocalizedName(cat.names, language)}
                 </option>
               ))}
             </select>
@@ -148,7 +151,7 @@ export function AdminArticlesPage() {
                     </p>
                   </div>
                   <div className="col-span-2 text-sm font-mono text-gray-600">
-                    {article.category?.name || '—'}
+                    {article.category ? getLocalizedName(article.category.names, language) : '—'}
                   </div>
                   <div className="col-span-2">
                     <span className={`px-2 py-1 text-xs font-mono uppercase ${

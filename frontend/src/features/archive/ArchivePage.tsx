@@ -7,13 +7,13 @@ import { useEffect, useRef } from 'react';
 import * as echarts from 'echarts';
 import { useCategoryTree } from '../../hooks/useCategories';
 import { useArticles } from '../../hooks/useArticles';
-import type { ArchiveTreeNode, CategoryDTO, ArticleListItem } from '../../types';
+import type { ArchiveTreeNode, CategoryTreeNode, ArticleListItem } from '../../types';
 import { useTranslation } from '../../context/TranslationContext';
 
 /**
- * Recursively build tree nodes from CategoryDTO
+ * Recursively build tree nodes from CategoryTreeNode
  */
-const buildCategoryNodes = (categories: CategoryDTO[], articles: ArticleListItem[]): ArchiveTreeNode[] => {
+const buildCategoryNodes = (categories: Array<CategoryTreeNode>, articles: ArticleListItem[]): ArchiveTreeNode[] => {
   const nodes: ArchiveTreeNode[] = [];
 
   categories.forEach((category) => {
@@ -23,19 +23,17 @@ const buildCategoryNodes = (categories: CategoryDTO[], articles: ArticleListItem
     };
 
     // Find articles in this category
-    if (category.id) {
-      const categoryArticles = articles.filter(
-        (article) => article.category?.id === category.id
-      );
+    const categoryArticles = articles.filter(
+      (article) => article.category?.id === category.id
+    );
 
-      categoryArticles.forEach((article) => {
-        categoryNode.children?.push({
-          name: article.title,
-          value: article.viewCount ?? 0,
-          article: article,
-        });
+    categoryArticles.forEach((article) => {
+      categoryNode.children?.push({
+        name: article.title,
+        value: article.viewCount ?? 0,
+        article: article,
       });
-    }
+    });
 
     // Recursively build children nodes
     if (category.children && category.children.length > 0) {
@@ -59,7 +57,7 @@ const buildCategoryNodes = (categories: CategoryDTO[], articles: ArticleListItem
 /**
  * Transform category and article data to ECharts tree format
  */
-const buildTreeData = (categoryTree: CategoryDTO | undefined, articles: ArticleListItem[]): ArchiveTreeNode => {
+const buildTreeData = (categoryTree: CategoryTreeNode | undefined, articles: ArticleListItem[]): ArchiveTreeNode => {
   const root: ArchiveTreeNode = {
     name: 'ARORMS.BLOG',
     children: [],

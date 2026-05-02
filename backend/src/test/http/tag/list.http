@@ -1,0 +1,5 @@
+### GET all tags (default EN)
+GET http://localhost:8080/api/tags
+
+### GET all tags with language
+GET http://localhost:8080/api/tags?language=ZH

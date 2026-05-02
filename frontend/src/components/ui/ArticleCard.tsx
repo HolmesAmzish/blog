@@ -5,20 +5,17 @@
  */
 import { Link } from 'react-router-dom';
 import { Calendar, Eye, Tag } from 'lucide-react';
-import type { ArticleDTO, ArticleListItem } from '../../types';
+import type { ArticleListItem } from '../../types';
 
 interface ArticleCardProps {
-  article: ArticleDTO | ArticleListItem;
+  article: ArticleListItem;
 }
 
 /**
  * Format date to readable string
  */
-const formatDate = (article: ArticleDTO | ArticleListItem): string => {
-  // publishedAt only exists on ArticleDTO, use createdAt/updatedAt for ArticleListItem
-  const dateString = 'publishedAt' in article && article.publishedAt
-    ? article.publishedAt
-    : article.createdAt || article.updatedAt;
+const formatDate = (article: ArticleListItem): string => {
+  const dateString = article.createdAt || article.updatedAt;
   if (!dateString) return '---';
   const date = new Date(dateString);
   return date.toLocaleDateString('en-US', {
@@ -32,6 +29,9 @@ const formatDate = (article: ArticleDTO | ArticleListItem): string => {
  * ArticleCard - Displays article preview in technical minimalism style
  */
 export const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
+  // Get category localized name - ArticleListItem has resolved title/summary, but category needs i18n
+  const categoryName = article.category?.name || null;
+
   return (
     <article className="group border-[0.5px] border-gray-200 bg-white transition-all duration-200 hover:border-[#0047FF] hover:shadow-sm">
       {/* Top border accent */}
@@ -48,9 +48,9 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
             <Eye className="w-3 h-3" />
             {(article.viewCount || 0).toString().padStart(4, '0')}
           </span>
-          {article.category?.name && (
+          {categoryName && (
             <span className="px-2 py-0.5 border-[0.5px] border-gray-200">
-              {article.category.name}
+              {categoryName}
             </span>
           )}
         </div>
@@ -70,10 +70,10 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
         )}
 
         {/* Tags */}
-        {article.tags.length > 0 && (
+        {article.tags?.length > 0 && (
           <div className="flex items-center gap-2 flex-wrap">
             <Tag className="w-3 h-3 text-gray-400" />
-            {article.tags.map((tag) => (
+            {article.tags?.map((tag) => (
               <Link
                 key={tag.id}
                 to={`/tag/${tag.slug}`}

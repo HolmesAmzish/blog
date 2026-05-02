@@ -1,0 +1,11 @@
+### GET all categories (default EN)
+GET http://localhost:8080/api/categories
+
+### GET all categories with language
+GET http://localhost:8080/api/categories?language=ZH
+
+### GET category tree
+GET http://localhost:8080/api/categories/tree
+
+### GET category by ID
+GET http://localhost:8080/api/categories/1?language=EN

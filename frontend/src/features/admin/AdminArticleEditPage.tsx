@@ -1,6 +1,6 @@
 /**
  * Admin Article Edit Page
- * Create or edit article
+ * Create or edit article with multilingual support
  */
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -9,24 +9,33 @@ import { AdminLayout } from '../../components/admin/AdminLayout';
 import { fetchArticleById, createArticle, updateArticle } from '../../api/article';
 import { fetchCategories } from '../../api/category';
 import { fetchTags } from '../../api/tag';
-import type { ArticleDTO, ArticleCreateRequest, ArticleUpdateRequest } from '../../types';
+import type { ArticleDTO, ArticleCreateRequest, ArticleUpdateRequest, ArticleTranslationUpsertRequest, Language } from '../../types';
 import { Save, ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import { getLocalizedName } from '../../utils/i18n';
+
+type TranslationForm = {
+  title: string;
+  summary: string;
+  content: string;
+};
+
+const LANGUAGES: Language[] = ['ZH', 'EN'];
 
 export function AdminArticleEditPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const isEdit = !!id;
 
-  const [form, setForm] = useState<ArticleCreateRequest | ArticleUpdateRequest>({
-    title: '',
-    summary: '',
-    content: '',
-    slug: '',
-    language: 'ZH',
-    status: 'DRAFT',
-    categoryId: null,
-    tagIds: [],
-  } as ArticleCreateRequest);
+  const [translations, setTranslations] = useState<Record<Language, TranslationForm>>({
+    ZH: { title: '', summary: '', content: '' },
+    EN: { title: '', summary: '', content: '' },
+  });
+
+  const [slug, setSlug] = useState('');
+  const [status, setStatus] = useState<'DRAFT' | 'PUBLISHED' | 'ARCHIVED'>('DRAFT');
+  const [categoryId, setCategoryId] = useState<number | null>(null);
+  const [tagIds, setTagIds] = useState<number[]>([]);
+  const [activeTab, setActiveTab] = useState<Language>('ZH');
   const [previewMode, setPreviewMode] = useState(false);
 
   // Fetch article if editing
@@ -50,17 +59,25 @@ export function AdminArticleEditPage() {
   // Populate form when editing
   useEffect(() => {
     if (article) {
-      setForm({
-        id: article.id as number,
-        title: article.title,
-        summary: article.summary || '',
-        content: article.content || '',
-        slug: article.slug,
-        language: article.language,
-        status: article.status,
-        categoryId: article.category?.id ?? null,
-        tagIds: article.tags?.map((t) => t.id as number) || [],
-      } as ArticleUpdateRequest);
+      // Build translations from article's translations map
+      const newTranslations: Record<Language, TranslationForm> = {
+        ZH: { title: '', summary: '', content: '' },
+        EN: { title: '', summary: '', content: '' },
+      };
+      Object.entries(article.translations).forEach(([lang, trans]) => {
+        const language = lang as Language;
+        newTranslations[language] = {
+          title: trans.title,
+          summary: trans.summary || '',
+          content: trans.content || '',
+        };
+      });
+
+      setTranslations(newTranslations);
+      setSlug(article.slug);
+      setStatus(article.status);
+      setCategoryId(article.category?.id ?? null);
+      setTagIds(article.tags?.map((t) => t.id as number) || []);
     }
   }, [article]);
 
@@ -81,38 +98,70 @@ export function AdminArticleEditPage() {
   const generateSlug = (title: string) => {
     return title
       .toLowerCase()
-      .replace(/[^a-z0-9\u4e00-\u9fa5]+/g, '-')
+      .replace(/[^a-z0-9一-龥]+/g, '-')
       .replace(/^-|-$/g, '');
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.title.trim()) return;
 
-    // Auto-generate slug if empty
-    const dataToSubmit = {
-      ...form,
-      slug: form.slug || generateSlug(form.title),
-    };
+    // Check if at least one language has a title
+    const hasContent = LANGUAGES.some(
+      (lang) => translations[lang].title.trim()
+    );
+    if (!hasContent) return;
 
-    mutation.mutate(dataToSubmit);
+    const translationsRequest: Array<ArticleTranslationUpsertRequest> = [];
+    LANGUAGES.forEach((lang) => {
+      if (translations[lang].title.trim()) {
+        translationsRequest.push({
+          id: null,
+          language: lang,
+          title: translations[lang].title,
+          summary: translations[lang].summary || null,
+          content: translations[lang].content || null,
+        });
+      }
+    });
+
+    const requestSlug = slug || generateSlug(translations.EN.title) || generateSlug(translations[activeTab].title);
+
+    if (isEdit) {
+      const request: ArticleUpdateRequest = {
+        id: Number(id),
+        slug: requestSlug,
+        status,
+        categoryId,
+        tagIds,
+        translations: translationsRequest,
+      };
+      mutation.mutate(request);
+    } else {
+      const request: ArticleCreateRequest = {
+        slug: requestSlug,
+        status,
+        categoryId,
+        tagIds,
+        translations: translationsRequest,
+      };
+      mutation.mutate(request);
+    }
   };
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+  const handleTranslationChange = (field: keyof TranslationForm, value: string) => {
+    setTranslations((prev) => ({
+      ...prev,
+      [activeTab]: { ...prev[activeTab], [field]: value },
+    }));
   };
 
   const handleTagToggle = (tagId: number) => {
-    setForm((prev) => ({
-      ...prev,
-      tagIds: prev.tagIds.includes(tagId)
-        ? prev.tagIds.filter((t) => t !== tagId)
-        : [...prev.tagIds, tagId],
-    }));
+    setTagIds((prev) =>
+      prev.includes(tagId) ? prev.filter((t) => t !== tagId) : [...prev, tagId]
+    );
   };
+
+  const currentTranslation = translations[activeTab];
 
   return (
     <AdminLayout>
@@ -147,58 +196,75 @@ export function AdminArticleEditPage() {
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Main Content */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Left: Title & Content */}
+            {/* Left: Title & Content with Language Tabs */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Title */}
-              <div className="bg-white border border-gray-200 p-6">
-                <label className="block text-xs font-mono text-gray-500 uppercase tracking-wider mb-2">
-                  Title *
-                </label>
-                <input
-                  type="text"
-                  name="title"
-                  value={form.title}
-                  onChange={handleChange}
-                  className="w-full text-xl font-mono text-black border-0 border-b border-gray-200 pb-2 focus:border-[#0047FF] focus:outline-none"
-                  placeholder="Enter article title..."
-                  required
-                />
-              </div>
+              {/* Language Tabs */}
+              <div className="bg-white border border-gray-200 p-4">
+                <div className="flex gap-2 mb-4">
+                  {LANGUAGES.map((lang) => (
+                    <button
+                      key={lang}
+                      type="button"
+                      onClick={() => setActiveTab(lang)}
+                      className={`px-4 py-2 text-xs font-mono uppercase tracking-wider border transition-colors ${
+                        activeTab === lang
+                          ? 'bg-[#0047FF] text-white border-[#0047FF]'
+                          : 'border-gray-300 text-gray-600 hover:border-[#0047FF]'
+                      }`}
+                    >
+                      {lang === 'ZH' ? '中文' : 'English'}
+                    </button>
+                  ))}
+                </div>
 
-              {/* Summary */}
-              <div className="bg-white border border-gray-200 p-6">
-                <label className="block text-xs font-mono text-gray-500 uppercase tracking-wider mb-2">
-                  Summary
-                </label>
-                <textarea
-                  name="summary"
-                  value={form.summary ?? ''}
-                  onChange={handleChange}
-                  rows={3}
-                  className="w-full font-mono text-gray-700 border-0 focus:outline-none resize-none"
-                  placeholder="Brief summary of the article..."
-                />
-              </div>
-
-              {/* Content */}
-              <div className="bg-white border border-gray-200 p-6">
-                <label className="block text-xs font-mono text-gray-500 uppercase tracking-wider mb-2">
-                  Content (Markdown)
-                </label>
-                {previewMode ? (
-                  <div className="prose prose-sm max-w-none min-h-[400px] font-mono text-gray-700">
-                    {form.content || 'No content yet...'}
-                  </div>
-                ) : (
-                  <textarea
-                    name="content"
-                    value={form.content ?? ''}
-                    onChange={handleChange}
-                    rows={20}
-                    className="w-full font-mono text-sm text-gray-700 border-0 focus:outline-none resize-none"
-                    placeholder="Write your article content in Markdown..."
+                {/* Title */}
+                <div className="mb-4">
+                  <label className="block text-xs font-mono text-gray-500 uppercase tracking-wider mb-2">
+                    Title ({activeTab === 'ZH' ? '中文' : 'English'}) *
+                  </label>
+                  <input
+                    type="text"
+                    value={currentTranslation.title}
+                    onChange={(e) => handleTranslationChange('title', e.target.value)}
+                    className="w-full text-xl font-mono text-black border-0 border-b border-gray-200 pb-2 focus:border-[#0047FF] focus:outline-none"
+                    placeholder={`Enter article title in ${activeTab === 'ZH' ? 'Chinese' : 'English'}...`}
+                    required
                   />
-                )}
+                </div>
+
+                {/* Summary */}
+                <div className="mb-4">
+                  <label className="block text-xs font-mono text-gray-500 uppercase tracking-wider mb-2">
+                    Summary ({activeTab === 'ZH' ? '中文' : 'English'})
+                  </label>
+                  <textarea
+                    value={currentTranslation.summary}
+                    onChange={(e) => handleTranslationChange('summary', e.target.value)}
+                    rows={3}
+                    className="w-full font-mono text-gray-700 border-0 focus:outline-none resize-none"
+                    placeholder="Brief summary of the article..."
+                  />
+                </div>
+
+                {/* Content */}
+                <div>
+                  <label className="block text-xs font-mono text-gray-500 uppercase tracking-wider mb-2">
+                    Content ({activeTab === 'ZH' ? '中文' : 'English'}) - Markdown
+                  </label>
+                  {previewMode ? (
+                    <div className="prose prose-sm max-w-none min-h-[400px] font-mono text-gray-700">
+                      {currentTranslation.content || 'No content yet...'}
+                    </div>
+                  ) : (
+                    <textarea
+                      value={currentTranslation.content}
+                      onChange={(e) => handleTranslationChange('content', e.target.value)}
+                      rows={20}
+                      className="w-full font-mono text-sm text-gray-700 border-0 focus:outline-none resize-none"
+                      placeholder="Write your article content in Markdown..."
+                    />
+                  )}
+                </div>
               </div>
             </div>
 
@@ -211,14 +277,13 @@ export function AdminArticleEditPage() {
                 </label>
                 <input
                   type="text"
-                  name="slug"
-                  value={form.slug}
-                  onChange={handleChange}
+                  value={slug}
+                  onChange={(e) => setSlug(e.target.value)}
                   className="w-full font-mono text-sm text-gray-700 border border-gray-200 px-3 py-2 focus:border-[#0047FF] focus:outline-none"
                   placeholder="article-url-slug"
                 />
                 <p className="text-xs text-gray-400 mt-1 font-mono">
-                  Auto-generated from title if empty
+                  Auto-generated from first non-empty title if empty
                 </p>
               </div>
 
@@ -228,30 +293,13 @@ export function AdminArticleEditPage() {
                   Status
                 </label>
                 <select
-                  name="status"
-                  value={form.status}
-                  onChange={handleChange}
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value as typeof status)}
                   className="w-full font-mono text-sm text-gray-700 border border-gray-200 px-3 py-2 focus:border-[#0047FF] focus:outline-none"
                 >
                   <option value="DRAFT">Draft</option>
                   <option value="PUBLISHED">Published</option>
                   <option value="ARCHIVED">Archived</option>
-                </select>
-              </div>
-
-              {/* Language */}
-              <div className="bg-white border border-gray-200 p-6">
-                <label className="block text-xs font-mono text-gray-500 uppercase tracking-wider mb-2">
-                  Language
-                </label>
-                <select
-                  name="language"
-                  value={form.language}
-                  onChange={handleChange}
-                  className="w-full font-mono text-sm text-gray-700 border border-gray-200 px-3 py-2 focus:border-[#0047FF] focus:outline-none"
-                >
-                  <option value="ZH">中文</option>
-                  <option value="EN">English</option>
                 </select>
               </div>
 
@@ -261,21 +309,17 @@ export function AdminArticleEditPage() {
                   Category
                 </label>
                 <select
-                  name="categoryId"
-                  value={form.categoryId || ''}
+                  value={categoryId || ''}
                   onChange={(e) =>
-                    setForm((prev) => ({
-                      ...prev,
-                      categoryId: e.target.value ? Number(e.target.value) : null,
-                    }))
+                    setCategoryId(e.target.value ? Number(e.target.value) : null)
                   }
                   className="w-full font-mono text-sm text-gray-700 border border-gray-200 px-3 py-2 focus:border-[#0047FF] focus:outline-none"
                 >
                   <option value="">No Category</option>
                   {categories?.map((cat) => (
-                  <option key={cat.id} value={String(cat.id)}>
-                    {cat.name}
-                  </option>
+                    <option key={cat.id} value={String(cat.id)}>
+                      {getLocalizedName(cat.names, 'EN')} / {getLocalizedName(cat.names, 'ZH')}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -292,7 +336,7 @@ export function AdminArticleEditPage() {
                       type="button"
                       onClick={() => handleTagToggle(tag.id as number)}
                       className={`px-3 py-1 text-xs font-mono border transition-colors ${
-                        form.tagIds.includes(tag.id as number)
+                        tagIds.includes(tag.id as number)
                           ? 'bg-[#0047FF] text-white border-[#0047FF]'
                           : 'border-gray-300 text-gray-600 hover:border-[#0047FF]'
                       }`}
@@ -306,7 +350,7 @@ export function AdminArticleEditPage() {
               {/* Submit Button */}
               <button
                 type="submit"
-                disabled={mutation.isPending || !form.title.trim()}
+                disabled={mutation.isPending || !LANGUAGES.some((l) => translations[l].title.trim())}
                 className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#0047FF] text-white text-sm font-mono uppercase tracking-wider hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Save size={16} />

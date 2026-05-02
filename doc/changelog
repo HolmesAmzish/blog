@@ -1,3 +1,17 @@
+0.3.0
+1. refactor article to use ArticleTranslation for i18n (title/summary/content per language)
+2. add JPA Specification for article search (fix keyword type inference bug)
+3. add /entity API for admin category/tag management with full entity data
+4. refactor Tag to single name field (remove names map/i18n)
+5. unify frontend types with backend DTOs (ArticleVo, CategoryVo, TagVo)
+6. fix ArticleListPage category filter display
+7. fix slug auto-generation to use English title
+8. fix ArticleCreateRequest translations format (array not map)
+
+0.2.0
+1. add article translation table for internationalization
+2. add jsonb for names of tags and categories
+
 0.1.0
 1. fix frontend build error
 2. add thumbnail for picture manage

@@ -5,9 +5,14 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AdminLayout } from '../../components/admin/AdminLayout';
-import { fetchTags, createTag, updateTag, deleteTag } from '../../api/tag';
-import type { TagDTO, TagRequest } from '../../types';
+import { fetchTagEntities, createTag, updateTag, deleteTag } from '../../api/tag';
+import type { TagVo, TagUpsertRequest } from '../../types';
 import { Plus, Edit, Trash2, Tag, X } from 'lucide-react';
+
+type TagForm = {
+  name: string;
+  slug: string;
+};
 
 /**
  * Admin Tags Page Component
@@ -15,19 +20,18 @@ import { Plus, Edit, Trash2, Tag, X } from 'lucide-react';
 export function AdminTagsPage() {
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingTag, setEditingTag] = useState<TagDTO | null>(null);
+  const [editingTag, setEditingTag] = useState<TagVo | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
 
-  const [form, setForm] = useState<TagRequest>({
+  const [form, setForm] = useState<TagForm>({
     name: '',
-    description: '',
     slug: '',
   });
 
   // Fetch tags
   const { data: tags, isLoading } = useQuery({
     queryKey: ['tags'],
-    queryFn: fetchTags,
+    queryFn: fetchTagEntities,
   });
 
   // Create mutation
@@ -41,8 +45,7 @@ export function AdminTagsPage() {
 
   // Update mutation
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: TagRequest }) =>
-      updateTag(id, data),
+    mutationFn: (data: TagUpsertRequest) => updateTag(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tags'] });
       closeModal();
@@ -59,15 +62,14 @@ export function AdminTagsPage() {
   });
 
   const openCreateModal = () => {
-    setForm({ name: '', description: '', slug: '' });
+    setForm({ name: '', slug: '' });
     setEditingTag(null);
     setIsModalOpen(true);
   };
 
-  const openEditModal = (tag: TagDTO) => {
+  const openEditModal = (tag: TagVo) => {
     setForm({
       name: tag.name,
-      description: tag.description || '',
       slug: tag.slug,
     });
     setEditingTag(tag);
@@ -77,20 +79,21 @@ export function AdminTagsPage() {
   const closeModal = () => {
     setIsModalOpen(false);
     setEditingTag(null);
-    setForm({ name: '', description: '', slug: '' });
+    setForm({ name: '', slug: '' });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name.trim()) return;
 
-    const data = {
-      ...form,
-      slug: form.slug || form.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+    const data: TagUpsertRequest = {
+      id: editingTag?.id ?? null,
+      name: form.name,
+      slug: form.slug || form.name.toLowerCase().replace(/[^a-z0-9一-龥]+/g, '-'),
     };
 
-    if (editingTag && editingTag.id) {
-      updateMutation.mutate({ id: editingTag.id, data });
+    if (editingTag?.id) {
+      updateMutation.mutate(data);
     } else {
       createMutation.mutate(data);
     }
@@ -165,17 +168,8 @@ export function AdminTagsPage() {
                     </div>
                   </div>
 
-                  {tag.description && (
-                    <p className="text-xs font-mono text-gray-500 mt-3 line-clamp-2">
-                      {tag.description}
-                    </p>
-                  )}
+                  <div className="mt-3 pt-3 border-t border-gray-100"></div>
 
-                  <div className="mt-3 pt-3 border-t border-gray-100">
-                    <span className="text-xs font-mono text-gray-400">
-                      {tag.articleCount || 0} articles
-                    </span>
-                  </div>
                 </div>
               </div>
             ))}
@@ -213,7 +207,7 @@ export function AdminTagsPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-xs font-mono text-gray-500 uppercase tracking-wider mb-2">
-                  Name *
+                  Chinese Name (中文)
                 </label>
                 <input
                   type="text"
@@ -221,7 +215,6 @@ export function AdminTagsPage() {
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   className="w-full border border-gray-200 px-3 py-2 text-sm font-mono focus:border-[#0047FF] focus:outline-none"
                   placeholder="Tag name"
-                  required
                 />
               </div>
 
@@ -239,19 +232,6 @@ export function AdminTagsPage() {
                 <p className="text-xs text-gray-400 mt-1 font-mono">Auto-generated if empty</p>
               </div>
 
-              <div>
-                <label className="block text-xs font-mono text-gray-500 uppercase tracking-wider mb-2">
-                  Description
-                </label>
-                <textarea
-                  value={form.description || ''}
-                  onChange={(e) => setForm({ ...form, description: e.target.value })}
-                  rows={3}
-                  className="w-full border border-gray-200 px-3 py-2 text-sm font-mono focus:border-[#0047FF] focus:outline-none resize-none"
-                  placeholder="Tag description..."
-                />
-              </div>
-
               <div className="flex gap-3 pt-4">
                 <button
                   type="button"
@@ -262,7 +242,7 @@ export function AdminTagsPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={createMutation.isPending || updateMutation.isPending}
+                  disabled={createMutation.isPending || updateMutation.isPending || !form.name.trim()}
                   className="flex-1 px-4 py-2 bg-[#0047FF] text-white text-sm font-mono uppercase tracking-wider hover:bg-blue-700 transition-colors disabled:opacity-50"
                 >
                   {createMutation.isPending || updateMutation.isPending

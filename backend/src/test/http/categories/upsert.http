@@ -1,0 +1,31 @@
+### CREATE category (requires auth)
+POST http://localhost:8080/api/categories
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "names": {
+    "EN": "New Category",
+    "ZH": "新分类"
+  },
+  "slug": "new-category",
+  "parentId": null
+}
+
+### UPDATE category (requires auth)
+PUT http://localhost:8080/api/categories/1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "names": {
+    "EN": "Updated Category",
+    "ZH": "更新的分类"
+  },
+  "slug": "updated-category",
+  "parentId": null
+}
+
+### DELETE category (requires auth)
+DELETE http://localhost:8080/api/categories/1
+Authorization: Bearer {{token}}

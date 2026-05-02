@@ -1,0 +1,39 @@
+### CREATE article (requires auth)
+POST http://localhost:8080/api/articles
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "slug": "new-test-article",
+  "status": "DRAFT",
+  "categoryId": 1,
+  "tagIds": [1],
+  "translations": [
+    {
+      "language": "EN",
+      "title": "New Test Article",
+      "summary": "This is a test article summary",
+      "content": "This is the content of the test article."
+    }
+  ]
+}
+
+### UPDATE article (requires auth)
+PUT http://localhost:8080/api/articles/1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "slug": "updated-test-article",
+  "status": "PUBLISHED",
+  "categoryId": 1,
+  "tagIds": [1, 2],
+  "translations": [
+    {
+      "language": "EN",
+      "title": "Updated Test Article",
+      "summary": "Updated summary",
+      "content": "Updated content."
+    }
+  ]
+}

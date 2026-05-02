@@ -2,14 +2,10 @@ package cn.arorms.blog.backend.entities
 
 import cn.arorms.blog.backend.enums.ArticleStatus
 import cn.arorms.blog.backend.enums.Language
-import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonIncludeProperties
 import jakarta.persistence.*
 import java.time.LocalDateTime
 
-/**
- * Article entity representing a blog post
- */
 @Entity
 @Table(name = "articles")
 class Article(
@@ -20,19 +16,6 @@ class Article(
     @Column(name = "slug", unique = true, length = 255)
     var slug: String,
 
-    @Column(nullable = false, length = 255)
-    var title: String,
-
-    @Column(length = 500)
-    var summary: String? = null,
-
-    @Column(columnDefinition = "TEXT")
-    var content: String? = null,
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "language", length = 10)
-    var language: Language = Language.EN,
-
     @Column(name = "created_at")
     var createdAt: LocalDateTime = LocalDateTime.now(),
 
@@ -41,11 +24,10 @@ class Article(
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 20)
-    var status: ArticleStatus = ArticleStatus.DRAFT,
+    var status: ArticleStatus? = ArticleStatus.DRAFT,
 
     @Column(name = "view_count")
     var viewCount: Long = 0,
-
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JsonIncludeProperties("id", "name", "slug")
@@ -56,6 +38,11 @@ class Article(
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "author_id")
     var author: User? = null,
+
+    @OneToMany(mappedBy = "article", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
+    @MapKeyEnumerated(EnumType.STRING)
+    @MapKey(name = "language")
+    val translations: MutableMap<Language, ArticleTranslation> = mutableMapOf(),
 
     @ManyToMany
     @JoinTable(

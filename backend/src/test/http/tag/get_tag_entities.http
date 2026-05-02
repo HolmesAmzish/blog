@@ -1,0 +1,2 @@
+### GET all tag entities (admin)
+GET http://localhost:8080/api/tags/entity

@@ -1,6 +1,10 @@
 package cn.arorms.blog.backend.services
 
+import cn.arorms.blog.backend.dto.responses.TagVo
+import cn.arorms.blog.backend.dto.requests.TagUpsertRequest
 import cn.arorms.blog.backend.entities.Tag
+import cn.arorms.blog.backend.enums.Language
+import cn.arorms.blog.backend.exception.ResourceNotFoundException
 import cn.arorms.blog.backend.repositories.TagRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -12,69 +16,81 @@ import org.springframework.transaction.annotation.Transactional
 class TagService(
     private val tagRepository: TagRepository
 ) {
-    
-    fun findAll(): List<Tag> {
+
+    fun findAll(language: Language): List<TagVo> {
+        return tagRepository.findAll().map { it.toVo() }
+    }
+
+    fun findAllEntities(): List<Tag> {
         return tagRepository.findAll()
     }
-    
+
     fun findById(id: Long): Tag? {
         return tagRepository.findById(id).orElse(null)
+    }
+
+    fun findById(id: Long, language: Language): TagVo {
+        val tag = tagRepository.findById(id).orElseThrow {
+            ResourceNotFoundException("Tag not found with id: $id")
+        }
+        return tag.toVo()
     }
 
     fun getTagsByIds(idList: List<Long>): List<Tag> {
         return tagRepository.findAllById(idList)
     }
-    
+
     fun findBySlug(slug: String): Tag? {
         return tagRepository.findBySlug(slug)
     }
-    
-    fun findByName(name: String): Tag? {
-        return tagRepository.findByName(name)
+
+    fun findBySlug(slug: String, language: Language): TagVo {
+        val tag = tagRepository.findBySlug(slug) ?: throw ResourceNotFoundException("Tag not found with slug: $slug")
+        return tag.toVo()
     }
-    
+
     @Transactional
-    fun create(tag: Tag): Tag {
-        if (tagRepository.existsByName(tag.name)) {
-            throw IllegalArgumentException("Tag with name '${tag.name}' already exists")
+    fun create(request: TagUpsertRequest): TagVo {
+        if (tagRepository.existsBySlug(request.slug)) {
+            throw IllegalArgumentException("Tag with slug '${request.slug}' already exists")
         }
-        if (tagRepository.existsBySlug(tag.slug)) {
-            throw IllegalArgumentException("Tag with slug '${tag.slug}' already exists")
-        }
-        return tagRepository.save(tag)
+        val tag = Tag(
+            name = request.name,
+            slug = request.slug
+        )
+        val saved = tagRepository.save(tag)
+        return saved.toVo()
     }
-    
+
     @Transactional
-    fun update(id: Long, tag: Tag): Tag {
+    fun update(id: Long, request: TagUpsertRequest): TagVo {
         val existingTag = tagRepository.findById(id)
-            .orElseThrow { IllegalArgumentException("Tag not found with id: $id") }
-        
-        if (tag.name != existingTag.name && tagRepository.existsByName(tag.name)) {
-            throw IllegalArgumentException("Tag with name '${tag.name}' already exists")
+            .orElseThrow { ResourceNotFoundException("Tag not found with id: $id") }
+
+        if (request.slug != existingTag.slug && tagRepository.existsBySlug(request.slug)) {
+            throw IllegalArgumentException("Tag with slug '${request.slug}' already exists")
         }
-        if (tag.slug != existingTag.slug && tagRepository.existsBySlug(tag.slug)) {
-            throw IllegalArgumentException("Tag with slug '${tag.slug}' already exists")
-        }
-        
-        existingTag.name = tag.name
-        existingTag.slug = tag.slug
-        
-        return tagRepository.save(existingTag)
+
+        existingTag.name = request.name
+        existingTag.slug = request.slug
+
+        val saved = tagRepository.save(existingTag)
+        return saved.toVo()
     }
-    
+
     @Transactional
     fun delete(id: Long) {
         if (!tagRepository.existsById(id)) {
-            throw IllegalArgumentException("Tag not found with id: $id")
+            throw ResourceNotFoundException("Tag not found with id: $id")
         }
         tagRepository.deleteById(id)
     }
-//
-//    fun getArticleCount(tagId: Long): Long {
-//        return articleTagRepository.findByTagId(tagId).size.toLong()
-//    }
-//
-//    fun findByArticleId(articleId: Long): List<cn.arorms.blog.backend.entities.ArticleTag> {
-//        return articleTagRepository.findByArticleId(articleId)
-//    }
+
+    private fun Tag.toVo(): TagVo {
+        return TagVo(
+            id = id,
+            name = name,
+            slug = slug
+        )
+    }
 }
