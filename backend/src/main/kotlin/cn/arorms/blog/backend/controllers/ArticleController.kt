@@ -100,4 +100,10 @@ class ArticleController(
         val updatedArticle = articleService.update(id, request)
         return ResponseEntity.ok(updatedArticle)
     }
+
+    @DeleteMapping("/{id}")
+    fun deleteArticle(@PathVariable id: Long): ResponseEntity<Void> {
+        articleService.delete(id)
+        return ResponseEntity.noContent().build()
+    }
 }

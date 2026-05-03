@@ -27,6 +27,8 @@ interface UseArticlesParams {
   isAdmin?: boolean;
 }
 
+export const ARTICLES_QUERY = ARTICLES_QUERY_KEY;
+
 /**
  * Hook for fetching paginated articles
  * When isAdmin is true, fetches all articles (including drafts)

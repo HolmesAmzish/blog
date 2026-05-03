@@ -128,15 +128,28 @@ export function AdminCategoriesPage() {
 
     // Get root categories (no parent)
     const rootCategories = categoryList.filter((c) => !c.parent?.id);
-    rootCategories.forEach((category) => {
+    for (const category of rootCategories) {
       result.push({ category, depth });
-      // Find children
-      const children = categoryList.filter((c) => c.parent?.id === category.id);
-      children.forEach((child) => {
-        result.push(...flattenCategories([child], depth + 1));
-      });
-    });
+      // Recursively get all descendants by passing full list each time
+      const descendants = getDescendants(category.id, categoryList, depth + 1);
+      result.push(...descendants);
+    }
 
+    return result;
+  };
+
+  const getDescendants = (
+    parentId: number,
+    categoryList: CategoryEntity[],
+    depth: number
+  ): { category: CategoryEntity; depth: number }[] => {
+    const result: { category: CategoryEntity; depth: number }[] = [];
+    const children = categoryList.filter((c) => c.parent?.id === parentId);
+    for (const child of children) {
+      result.push({ category: child, depth });
+      // Pass full list to find grandchildren
+      result.push(...getDescendants(child.id, categoryList, depth + 1));
+    }
     return result;
   };
 

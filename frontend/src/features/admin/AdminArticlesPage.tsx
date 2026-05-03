@@ -4,25 +4,28 @@
  */
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useArticles } from '../../hooks/useArticles';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useArticles, ARTICLES_QUERY } from '../../hooks/useArticles';
 import { useCategories } from '../../hooks/useCategories';
 import { AdminLayout } from '../../components/admin/AdminLayout';
 import { Plus, Search, Edit, Trash2, Eye } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 import { getLocalizedName } from '../../utils/i18n';
+import { deleteArticle } from '../../api/article';
 
 /**
  * Admin Articles Page Component
  */
 export function AdminArticlesPage() {
+  const queryClient = useQueryClient();
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string | ''>('');
   const [categoryFilter, setCategoryFilter] = useState<number | ''>('');
 
   const { data: articlesData, isLoading } = useArticles({ page, size: 10, isAdmin: true });
-  const { data: categories } = useCategories();
   const { language } = useLanguage();
+  const { data: categories } = useCategories(language);
 
   const filteredArticles = articlesData?.content.filter((article) => {
     const matchesSearch = search === '' ||
@@ -30,6 +33,19 @@ export function AdminArticlesPage() {
     const matchesCategory = categoryFilter === '' || article.category?.id === categoryFilter;
     return matchesSearch && matchesCategory;
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: deleteArticle,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [ARTICLES_QUERY] });
+    },
+  });
+
+  const handleDelete = (id: number) => {
+    if (confirm('Are you sure you want to delete this article?')) {
+      deleteMutation.mutate(id);
+    }
+  };
 
   return (
     <AdminLayout>
@@ -151,7 +167,7 @@ export function AdminArticlesPage() {
                     </p>
                   </div>
                   <div className="col-span-2 text-sm font-mono text-gray-600">
-                    {article.category ? getLocalizedName(article.category.names, language) : '—'}
+                    {article.category ? article.category.name : '—'}
                   </div>
                   <div className="col-span-2">
                     <span className={`px-2 py-1 text-xs font-mono uppercase ${
@@ -185,6 +201,7 @@ export function AdminArticlesPage() {
                       <Edit size={16} />
                     </Link>
                     <button
+                      onClick={() => handleDelete(article.id)}
                       className="p-2 text-gray-400 hover:text-red-500 transition-colors"
                       title="Delete"
                     >

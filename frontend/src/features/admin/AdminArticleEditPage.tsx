@@ -4,11 +4,12 @@
  */
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AdminLayout } from '../../components/admin/AdminLayout';
 import { fetchArticleById, createArticle, updateArticle } from '../../api/article';
 import { fetchCategories } from '../../api/category';
 import { fetchTags } from '../../api/tag';
+import { ARTICLES_QUERY } from '../../hooks/useArticles';
 import type { ArticleDTO, ArticleCreateRequest, ArticleUpdateRequest, ArticleTranslationUpsertRequest, Language } from '../../types';
 import { Save, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { getLocalizedName } from '../../utils/i18n';
@@ -19,11 +20,12 @@ type TranslationForm = {
   content: string;
 };
 
-const LANGUAGES: Language[] = ['ZH', 'EN'];
+const LANGUAGES: Language[] = ['EN', 'ZH'];
 
 export function AdminArticleEditPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const isEdit = !!id;
 
   const [translations, setTranslations] = useState<Record<Language, TranslationForm>>({
@@ -90,6 +92,7 @@ export function AdminArticleEditPage() {
       return createArticle(data as ArticleCreateRequest);
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [ARTICLES_QUERY] });
       navigate('/admin/articles');
     },
   });
@@ -318,7 +321,7 @@ export function AdminArticleEditPage() {
                   <option value="">No Category</option>
                   {categories?.map((cat) => (
                     <option key={cat.id} value={String(cat.id)}>
-                      {getLocalizedName(cat.names, 'EN')} / {getLocalizedName(cat.names, 'ZH')}
+                      {cat.name}
                     </option>
                   ))}
                 </select>

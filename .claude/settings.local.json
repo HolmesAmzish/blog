@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(npm run:*)",
-      "Bash(./gradlew :backend:build -x test)"
+      "Bash(./gradlew :backend:build -x test)",
+      "Bash(./gradlew -p backend compileKotlin)",
+      "Bash(./gradlew dependencies *)"
     ]
   }
 }

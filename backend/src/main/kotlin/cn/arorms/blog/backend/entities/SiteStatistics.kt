@@ -10,9 +10,9 @@ import java.time.LocalDateTime
 @Entity
 class SiteStatistics (
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long? = null,
+    val id: Long? = null,
 
-    var viewDate: LocalDateTime = LocalDateTime.now(),
+    val viewDate: LocalDateTime = LocalDateTime.now(),
 
     var totalArticleView: Long = 0,
 

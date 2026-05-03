@@ -1,0 +1,48 @@
+0.3.1
+1. fix category tree display with proper recursion for nested children
+2. add delete article API endpoint (DELETE /api/articles/{id})
+3. fix delete button not working on admin articles page (missing onClick handler)
+4. fix category display showing undefined (CategoryVo uses flat name, not names map)
+5. add language parameter to category APIs for i18n support
+6. fix useCategories hook not passing language to API
+7. add language support for category tree API
+8. fix archive page language switch causing ECharts removeChild error
+9. change archive page navigation from window.location to React Router navigate
+10. add i18n for uncategorized label in archive page
+11. fix AdminArticlesPage category filter showing undefined
+
+0.3.0
+1. refactor article to use ArticleTranslation for i18n (title/summary/content per language)
+2. add JPA Specification for article search (fix keyword type inference bug)
+3. add /entity API for admin category/tag management with full entity data
+4. refactor Tag to single name field (remove names map/i18n)
+5. unify frontend types with backend DTOs (ArticleVo, CategoryVo, TagVo)
+6. fix ArticleListPage category filter display
+7. fix slug auto-generation to use English title
+8. fix ArticleCreateRequest translations format (array not map)
+
+0.2.0
+1. add article translation table for internationalization
+2. add jsonb for names of tags and categories
+
+0.1.0
+1. fix frontend build error
+2. add thumbnail for picture manage
+
+0.0.5
+1. add admin image manage page
+
+0.0.4
+1. add image api
+
+0.0.3
+1. add article filter search
+
+0.0.2
+1. add CORS config
+2. add jwt header authentication
+3. add admin management page
+
+0.0.1
+1. add kotlin basic api
+2. add user authentication

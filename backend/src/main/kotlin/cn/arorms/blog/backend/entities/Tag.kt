@@ -10,7 +10,7 @@ import org.hibernate.type.SqlTypes
 class Tag(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long? = null,
+    val id: Long? = null,
 
     @Column(length = 100)
     var name: String,

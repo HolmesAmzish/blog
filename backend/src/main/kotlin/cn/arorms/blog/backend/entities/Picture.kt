@@ -12,7 +12,7 @@ import java.time.LocalDateTime
 class Picture(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long? = null,
+    val id: Long? = null,
 
     @Column(nullable = false, length = 255)
     var filename: String,
@@ -41,5 +41,5 @@ class Picture(
     var uploader: User? = null,
 
     @Column(name = "created_at")
-    var createdAt: LocalDateTime = LocalDateTime.now()
+    val createdAt: LocalDateTime = LocalDateTime.now()
 )

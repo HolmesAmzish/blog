@@ -5,10 +5,12 @@
  */
 import { useEffect, useRef } from 'react';
 import * as echarts from 'echarts';
+import { useNavigate } from 'react-router-dom';
 import { useCategoryTree } from '../../hooks/useCategories';
 import { useArticles } from '../../hooks/useArticles';
 import type { ArchiveTreeNode, CategoryTreeNode, ArticleListItem } from '../../types';
 import { useTranslation } from '../../context/TranslationContext';
+import { useLanguage } from '../../context/LanguageContext';
 
 /**
  * Recursively build tree nodes from CategoryTreeNode
@@ -57,7 +59,7 @@ const buildCategoryNodes = (categories: Array<CategoryTreeNode>, articles: Artic
 /**
  * Transform category and article data to ECharts tree format
  */
-const buildTreeData = (categoryTree: CategoryTreeNode | undefined, articles: ArticleListItem[]): ArchiveTreeNode => {
+const buildTreeData = (categoryTree: CategoryTreeNode | undefined, articles: ArticleListItem[], uncategorizedLabel: string): ArchiveTreeNode => {
   const root: ArchiveTreeNode = {
     name: 'ARORMS.BLOG',
     children: [],
@@ -75,7 +77,7 @@ const buildTreeData = (categoryTree: CategoryTreeNode | undefined, articles: Art
 
   if (uncategorizedArticles.length > 0) {
     const uncategorizedNode: ArchiveTreeNode = {
-      name: 'UNCATEGORIZED',
+      name: uncategorizedLabel,
       children: uncategorizedArticles.map((article) => ({
         name: article.title,
         value: article.viewCount ?? 0,
@@ -93,13 +95,16 @@ const buildTreeData = (categoryTree: CategoryTreeNode | undefined, articles: Art
  */
 export const ArchivePage: React.FC = () => {
   const { t } = useTranslation();
+  const { language } = useLanguage();
+  const navigate = useNavigate();
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstance = useRef<echarts.ECharts | null>(null);
 
-  const { data: categoryTree, isLoading: categoriesLoading } = useCategoryTree();
+  const { data: categoryTree, isLoading: categoriesLoading } = useCategoryTree(language);
   const { data: articlesData, isLoading: articlesLoading } = useArticles({
     page: 0,
-    size: 1000, // Get all articles
+    size: 1000,
+    language,
   });
 
   const articles = articlesData?.content || [];
@@ -107,10 +112,11 @@ export const ArchivePage: React.FC = () => {
   useEffect(() => {
     if (!chartRef.current || categoriesLoading || articlesLoading) return;
 
-    // Initialize chart
+    // Dispose existing chart before creating new one
+    chartInstance.current?.dispose();
     chartInstance.current = echarts.init(chartRef.current);
 
-    const treeData = buildTreeData(categoryTree, articles);
+    const treeData = buildTreeData(categoryTree, articles, t('archive.uncategorized'));
 
     // Type-ignored option for ECharts compatibility
     const option = {
@@ -216,7 +222,7 @@ export const ArchivePage: React.FC = () => {
       const data = params.data;
       if (!data) return;
       if (data.article) {
-        window.location.href = `/article/${data.article.slug}`;
+        navigate(`/article/${data.article.slug}`);
       }
     });
 
@@ -231,7 +237,7 @@ export const ArchivePage: React.FC = () => {
       window.removeEventListener('resize', handleResize);
       chartInstance.current?.dispose();
     };
-  }, [categoryTree, articles, categoriesLoading, articlesLoading]);
+  }, [categoryTree, articles, categoriesLoading, articlesLoading, t, navigate]);
 
   const isLoading = categoriesLoading || articlesLoading;
 
@@ -272,6 +278,7 @@ export const ArchivePage: React.FC = () => {
               ref={chartRef}
               className="w-full h-[600px]"
               style={{ minHeight: '600px' }}
+              key={language}
             />
           )}
         </div>

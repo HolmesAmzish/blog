@@ -12,3 +12,6 @@ GET http://localhost:8080/api/articles/published?language=ZH
 
 ### GET published articles with keyword search
 GET http://localhost:8080/api/articles/published?keyword=AI&language=EN
+
+### GET article list (admin)
+GET http://localhost:8080/api/articles?page=0&size=10&sortBy=createdAt&sortDir=desc

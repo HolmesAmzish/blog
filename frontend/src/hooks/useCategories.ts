@@ -12,6 +12,7 @@ import {
   deleteCategory,
 } from '../api/category';
 import type { CategoryVo, CategoryTreeNode, CategoryUpsertRequest } from '../types';
+import { type SupportedLanguage } from '../context/LanguageContext';
 
 const CATEGORIES_QUERY_KEY = 'categories';
 const CATEGORY_QUERY_KEY = 'category';
@@ -19,10 +20,10 @@ const CATEGORY_QUERY_KEY = 'category';
 /**
  * Hook for fetching all categories
  */
-export const useCategories = () => {
+export const useCategories = (language?: SupportedLanguage) => {
   return useQuery<CategoryVo[], Error>({
-    queryKey: [CATEGORIES_QUERY_KEY],
-    queryFn: fetchCategories,
+    queryKey: [CATEGORIES_QUERY_KEY, language],
+    queryFn: () => fetchCategories(language),
     staleTime: 10 * 60 * 1000, // 10 minutes - categories rarely change
   });
 };
@@ -30,10 +31,10 @@ export const useCategories = () => {
 /**
  * Hook for fetching category tree
  */
-export const useCategoryTree = () => {
+export const useCategoryTree = (language?: SupportedLanguage) => {
   return useQuery<CategoryTreeNode, Error>({
-    queryKey: [CATEGORIES_QUERY_KEY, 'tree'],
-    queryFn: fetchCategoryTree,
+    queryKey: [CATEGORIES_QUERY_KEY, 'tree', language],
+    queryFn: () => fetchCategoryTree(language),
     staleTime: 10 * 60 * 1000,
   });
 };

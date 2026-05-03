@@ -69,6 +69,7 @@ export const en = {
   archive: {
     archive: 'ARCHIVE',
     noData: 'No archive data available',
+    uncategorized: 'UNCATEGORIZED',
   },
   about: {
     about: 'ABOUT',
@@ -153,6 +154,7 @@ export const zh = {
   archive: {
     archive: '归档',
     noData: '暂无归档数据',
+    uncategorized: '未分类',
   },
   about: {
     about: '关于',

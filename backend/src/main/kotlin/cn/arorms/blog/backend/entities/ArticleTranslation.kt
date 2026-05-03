@@ -32,5 +32,5 @@ class ArticleTranslation(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "article_id", nullable = false)
     @JsonIgnore
-    val article: Article
+    var article: Article
 )

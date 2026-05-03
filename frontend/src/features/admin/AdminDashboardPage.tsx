@@ -48,11 +48,11 @@ function StatCard({
  * Admin Dashboard Page Component
  */
 export function AdminDashboardPage() {
+  const { language } = useLanguage();
   const { data: articlesData, isLoading: articlesLoading } = useArticles({ page: 0, size: 100 });
-  const { data: categories } = useCategories();
+  const { data: categories } = useCategories(language);
   const { data: tags } = useTags();
   const { data: users } = useUsers();
-  const { language } = useLanguage();
 
   const totalArticles = articlesData?.totalElements || 0;
   const publishedArticles = articlesData?.content.filter(a => a.status === 'PUBLISHED').length || 0;

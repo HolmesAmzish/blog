@@ -27,7 +27,7 @@ export const ArticleListPage: React.FC = () => {
     language: language, // Use global language from context
   });
 
-  const { data: categories } = useCategories();
+  const { data: categories } = useCategories(language);
 
   const totalPages = data?.totalPages ?? 0;
 

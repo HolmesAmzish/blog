@@ -12,7 +12,7 @@ import org.hibernate.type.SqlTypes
 class Category(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long? = null,
+    val id: Long? = null,
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "names", columnDefinition = "jsonb")

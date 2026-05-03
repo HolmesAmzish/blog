@@ -62,7 +62,7 @@ export const HomePage: React.FC = () => {
               <p className="text-sm text-gray-600 leading-relaxed mb-8 max-w-md font-mono">
                 {t('home.heroDescription')}
               </p>
-              <div className="flex gap-3">
+              <div className="flex gap-3 my-3">
                 <Link
                   to="/articles"
                   className="inline-flex items-center gap-2 px-6 py-3 bg-black text-white text-[11px] font-mono uppercase tracking-wider hover:bg-[#0047FF] transition-colors duration-200"

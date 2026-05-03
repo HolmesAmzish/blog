@@ -4,14 +4,20 @@
  */
 import { get, post, put, del } from './client';
 import type { CategoryVo, CategoryTreeNode, CategoryUpsertRequest, CategoryEntity } from '../types';
+import { type SupportedLanguage } from '../context/LanguageContext';
 
 const BASE_PATH = '/categories';
 
 /**
  * Fetch all categories
  */
-export const fetchCategories = async (): Promise<CategoryVo[]> => {
-  return get<CategoryVo[]>(BASE_PATH);
+export const fetchCategories = async (language?: SupportedLanguage): Promise<CategoryVo[]> => {
+  const params = new URLSearchParams();
+  if (language && typeof language === 'string') {
+    params.append('language', language);
+  }
+  const queryString = params.toString();
+  return get<CategoryVo[]>(`${BASE_PATH}${queryString ? `?${queryString}` : ''}`);
 };
 
 /**
@@ -24,8 +30,13 @@ export const fetchCategoryEntities = async (): Promise<CategoryEntity[]> => {
 /**
  * Fetch category tree (hierarchical structure with unlimited depth)
  */
-export const fetchCategoryTree = async (): Promise<CategoryTreeNode> => {
-  return get<CategoryTreeNode>(`${BASE_PATH}/tree`);
+export const fetchCategoryTree = async (language?: SupportedLanguage): Promise<CategoryTreeNode> => {
+  const params = new URLSearchParams();
+  if (language && typeof language === 'string') {
+    params.append('language', language);
+  }
+  const queryString = params.toString();
+  return get<CategoryTreeNode>(`${BASE_PATH}/tree${queryString ? `?${queryString}` : ''}`);
 };
 
 /**
