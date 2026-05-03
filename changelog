@@ -1,3 +1,8 @@
+0.3.2
+1. fix TypeScript build errors - replace CategoryDTO with CategoryVo, remove unused imports
+2. fix AdminCategoriesPage getDescendants null check for category.id
+3. remove author field from ArticleDetailPage (not in backend ArticleVo)
+
 0.3.1
 1. fix category tree display with proper recursion for nested children
 2. add delete article API endpoint (DELETE /api/articles/{id})

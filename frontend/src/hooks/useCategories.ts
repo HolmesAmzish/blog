@@ -43,7 +43,7 @@ export const useCategoryTree = (language?: SupportedLanguage) => {
  * Hook for fetching single category by ID
  */
 export const useCategoryById = (id: number | null) => {
-  return useQuery<CategoryDTO, Error>({
+  return useQuery<CategoryVo, Error>({
     queryKey: [CATEGORY_QUERY_KEY, id],
     queryFn: () => {
       if (id === null) throw new Error('Category ID is required');
@@ -58,7 +58,7 @@ export const useCategoryById = (id: number | null) => {
  * Hook for fetching category by slug
  */
 export const useCategoryBySlug = (slug: string | null) => {
-  return useQuery<CategoryDTO, Error>({
+  return useQuery<CategoryVo, Error>({
     queryKey: [CATEGORY_QUERY_KEY, 'slug', slug],
     queryFn: () => {
       if (!slug) throw new Error('Category slug is required');
@@ -75,7 +75,7 @@ export const useCategoryBySlug = (slug: string | null) => {
 export const useCreateCategory = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<CategoryDTO, Error, CategoryUpsertRequest>({
+  return useMutation<CategoryVo, Error, CategoryUpsertRequest>({
     mutationFn: createCategory,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [CATEGORIES_QUERY_KEY] });
@@ -89,7 +89,7 @@ export const useCreateCategory = () => {
 export const useUpdateCategory = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<CategoryDTO, Error, CategoryUpsertRequest>({
+  return useMutation<CategoryVo, Error, CategoryUpsertRequest>({
     mutationFn: (data) => updateCategory(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [CATEGORY_QUERY_KEY] });

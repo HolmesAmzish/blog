@@ -10,7 +10,6 @@ import { useCategories } from '../../hooks/useCategories';
 import { AdminLayout } from '../../components/admin/AdminLayout';
 import { Plus, Search, Edit, Trash2, Eye } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
-import { getLocalizedName } from '../../utils/i18n';
 import { deleteArticle } from '../../api/article';
 
 /**
@@ -105,7 +104,7 @@ export function AdminArticlesPage() {
               <option value="">All Categories</option>
               {categories?.map((cat) => (
                 <option key={cat.id} value={cat.id!}>
-                  {getLocalizedName(cat.names, language)}
+                  {cat.name}
                 </option>
               ))}
             </select>

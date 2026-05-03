@@ -12,7 +12,7 @@ import rehypeKatex from 'rehype-katex';
 import rehypeHighlight from 'rehype-highlight';
 import 'highlight.js/styles/github.css';
 import 'katex/dist/katex.min.css';
-import { Calendar, Eye, Tag, ArrowLeft, User } from 'lucide-react';
+import { Calendar, Eye, Tag, ArrowLeft } from 'lucide-react';
 
 /**
  * Format date to readable string
@@ -115,12 +115,6 @@ export const ArticleDetailPage: React.FC = () => {
               <Eye className="w-3 h-3" />
               {article.viewCount.toString().padStart(4, '0')} VIEWS
             </span>
-            {article.author?.displayName && (
-              <span className="flex items-center gap-1">
-                <User className="w-3 h-3" />
-                {article.author.displayName.toUpperCase()}
-              </span>
-            )}
           </div>
         </header>
 

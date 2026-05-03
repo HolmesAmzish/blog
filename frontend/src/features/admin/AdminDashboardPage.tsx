@@ -9,7 +9,6 @@ import { useUsers } from '../../hooks/useUsers';
 import { AdminLayout } from '../../components/admin/AdminLayout';
 import { FileText, FolderTree, Tags, Users, Eye } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
-import { getLocalizedName } from '../../utils/i18n';
 
 /**
  * Stat Card Component
@@ -165,7 +164,7 @@ export function AdminDashboardPage() {
                       {article.title}
                     </p>
                     <p className="text-xs font-mono text-gray-500 mt-1">
-                      {article.category ? getLocalizedName(article.category.names, language) : 'Uncategorized'} • {article.viewCount} views
+                      {article.category ? article.category.name : 'Uncategorized'} • {article.viewCount} views
                     </p>
                   </div>
                   <span className={`px-2 py-1 text-xs font-mono uppercase ${

@@ -131,8 +131,10 @@ export function AdminCategoriesPage() {
     for (const category of rootCategories) {
       result.push({ category, depth });
       // Recursively get all descendants by passing full list each time
-      const descendants = getDescendants(category.id, categoryList, depth + 1);
-      result.push(...descendants);
+      if (category.id != null) {
+        const descendants = getDescendants(category.id, categoryList, depth + 1);
+        result.push(...descendants);
+      }
     }
 
     return result;
@@ -148,7 +150,9 @@ export function AdminCategoriesPage() {
     for (const child of children) {
       result.push({ category: child, depth });
       // Pass full list to find grandchildren
-      result.push(...getDescendants(child.id, categoryList, depth + 1));
+      if (child.id != null) {
+        result.push(...getDescendants(child.id, categoryList, depth + 1));
+      }
     }
     return result;
   };

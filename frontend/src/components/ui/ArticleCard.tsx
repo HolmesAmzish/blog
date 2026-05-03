@@ -70,7 +70,7 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
         )}
 
         {/* Tags */}
-        {article.tags?.length > 0 && (
+        {article.tags && article.tags.length > 0 && (
           <div className="flex items-center gap-2 flex-wrap">
             <Tag className="w-3 h-3 text-gray-400" />
             {article.tags?.map((tag) => (

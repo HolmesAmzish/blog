@@ -12,7 +12,6 @@ import { fetchTags } from '../../api/tag';
 import { ARTICLES_QUERY } from '../../hooks/useArticles';
 import type { ArticleDTO, ArticleCreateRequest, ArticleUpdateRequest, ArticleTranslationUpsertRequest, Language } from '../../types';
 import { Save, ArrowLeft, Eye, EyeOff } from 'lucide-react';
-import { getLocalizedName } from '../../utils/i18n';
 
 type TranslationForm = {
   title: string;
@@ -50,7 +49,7 @@ export function AdminArticleEditPage() {
   // Fetch categories and tags
   const { data: categories } = useQuery({
     queryKey: ['categories'],
-    queryFn: fetchCategories,
+    queryFn: () => fetchCategories(),
   });
 
   const { data: tags } = useQuery({
