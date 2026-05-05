@@ -74,6 +74,7 @@ class ArticleService(
                 title = dto.title,
                 summary = dto.summary,
                 content = dto.content,
+                isAiTranslated = dto.isAiTranslated,
                 article = article
             )
             article.translations[lang] = translation
@@ -115,12 +116,14 @@ class ArticleService(
                 existing.title = dto.title
                 existing.summary = dto.summary
                 existing.content = dto.content
+                existing.isAiTranslated = dto.isAiTranslated
             } else {
                 val translation = ArticleTranslation(
                     language = lang,
                     title = dto.title,
                     summary = dto.summary,
                     content = dto.content,
+                    isAiTranslated = dto.isAiTranslated,
                     article = existingArticle
                 )
                 existingArticle.translations[lang] = translation
@@ -188,6 +191,7 @@ class ArticleService(
             summary = translation.summary ?: "",
             content = translation.content ?: "",
             language = translation.language,
+            isAiTranslated = translation.isAiTranslated ?: false,
             category = category?.let { cat ->
                 val catName = cat.names[language] ?: cat.names[Language.EN]
                 CategoryVo(id = cat.id, name = catName!!, slug = cat.slug, parentId = cat.parent?.id)

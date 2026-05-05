@@ -90,6 +90,17 @@ export const ArticleDetailPage: React.FC = () => {
 
         {/* Article header */}
         <header className="mb-8 pb-8 border-b-[0.5px] border-gray-200">
+          {/* AI Translated Notice */}
+          {article.isAiTranslated && (
+            <div className="mb-4 px-4 py-3 bg-blue-50 border border-blue-200">
+              <p className="text-sm text-blue-700 font-mono">
+                {language === 'ZH'
+                  ? '本文由 AI 翻译'
+                  : 'This article was translated by AI for reference only'}
+              </p>
+            </div>
+          )}
+
           {/* Category */}
           {categoryName && (
             <Link

@@ -17,6 +17,7 @@ type TranslationForm = {
   title: string;
   summary: string;
   content: string;
+  isAiTranslated: boolean;
 };
 
 const LANGUAGES: Language[] = ['EN', 'ZH'];
@@ -28,8 +29,8 @@ export function AdminArticleEditPage() {
   const isEdit = !!id;
 
   const [translations, setTranslations] = useState<Record<Language, TranslationForm>>({
-    ZH: { title: '', summary: '', content: '' },
-    EN: { title: '', summary: '', content: '' },
+    ZH: { title: '', summary: '', content: '', isAiTranslated: false },
+    EN: { title: '', summary: '', content: '', isAiTranslated: false },
   });
 
   const [slug, setSlug] = useState('');
@@ -62,8 +63,8 @@ export function AdminArticleEditPage() {
     if (article) {
       // Build translations from article's translations map
       const newTranslations: Record<Language, TranslationForm> = {
-        ZH: { title: '', summary: '', content: '' },
-        EN: { title: '', summary: '', content: '' },
+        ZH: { title: '', summary: '', content: '', isAiTranslated: false },
+        EN: { title: '', summary: '', content: '', isAiTranslated: false },
       };
       Object.entries(article.translations).forEach(([lang, trans]) => {
         const language = lang as Language;
@@ -71,6 +72,7 @@ export function AdminArticleEditPage() {
           title: trans.title,
           summary: trans.summary || '',
           content: trans.content || '',
+          isAiTranslated: trans.isAiTranslated || false,
         };
       });
 
@@ -122,6 +124,7 @@ export function AdminArticleEditPage() {
           title: translations[lang].title,
           summary: translations[lang].summary || null,
           content: translations[lang].content || null,
+          isAiTranslated: translations[lang].isAiTranslated,
         });
       }
     });
@@ -250,9 +253,26 @@ export function AdminArticleEditPage() {
 
                 {/* Content */}
                 <div>
-                  <label className="block text-xs font-mono text-gray-500 uppercase tracking-wider mb-2">
-                    Content ({activeTab === 'ZH' ? '中文' : 'English'}) - Markdown
-                  </label>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-xs font-mono text-gray-500 uppercase tracking-wider">
+                      Content ({activeTab === 'ZH' ? '中文' : 'English'}) - Markdown
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="isAiTranslated"
+                        checked={currentTranslation.isAiTranslated}
+                        onChange={(e) => setTranslations((prev) => ({
+                          ...prev,
+                          [activeTab]: { ...prev[activeTab], isAiTranslated: e.target.checked },
+                        }))}
+                        className="w-4 h-4 text-[#0047FF] border-gray-300 rounded focus:ring-[#0047FF]"
+                      />
+                      <label htmlFor="isAiTranslated" className="text-xs font-mono text-gray-600">
+                        AI Translated
+                      </label>
+                    </div>
+                  </div>
                   {previewMode ? (
                     <div className="prose prose-sm max-w-none min-h-[400px] font-mono text-gray-700">
                       {currentTranslation.content || 'No content yet...'}

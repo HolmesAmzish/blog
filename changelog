@@ -1,3 +1,6 @@
+0.3.1
+1. add ai translated tag for article translation
+
 0.3.2
 1. fix TypeScript build errors - replace CategoryDTO with CategoryVo, remove unused imports
 2. fix AdminCategoriesPage getDescendants null check for category.id

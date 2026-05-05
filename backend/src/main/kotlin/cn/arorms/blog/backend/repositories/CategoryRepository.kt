@@ -12,7 +12,7 @@ import org.springframework.stereotype.Repository
 @Repository
 interface CategoryRepository : JpaRepository<Category, Long> {
 
-    @Query(value = "SELECT c.id, c.names ->> cast(:lang as text), c.slug, c.parent_id FROM categories c", nativeQuery = true)
+    @Query(value = "SELECT c.id, c.names ->> cast(:lang as text), c.slug, c.parent_id FROM categories c WHERE c.names ->> cast(:lang as text) IS NOT NULL", nativeQuery = true)
     fun findAllLocalized(@Param("lang") lang: String): List<Array<Any>>
 
     fun findBySlug(slug: String): Category?

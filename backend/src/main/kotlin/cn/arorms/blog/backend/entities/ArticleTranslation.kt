@@ -29,6 +29,8 @@ class ArticleTranslation(
     @Column(columnDefinition = "TEXT")
     var content: String? = null,
 
+    var isAiTranslated: Boolean? = false,
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "article_id", nullable = false)
     @JsonIgnore

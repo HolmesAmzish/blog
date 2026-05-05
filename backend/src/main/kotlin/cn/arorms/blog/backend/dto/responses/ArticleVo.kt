@@ -9,6 +9,7 @@ data class ArticleVo(
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime,
 //    val author: UserVo,
+    val isAiTranslated: Boolean,
     val viewCount: Long,
     val title: String,
     val summary: String,

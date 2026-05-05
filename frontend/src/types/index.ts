@@ -33,6 +33,7 @@ export interface ArticleTranslation {
   title: string;
   summary: string | null;
   content: string | null;
+  isAiTranslated: boolean;
 }
 
 export interface ArticleTranslationUpsertRequest {
@@ -41,6 +42,7 @@ export interface ArticleTranslationUpsertRequest {
   title: string;
   summary: string | null;
   content: string | null;
+  isAiTranslated: boolean;
 }
 
 // Tag DTOs
@@ -134,6 +136,7 @@ export interface ArticleVo {
   createdAt: string;
   updatedAt: string;
   viewCount: number;
+  isAiTranslated: boolean;
   title: string;
   summary: string;
   content: string;
