@@ -17,7 +17,7 @@ class ArticleTranslation(
     val id: Long? = null,
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "language", length = 10, nullable = false)
+    @Column(name = "language", length = 2, nullable = false)
     val language: Language,
 
     @Column(nullable = false, length = 255)

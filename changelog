@@ -1,3 +1,7 @@
+0.5.0
+1. refactor ArticleListPage item hover effect
+2. add llm translation api
+
 0.4.0
 1. change sql filter from spring data jpa specification to querydsl
 2. fix ArticleListPage TypeScript type mismatches (ArticleVo vs ArticleListItem)

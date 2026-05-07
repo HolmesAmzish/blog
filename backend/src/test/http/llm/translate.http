@@ -1,0 +1,9 @@
+### translate
+POST http://localhost:8080/api/llm/translate
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "originalContent": "After launching Neovim, the default mode is command mode, if you wanna edit the file, press INSERT or I to enter insert mode, and you can press one more time for replace mode. After finishing editing, you can press ESC to enter command mode and type `:wq` command to save and quit.",
+  "targetLanguage": "ZH"
+}

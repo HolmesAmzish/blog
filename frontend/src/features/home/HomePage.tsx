@@ -68,7 +68,7 @@ export const HomePage: React.FC = () => {
                 : stats.map((stat) => (
                     <div key={stat.label} className="flex items-center gap-1">
                       <span className="text-base font-bold text-black">{stat.value}</span>
-                      <span className="text-[9px] font-mono uppercase tracking-wider text-gray-500">
+                      <span className="text-xs font-mono uppercase tracking-wider text-gray-500">
                         {t(stat.label)}
                       </span>
                     </div>
@@ -78,7 +78,7 @@ export const HomePage: React.FC = () => {
 
             {/* Row 4: Description + CTAs col 1-4 (span 2 rows) */}
             <div className="col-span-4 row-span-2 bg-white flex flex-col justify-between">
-              <p className="text-xs font-mono text-gray-600 leading-relaxed">
+              <p className="text-gray-600 leading-relaxed">
                 {t('home.heroDescription')}
               </p>
               <div className="flex gap-2">

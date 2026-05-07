@@ -56,31 +56,35 @@ interface ArticleListItemProps {
 }
 
 const ArticleListItem: React.FC<ArticleListItemProps> = ({ article }) => {
-
   return (
-    <Link
-      to={`/article/${article.slug}`}
-      className="block py-3 hover:bg-black group duration-300 border-b border-gray-300"
-    >
-      <div className="flex items-center gap-4">
-        <div className="relative flex-1 h-5 overflow-hidden">
-          <h3 className="tracking-tight group-hover:opacity-0 transition-opacity duration-300 absolute inset-0 leading-normal">
-            {article.title}
-          </h3>
-          <p className="text-sm px-4 text-gray-500 group-hover:text-white transition-opacity duration-300 absolute inset-0 group-hover:opacity-100 opacity-0 line-clamp-1">
-            {article.summary}
-          </p>
-        </div>
-        {article.tags && article.tags.length > 0 && (
-          <span className="text-xs font-mono text-gray-500 shrink-0 group-hover:opacity-0 transition-opacity">
+      <Link
+          to={`/article/${article.slug}`}
+          className="block py-3 hover:bg-black group duration-300 border-b border-gray-300"
+      >
+        <div className="flex items-center gap-4">
+          <div className="relative flex-1 group-hover:px-4 duration-300">
+
+            <h3 className="text-left text-base group-hover:text-white font-semibold tracking-tight">
+              {article.title}
+            </h3>
+
+            <div className="max-h-0 group-hover:max-h-16 overflow-hidden transition-[max-height] duration-300 ease-out">
+              <p className="text-sm text-white  pt-1">
+                {article.summary}
+              </p>
+            </div>
+          </div>
+
+          {article.tags && article.tags.length > 0 && (
+              <span className="text-xs font-mono text-gray-500 shrink-0 group-hover:opacity-0 transition-opacity">
             {article.tags.map(t => `#${t.name}`).join(' ')}
           </span>
-        )}
-        <span className="text-xs font-mono text-gray-500 shrink-0 group-hover:opacity-0 transition-opacity">
+          )}
+          <span className="text-xs font-mono text-gray-500 shrink-0 group-hover:opacity-0 transition-opacity">
           {formatDate(article.createdAt)}
         </span>
-      </div>
-    </Link>
+        </div>
+      </Link>
   );
 };
 

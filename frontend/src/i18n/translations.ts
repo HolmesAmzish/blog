@@ -135,7 +135,7 @@ export const zh = {
     showing: '显示',
     of: '篇，共',
     articles: '篇文章',
-    views: '浏览量',
+    views: '浏览',
     tags: '标签',
     noContent: '暂无内容',
     error: '错误',
