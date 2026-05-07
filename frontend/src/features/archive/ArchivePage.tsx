@@ -4,8 +4,8 @@
  * Root -> Categories -> Articles
  */
 import { useEffect, useRef } from 'react';
-import * as echarts from 'echarts';
 import { useNavigate } from 'react-router-dom';
+import type { ECharts } from 'echarts';
 import { useCategoryTree } from '../../hooks/useCategories';
 import { useArticles } from '../../hooks/useArticles';
 import type { ArchiveTreeNode, CategoryTreeNode, ArticleListItem } from '../../types';
@@ -98,7 +98,7 @@ export const ArchivePage: React.FC = () => {
   const { language } = useLanguage();
   const navigate = useNavigate();
   const chartRef = useRef<HTMLDivElement>(null);
-  const chartInstance = useRef<echarts.ECharts | null>(null);
+  const chartInstance = useRef<ECharts | null>(null);
 
   const { data: categoryTree, isLoading: categoriesLoading } = useCategoryTree(language);
   const { data: articlesData, isLoading: articlesLoading } = useArticles({
@@ -112,130 +112,132 @@ export const ArchivePage: React.FC = () => {
   useEffect(() => {
     if (!chartRef.current || categoriesLoading || articlesLoading) return;
 
-    // Dispose existing chart before creating new one
-    chartInstance.current?.dispose();
-    chartInstance.current = echarts.init(chartRef.current);
+    let disposed = false;
 
-    const treeData = buildTreeData(categoryTree, articles, t('archive.uncategorized'));
+    import('echarts').then((echarts) => {
+      if (disposed || !chartRef.current) return;
 
-    // Type-ignored option for ECharts compatibility
-    const option = {
-      backgroundColor: 'transparent',
-      tooltip: {
-        trigger: 'item',
-        triggerOn: 'mousemove',
-        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-        borderColor: '#e5e7eb',
-        borderWidth: 0.5,
-        textStyle: {
-          color: '#000',
-          fontFamily: 'monospace',
-          fontSize: 11,
-        },
-        formatter: (params: any) => {
-          const data = params.data;
-          if (!data) return '';
-          if (data.article) {
-            return `
-              <div style="padding: 8px;">
-                <div style="font-weight: bold; margin-bottom: 4px;">${data.name}</div>
-                <div style="color: #666;">Views: ${data.value}</div>
-              </div>
-            `;
-          }
-          return data.name;
-        },
-      },
-      series: [
-        {
-          type: 'tree',
-          data: [treeData],
-          top: '5%',
-          left: '10%',
-          bottom: '5%',
-          right: '20%',
-          symbolSize: 8,
-          symbol: 'circle',
-          itemStyle: {
+      chartInstance.current = echarts.init(chartRef.current);
+
+      const treeData = buildTreeData(categoryTree, articles, t('archive.uncategorized'));
+
+      const option = {
+        backgroundColor: 'transparent',
+        tooltip: {
+          trigger: 'item',
+          triggerOn: 'mousemove',
+          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+          borderColor: '#e5e7eb',
+          borderWidth: 0.5,
+          textStyle: {
             color: '#000',
-            borderColor: '#0047FF',
-            borderWidth: 1,
-          },
-          label: {
-            position: 'left',
-            verticalAlign: 'middle',
-            align: 'right',
             fontFamily: 'monospace',
             fontSize: 11,
-            color: '#000',
-            formatter: (params: any) => {
-              const data = params.data;
-              if (!data) return '';
-              return data.article
-                ? `{article|${data.name}}`
-                : `{category|${data.name}}`;
-            },
-            rich: {
-              category: {
-                fontWeight: 'bold',
-                color: '#000',
-              },
-              article: {
-                color: '#666',
-              },
-            },
           },
-          leaves: {
-            label: {
-              position: 'right',
-              verticalAlign: 'middle',
-              align: 'left',
-            },
-            itemStyle: {
-              color: '#0047FF',
-            },
-          },
-          emphasis: {
-            focus: 'descendant',
-            itemStyle: {
-              color: '#0047FF',
-              borderColor: '#000',
-              borderWidth: 2,
-            },
-          },
-          expandAndCollapse: true,
-          animationDuration: 550,
-          animationDurationUpdate: 750,
-          initialTreeDepth: -1,
-          lineStyle: {
-            color: '#e5e7eb',
-            width: 1,
+          formatter: (params: any) => {
+            const data = params.data;
+            if (!data) return '';
+            if (data.article) {
+              return `
+                <div style="padding: 8px;">
+                  <div style="font-weight: bold; margin-bottom: 4px;">${data.name}</div>
+                  <div style="color: #666;">Views: ${data.value}</div>
+                </div>
+              `;
+            }
+            return data.name;
           },
         },
-      ],
-    } as any;
+        series: [
+          {
+            type: 'tree',
+            data: [treeData],
+            top: '5%',
+            left: '10%',
+            bottom: '5%',
+            right: '20%',
+            symbolSize: 8,
+            symbol: 'circle',
+            itemStyle: {
+              color: '#000',
+              borderColor: '#0047FF',
+              borderWidth: 1,
+            },
+            label: {
+              position: 'left',
+              verticalAlign: 'middle',
+              align: 'right',
+              fontFamily: 'monospace',
+              fontSize: 11,
+              color: '#000',
+              formatter: (params: any) => {
+                const data = params.data;
+                if (!data) return '';
+                return data.article
+                  ? `{article|${data.name}}`
+                  : `{category|${data.name}}`;
+              },
+              rich: {
+                category: {
+                  fontWeight: 'bold',
+                  color: '#000',
+                },
+                article: {
+                  color: '#666',
+                },
+              },
+            },
+            leaves: {
+              label: {
+                position: 'right',
+                verticalAlign: 'middle',
+                align: 'left',
+              },
+              itemStyle: {
+                color: '#0047FF',
+              },
+            },
+            emphasis: {
+              focus: 'descendant',
+              itemStyle: {
+                color: '#0047FF',
+                borderColor: '#000',
+                borderWidth: 2,
+              },
+            },
+            expandAndCollapse: true,
+            animationDuration: 550,
+            animationDurationUpdate: 750,
+            initialTreeDepth: -1,
+            lineStyle: {
+              color: '#e5e7eb',
+              width: 1,
+            },
+          },
+        ],
+      } as any;
 
-    chartInstance.current.setOption(option as any);
+      chartInstance.current.setOption(option as any);
 
-    // Handle click events
-    chartInstance.current.on('click', (params: any) => {
-      const data = params.data;
-      if (!data) return;
-      if (data.article) {
-        navigate(`/article/${data.article.slug}`);
-      }
+      chartInstance.current.on('click', (params: any) => {
+        const data = params.data;
+        if (!data) return;
+        if (data.article) {
+          navigate(`/article/${data.article.slug}`);
+        }
+      });
+
+      const handleResize = () => {
+        chartInstance.current?.resize();
+      };
+
+      window.addEventListener('resize', handleResize);
     });
 
-    // Handle resize
-    const handleResize = () => {
-      chartInstance.current?.resize();
-    };
-
-    window.addEventListener('resize', handleResize);
-
     return () => {
-      window.removeEventListener('resize', handleResize);
+      disposed = true;
       chartInstance.current?.dispose();
+      chartInstance.current = null;
     };
   }, [categoryTree, articles, categoriesLoading, articlesLoading, t, navigate]);
 
