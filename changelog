@@ -1,3 +1,10 @@
+0.4.0
+1. change sql filter from spring data jpa specification to querydsl
+2. fix ArticleListPage TypeScript type mismatches (ArticleVo vs ArticleListItem)
+3. handle null createdAt in date formatting functions
+4. refactor ArticleCard into Swiss Style index row
+5. refactor HomePage and ArchivePage for consistency
+
 0.3.1
 1. add ai translated tag for article translation
 

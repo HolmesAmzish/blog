@@ -45,13 +45,15 @@ export const fetchPublishedArticles = async (
   page: number = 0,
   size: number = 10,
   categoryId?: number,
-  language?: SupportedLanguage
+  language?: SupportedLanguage,
+  keyword?: string
 ): Promise<ArticlePageResponse> => {
   const params = new URLSearchParams();
   params.append('page', page.toString());
   params.append('size', size.toString());
   if (categoryId) params.append('categoryId', categoryId.toString());
   if (language) params.append('language', language);
+  if (keyword) params.append('keyword', keyword);
 
   return get<ArticlePageResponse>(`${BASE_PATH}/published?${params.toString()}`);
 };

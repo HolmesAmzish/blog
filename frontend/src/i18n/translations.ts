@@ -42,6 +42,7 @@ export const en = {
   },
   articles: {
     allArticles: 'ALL ARTICLES',
+    search: 'SEARCH',
     filterByCategory: 'FILTER BY CATEGORY',
     all: 'ALL',
     noArticles: 'NO ARTICLES FOUND',
@@ -127,6 +128,7 @@ export const zh = {
   },
   articles: {
     allArticles: '所有文章',
+    search: '搜索',
     filterByCategory: '按分类筛选',
     all: '全部',
     noArticles: '暂无文章',

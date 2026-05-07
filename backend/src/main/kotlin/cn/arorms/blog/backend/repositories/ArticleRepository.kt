@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor
 import org.springframework.data.jpa.repository.Query
+import org.springframework.data.querydsl.QuerydslPredicateExecutor
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 
@@ -15,7 +16,7 @@ import org.springframework.stereotype.Repository
  * Repository interface for Article entity
  */
 @Repository
-interface ArticleRepository : JpaRepository<Article, Long>, JpaSpecificationExecutor<Article> {
+interface ArticleRepository : JpaRepository<Article, Long>, QuerydslPredicateExecutor<Article> {
 
     @Query("SELECT a FROM Article a")
     fun findAllListItem(pageable: Pageable): Page<Article>

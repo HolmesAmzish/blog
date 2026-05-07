@@ -57,7 +57,7 @@ const useScrambleText = (targetText: string, isActive: boolean, speed: number = 
  */
 export const LoadingScreen: React.FC<LoadingScreenProps> = ({
   onComplete,
-  duration = 2000,
+  duration = 1000,
 }) => {
   const [progress, setProgress] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
@@ -142,32 +142,32 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
 
           {/* Progress text */}
           <div className="flex justify-between text-[10px] font-mono text-gray-400">
-            <span>LOADING</span>
+            {/*<span>LOADING</span>*/}
             <span>{progress.toString().padStart(3, '0')}%</span>
           </div>
         </div>
       </div>
 
       {/* Corner decorations */}
-      <div className="absolute top-8 left-8 text-[10px] font-mono text-gray-300">
-        <div>VER.1.0.0</div>
-        <div>BUILD.2024</div>
-      </div>
+      {/*<div className="absolute top-8 left-8 text-[10px] font-mono text-gray-300">*/}
+      {/*  <div>VER.1.0.0</div>*/}
+      {/*  <div>BUILD.2024</div>*/}
+      {/*</div>*/}
 
-      <div className="absolute top-8 right-8 text-[10px] font-mono text-gray-300 text-right">
-        <div>REACT.TS</div>
-        <div>SPRING.BOOT</div>
-      </div>
+      {/*<div className="absolute top-8 right-8 text-[10px] font-mono text-gray-300 text-right">*/}
+      {/*  <div>REACT.TS</div>*/}
+      {/*  <div>SPRING.BOOT</div>*/}
+      {/*</div>*/}
 
-      <div className="absolute bottom-8 left-8 text-[10px] font-mono text-gray-300">
-        <div>COORD: 00.00</div>
-        <div>STATUS: ACTIVE</div>
-      </div>
+      {/*<div className="absolute bottom-8 left-8 text-[10px] font-mono text-gray-300">*/}
+      {/*  <div>COORD: 00.00</div>*/}
+      {/*  <div>STATUS: ACTIVE</div>*/}
+      {/*</div>*/}
 
-      <div className="absolute bottom-8 right-8 text-[10px] font-mono text-gray-300 text-right">
-        <div>MEM: 64TB</div>
-        <div>CPU: 99.9%</div>
-      </div>
+      {/*<div className="absolute bottom-8 right-8 text-[10px] font-mono text-gray-300 text-right">*/}
+      {/*  <div>MEM: 64TB</div>*/}
+      {/*  <div>CPU: 99.9%</div>*/}
+      {/*</div>*/}
 
       {/* Scanline effect */}
       <div

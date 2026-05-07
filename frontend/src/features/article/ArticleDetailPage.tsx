@@ -175,14 +175,17 @@ export const ArticleDetailPage: React.FC = () => {
                     </blockquote>
                   ),
                   ul: ({ children }) => (
-                    <ul className="list-disc list-inside mb-4 text-gray-700">
+                    <ul className="list-disc list-outside mb-4 text-gray-700 pl-6">
                       {children}
                     </ul>
                   ),
                   ol: ({ children }) => (
-                    <ol className="list-decimal list-inside mb-4 text-gray-700">
+                    <ol className="list-decimal list-outside mb-4 text-gray-700 pl-6">
                       {children}
                     </ol>
+                  ),
+                  li: ({ children }) => (
+                    <li className="mb-1 leading-relaxed">{children}</li>
                   ),
                   a: ({ children, href }) => (
                     <a

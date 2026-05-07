@@ -8,6 +8,8 @@ import type { ArticleListItem } from '../../types';
 interface ArticleCardProps {
   article: ArticleListItem;
   index?: number;
+  className?: string;
+  showTags?: boolean;
 }
 
 const formatDate = (article: ArticleListItem): string => {
@@ -21,20 +23,18 @@ const formatDate = (article: ArticleListItem): string => {
   });
 };
 
-export const ArticleCard: React.FC<ArticleCardProps> = ({ article, index }) => {
+export const ArticleCard: React.FC<ArticleCardProps> = ({ article, index, className = '', showTags = true }) => {
   const categoryName = article.category?.name || null;
   const displayIndex = index !== undefined ? String(index + 1).padStart(2, '0') : null;
 
   return (
-    <article className="group border-t-[0.5px] border-gray-200 py-6 md:py-8 transition-colors duration-200">
+    <article className={`group border-gray-200 py-6 md:py-2 transition-colors duration-200 ${className}`}>
       {/* Top metadata row */}
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[10px] font-mono uppercase tracking-wider text-gray-500">
         {displayIndex && (
           <span className="w-8 text-gray-400">[{displayIndex}]</span>
         )}
         <span>{formatDate(article)}</span>
-        <span className="text-gray-300">|</span>
-        <span>VIEWS: {(article.viewCount || 0).toString().padStart(4, '0')}</span>
         {categoryName && (
           <>
             <span className="text-gray-300">|</span>
@@ -43,7 +43,7 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({ article, index }) => {
             </span>
           </>
         )}
-        {article.tags && article.tags.length > 0 && (
+        {showTags && article.tags && article.tags.length > 0 && (
           <div className="flex items-center gap-2 ml-auto">
             {article.tags.map((tag) => (
               <span key={tag.id} className="text-gray-500">

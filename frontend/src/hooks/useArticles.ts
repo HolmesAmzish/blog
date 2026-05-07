@@ -25,6 +25,7 @@ interface UseArticlesParams {
   tagId?: number;
   language?: SupportedLanguage;
   isAdmin?: boolean;
+  keyword?: string;
 }
 
 export const ARTICLES_QUERY = ARTICLES_QUERY_KEY;
@@ -35,7 +36,7 @@ export const ARTICLES_QUERY = ARTICLES_QUERY_KEY;
  * When isAdmin is false, fetches only published articles
  */
 export const useArticles = (params: UseArticlesParams = {}) => {
-  const { page = 0, size = 10, categoryId, tagId, language, isAdmin = false } = params;
+  const { page = 0, size = 10, categoryId, tagId, language, isAdmin = false, keyword } = params;
 
   if (isAdmin) {
     // Fetch all articles for admin
@@ -47,8 +48,8 @@ export const useArticles = (params: UseArticlesParams = {}) => {
   } else {
     // Fetch only published articles for users
     return useQuery<ArticlePageResponse, Error>({
-      queryKey: [ARTICLES_QUERY_KEY, { page, size, categoryId, language }],
-      queryFn: () => fetchPublishedArticles(page, size, categoryId, language),
+      queryKey: [ARTICLES_QUERY_KEY, { page, size, categoryId, language, keyword }],
+      queryFn: () => fetchPublishedArticles(page, size, categoryId, language, keyword),
       staleTime: 5 * 60 * 1000,
     });
   }

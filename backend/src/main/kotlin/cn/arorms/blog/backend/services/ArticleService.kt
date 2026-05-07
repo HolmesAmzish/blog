@@ -9,8 +9,8 @@ import cn.arorms.blog.backend.entities.Article
 import cn.arorms.blog.backend.entities.ArticleTranslation
 import cn.arorms.blog.backend.enums.Language
 import cn.arorms.blog.backend.exception.ResourceNotFoundException
+import cn.arorms.blog.backend.repositories.ArticlePredicates
 import cn.arorms.blog.backend.repositories.ArticleRepository
-import cn.arorms.blog.backend.repositories.ArticleSpecifications
 import cn.arorms.blog.backend.repositories.CategoryRepository
 import cn.arorms.blog.backend.repositories.TagRepository
 import org.springframework.data.domain.Page
@@ -44,9 +44,14 @@ class ArticleService(
             ?: throw ResourceNotFoundException("Article not found with slug: $slug")
     }
 
-    fun findAllPublished(language: Language, keyword: String?, categoryId: Long?, pageable: Pageable): Page<ArticleListItem> {
-        val spec = ArticleSpecifications.findPublishedArticles(language, keyword, categoryId)
-        return articleRepository.findAll(spec, pageable)
+    fun findAllPublished(
+        language: Language,
+        keyword: String?,
+        categoryId: Long?,
+        pageable: Pageable
+    ): Page<ArticleListItem> {
+        val predicate = ArticlePredicates.findPublishedArticles(language, keyword, categoryId)
+        return articleRepository.findAll(predicate, pageable)
             .map { it.toArticleListItem(language) }
     }
 

@@ -215,3 +215,9 @@ p {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Swiss grid debug guide */
+.swiss-grid-guide {
+  background-image: linear-gradient(to right, #f3f4f6 1px, transparent 1px);
+  background-size: calc(100% / 12) 100%;
+}
