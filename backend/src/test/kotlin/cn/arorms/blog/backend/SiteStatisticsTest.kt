@@ -1,6 +1,6 @@
 package cn.arorms.blog.backend
 
-import cn.arorms.blog.backend.services.SiteStatisticService
+import cn.arorms.blog.backend.services.SiteStatisticsService
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -9,7 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest
 class SiteStatisticsTest {
 
     @Autowired
-    private lateinit var siteStatisticService: SiteStatisticService
+    private lateinit var siteStatisticService: SiteStatisticsService
 
     @Test
     fun testUpdateDailyStatistics() {

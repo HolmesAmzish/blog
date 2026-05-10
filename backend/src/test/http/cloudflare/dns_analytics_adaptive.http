@@ -1,0 +1,21 @@
+###
+GRAPHQL https://api.cloudflare.com/client/v4/graphql
+Authorization: Bearer {{cloudflareToken}}
+
+query {
+  viewer {
+    zones(filter: { zoneTag: "{{cloudflareZoneId}}" }) {
+      dnsAnalyticsAdaptiveGroups(
+        filter: { date_geq: "2026-05-05", date_leq: "2026-05-08" }
+        limit: 200
+      ) {
+        count
+        dimensions {
+          queryName
+          queryType
+          responseCode
+        }
+      }
+    }
+  }
+}

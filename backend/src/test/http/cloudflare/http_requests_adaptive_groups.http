@@ -1,0 +1,31 @@
+### Get by client country map
+GRAPHQL https://api.cloudflare.com/client/v4/graphql
+Authorization: Bearer {{cloudflareToken}}
+
+query{
+    viewer {
+        zones(filter: { zoneTag: "{{cloudflareZoneId}}" }) {
+            httpRequestsAdaptiveGroups(
+                limit: 100,
+                filter: {
+                    datetime_geq: $start,
+                    datetime_leq: $end,
+                    clientRequestHTTPHost: "blog.arorms.cn"
+                }
+            ) {
+                dimensions {
+                    clientCountryName
+                }
+                count
+                sum {
+                    visits
+                }
+            }
+        }
+    }
+}
+
+{
+  "start": "2026-05-02T00:00:00Z",
+  "end": "2026-05-03T00:00:00Z"
+}

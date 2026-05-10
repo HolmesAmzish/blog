@@ -12,7 +12,7 @@ class SiteStatistics (
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
 
-    val viewDate: LocalDateTime = LocalDateTime.now(),
+    val date: LocalDateTime = LocalDateTime.now(),
 
     var totalArticleView: Long = 0,
 

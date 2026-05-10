@@ -1,0 +1,8 @@
+### GET country traffic
+GET http://localhost:8080/api/statistics/country-traffic?timeRange=1
+
+### GET country traffic (week)
+GET http://localhost:8080/api/statistics/country-traffic?timeRange=7
+
+### GET country traffic (month)
+GET http://localhost:8080/api/statistics/country-traffic?timeRange=30

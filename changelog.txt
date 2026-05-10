@@ -1,3 +1,9 @@
+0.6.0
+1. refactor SiteStatisticService to SiteStatisticsService (naming consistency)
+2. add Cloudflare GraphQL integration for HTTP request statistics
+3. add country traffic tracking with CountryTraffic entity and QueryDSL aggregation
+4. add spring-boot-starter-graphql and webflux dependencies
+
 0.5.1
 1. code-split routes and vendor chunks to reduce initial bundle size
 

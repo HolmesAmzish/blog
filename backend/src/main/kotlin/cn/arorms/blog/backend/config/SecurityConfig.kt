@@ -71,6 +71,7 @@ class SecurityConfig {
                     // Public read-only endpoints for images
                     .requestMatchers(HttpMethod.GET, "/api/pictures/**").permitAll()
                     .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/statistics/**").permitAll()
                     // All other requests require authentication
                     .anyRequest().authenticated()
 //                    .anyRequest().permitAll()

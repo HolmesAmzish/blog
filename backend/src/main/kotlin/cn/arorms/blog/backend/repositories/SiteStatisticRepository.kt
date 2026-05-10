@@ -9,8 +9,8 @@ import java.time.LocalDate
  */
 interface SiteStatisticRepository : JpaRepository<SiteStatistics, Long> {
 
-    fun findByViewDate(date: LocalDate): SiteStatistics?
+    fun findByDate(date: LocalDate): SiteStatistics?
 
-    fun findAllByOrderByViewDateDesc(): List<SiteStatistics>
+    fun findAllByOrderByDateDesc(): List<SiteStatistics>
 
 }

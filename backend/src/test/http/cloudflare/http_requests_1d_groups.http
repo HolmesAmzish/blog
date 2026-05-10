@@ -1,0 +1,49 @@
+### GET 3 days
+GRAPHQL https://api.cloudflare.com/client/v4/graphql
+Authorization: Bearer {{cloudflareToken}}
+
+query Get7Days($zoneTag: String!) {
+    viewer {
+        zones(filter: { zoneTag: $zoneTag }) {
+            httpRequests1dGroups(
+                limit: 3,
+                filter: {
+                    date_geq: "2026-05-05",
+                    date_leq: "2026-05-08",
+                }
+            ) {
+                dimensions { date }
+                sum {
+                    countryMap { clientCountryName requests }
+                }
+            }
+        }
+    }
+}
+
+{
+  "zoneTag": "{{cloudflareZoneId}}"
+}
+
+### GET 30 days
+GRAPHQL https://api.cloudflare.com/client/v4/graphql
+Authorization: Bearer {{cloudflareToken}}
+
+query {
+    viewer {
+        zones(filter: { zoneTag: "{{cloudflareZoneId}}" }) {
+            httpRequests1dGroups(
+                limit: 30,
+                filter: {
+                    date_geq: "2026-04-10",
+                    date_leq: "2026-05-08",
+                }
+            ) {
+                dimensions { date }
+                sum {
+                    countryMap { clientCountryName requests bytes }
+                }
+            }
+        }
+    }
+}
