@@ -236,15 +236,20 @@ export const ArticleListPage: React.FC = () => {
 
         {/* Articles list grouped by month */}
         {isLoading ? (
-          <div className="space-y-8">
+          <div className="space-y-12">
             {[...Array(3)].map((_, i) => (
               <div key={i}>
-                <div className="h-6 w-32 bg-gray-100 mb-6 animate-pulse" />
-                <div className="border-t border-b border-gray-100 divide-y divide-gray-50">
+                <div className="h-4 w-32 bg-gray-100 mb-2 animate-pulse" />
+                <div className="border-t border-gray-200">
                   {[...Array(3)].map((_, j) => (
-                    <div key={j} className="py-4 px-4 animate-pulse">
-                      <div className="h-5 bg-gray-100 w-3/4 mb-2" />
-                      <div className="h-4 bg-gray-50 w-1/4" />
+                    <div key={j} className="py-3 border-b border-gray-200 animate-pulse">
+                      <div className="flex items-center gap-4">
+                        <div className="flex-1">
+                          <div className="h-5 bg-gray-100 w-2/3" />
+                        </div>
+                        <div className="h-3 bg-gray-50 w-20 shrink-0" />
+                        <div className="h-3 bg-gray-50 w-16 shrink-0" />
+                      </div>
                     </div>
                   ))}
                 </div>

@@ -1,3 +1,10 @@
+0.6.1
+1. add TrafficMap component — custom D3 SVG world map with country traffic heatmap
+2. add fetchCountryTraffic API endpoint
+3. add CountryTraffic type definition
+4. add home.trafficDistribution i18n
+5. fix ArticleListPage loading skeleton layout mismatch
+
 0.6.0
 1. refactor SiteStatisticService to SiteStatisticsService (naming consistency)
 2. add Cloudflare GraphQL integration for HTTP request statistics

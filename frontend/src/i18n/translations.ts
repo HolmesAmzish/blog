@@ -33,6 +33,7 @@ export const en = {
     viewArchive: 'VIEW ARCHIVE',
     latestArticles: 'LATEST ARTICLES',
     viewAll: 'VIEW ALL',
+    trafficDistribution: 'TRAFFIC DISTRIBUTION',
     stats: {
       articles: 'ARTICLES',
       categories: 'CATEGORIES',
@@ -119,6 +120,7 @@ export const zh = {
     viewArchive: '查看归档',
     latestArticles: '最新文章',
     viewAll: '查看全部',
+    trafficDistribution: '流量分布',
     stats: {
       articles: '文章',
       categories: '分类',

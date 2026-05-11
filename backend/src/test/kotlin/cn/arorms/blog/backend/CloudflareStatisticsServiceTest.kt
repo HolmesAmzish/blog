@@ -4,8 +4,11 @@ import cn.arorms.blog.backend.services.SiteStatisticsService
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
+import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
 
 @SpringBootTest
 class CloudflareStatisticsServiceTest {
@@ -15,14 +18,15 @@ class CloudflareStatisticsServiceTest {
 
     @Test
     fun testGetHttpRequestsStatistics() {
-        val yesterday = LocalDate.now(ZoneOffset.UTC).minusDays(1)
-        val start = yesterday.atStartOfDay().atOffset(ZoneOffset.UTC)
-        val end = yesterday.plusDays(1).atStartOfDay().atOffset(ZoneOffset.UTC)
+        val endTime = Instant.now().truncatedTo(ChronoUnit.DAYS)
+        val startTime = endTime.minus(1, ChronoUnit.DAYS)
+        val recordDate = startTime.atZone(ZoneOffset.UTC).toLocalDate()
 
-        val groups = siteStatisticService.getHttpRequestsStatistics(start, end, "blog.arorms.cn")
+        val groups = siteStatisticService.getHttpRequestsStatistics(startTime, endTime, "blog.arorms.cn")
 
         println("=== Cloudflare HTTP Requests Statistics ===")
-        println("Date range: $start ~ $end")
+        println("Date range: $startTime ~ $endTime")
+        println("Local Date: $recordDate")
         println("Host: blog.arorms.cn")
         println("Groups returned: ${groups.size}")
         groups.forEach { group ->

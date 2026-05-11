@@ -20,6 +20,9 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
+import java.time.Instant
 
 /**
  * Service for Site Statistics
@@ -81,9 +84,9 @@ class SiteStatisticsService(
         siteStatisticRepository.save(statistics)
     }
 
-    fun getHttpRequestsStatistics(start: OffsetDateTime, end: OffsetDateTime, host: String): List<AdaptiveGroup> {
-        val startStr = start.toInstant().toString()
-        val endStr = end.toInstant().toString()
+    fun getHttpRequestsStatistics(startTime: Instant, endTime: Instant, host: String): List<AdaptiveGroup> {
+        val startTimeStr = startTime.toString()
+        val endTimeStr = endTime.toString()
 
         val query = """
             query GetStats(${"$"}zoneTag: String!, ${"$"}start: String!, ${"$"}end: String!, ${"$"}host: String!) {
@@ -108,8 +111,8 @@ class SiteStatisticsService(
 
         return cloudflareClient.document(query)
             .variable("zoneTag", zoneId)
-            .variable("start", startStr)
-            .variable("end", endStr)
+            .variable("start", startTimeStr)
+            .variable("end", endTimeStr)
             .variable("host", host)
             .retrieve("viewer")
             .toEntity(CloudflareViewer::class.java)
@@ -119,15 +122,16 @@ class SiteStatisticsService(
 
     @Scheduled(cron = "0 5 0 * * ?", zone = "UTC")
     fun syncYesterdayStats() {
-        val yesterday = LocalDate.now(ZoneOffset.UTC).minusDays(1)
-        val start = yesterday.atStartOfDay().atOffset(ZoneOffset.UTC)
-        val end = yesterday.plusDays(1).atStartOfDay().atOffset(ZoneOffset.UTC)
 
-        val groups = getHttpRequestsStatistics(start, end, "blog.arorms.cn")
+        val endTime = Instant.now().truncatedTo(ChronoUnit.DAYS)
+        val startTime = endTime.minus(1, ChronoUnit.DAYS)
+
+
+        val groups = getHttpRequestsStatistics(startTime, endTime, "blog.arorms.cn")
 
         val entities = groups.map { group ->
             CountryTraffic(
-                date = yesterday,
+                date = startTime.atZone(ZoneOffset.UTC).toLocalDate(),
                 countryCode = group.dimensions.clientCountryName ?: "XX",
                 requests = group.count,
                 visits = group.sum.visits

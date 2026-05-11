@@ -274,3 +274,9 @@ export interface SiteStatistics {
   totalCategories: number;
   totalTags: number;
 }
+
+// Country Traffic
+export interface CountryTraffic {
+  countryCode: string;
+  visits: number;
+}

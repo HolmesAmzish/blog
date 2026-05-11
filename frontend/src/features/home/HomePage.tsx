@@ -9,6 +9,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from '../../context/TranslationContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { fetchSiteStatistics } from '../../api/siteStatistics';
+import { TrafficMap } from '../../components/ui/TrafficMap';
 import { useQuery } from '@tanstack/react-query';
 
 export const HomePage: React.FC = () => {
@@ -155,6 +156,21 @@ export const HomePage: React.FC = () => {
               ))}
             </div>
           )}
+        </div>
+      </section>
+
+      {/* Traffic Distribution Section */}
+      <section className="pb-16">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Section header */}
+          <div className="flex items-center justify-between mb-8 pb-4 border-b-[0.5px] border-gray-200">
+            <h2 className="text-lg font-bold tracking-tight text-black">
+              {t('home.trafficDistribution')}
+            </h2>
+          </div>
+
+          {/* Map */}
+          <TrafficMap />
         </div>
       </section>
     </div>
