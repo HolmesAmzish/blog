@@ -88,6 +88,12 @@ export const en = {
     switchToZh: 'Switch to 中文',
     switchToEn: 'Switch to English',
   },
+  theme: {
+    system: 'SYSTEM',
+    light: 'LIGHT',
+    dark: 'DARK',
+    toggle: 'Toggle theme',
+  },
 };
 
 // Chinese translations
@@ -174,6 +180,12 @@ export const zh = {
     en: 'English',
     switchToZh: '切换到中文',
     switchToEn: 'Switch to English',
+  },
+  theme: {
+    system: '系统',
+    light: '亮色',
+    dark: '暗色',
+    toggle: '切换主题',
   },
 };
 

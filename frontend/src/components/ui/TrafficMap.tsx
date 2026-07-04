@@ -9,6 +9,7 @@ import { fetchCountryTraffic } from '../../api/siteStatistics';
 import * as topojson from 'topojson-client';
 import { geoEquirectangular, geoPath } from 'd3-geo';
 import { scaleLinear } from 'd3-scale';
+import { useTheme } from '../../context/ThemeContext';
 
 // ISO 3166-1 numeric (as string) → alpha-2 mapping for world-atlas ids
 const ISO_NUMERIC_TO_ALPHA2: Record<string, string> = {
@@ -70,6 +71,8 @@ export const TrafficMap: React.FC<TrafficMapProps> = ({ className = '' }) => {
   const [dimensions, setDimensions] = useState({ width: 800, height: 400 });
   const [geoData, setGeoData] = useState<GeoJSON.FeatureCollection | null>(null);
   const [hovered, setHovered] = useState<HoveredCountry | null>(null);
+  const { resolved } = useTheme();
+  const isDark = resolved === 'dark';
 
   const { data: trafficData, isLoading, error } = useQuery({
     queryKey: ['countryTraffic', 30],
@@ -104,13 +107,17 @@ export const TrafficMap: React.FC<TrafficMapProps> = ({ className = '' }) => {
     return () => window.removeEventListener('resize', measure);
   }, []);
 
-  // Build color scale
+  // Build color scale — light: low=white, high=black; dark: low=dark-gray, high=white
+  const noDataFill = isDark ? '#1a1a1a' : '#F5F5F5';
+  const strokeColor = isDark ? '#2d2d2d' : '#E0E0E0';
+  const hoverFill = isDark ? '#ffffff' : '#000000';
+
   const colorScale = (() => {
-    if (!trafficData || trafficData.length === 0) return () => '#F5F5F5';
+    if (!trafficData || trafficData.length === 0) return () => noDataFill;
     const maxVisits = Math.max(...trafficData.map((d) => d.visits));
     return scaleLinear<string>()
       .domain([0, maxVisits])
-      .range(['#F5F5F5', '#000000']);
+      .range(isDark ? ['#1a1a1a', '#ffffff'] : ['#F5F5F5', '#000000']);
   })();
 
   // Create lookup map: alpha-2 → visits
@@ -133,8 +140,8 @@ export const TrafficMap: React.FC<TrafficMapProps> = ({ className = '' }) => {
     return (
       <div className={`flex items-center justify-center py-24 ${className}`}>
         <div className="text-center">
-          <div className="w-8 h-8 border-2 border-gray-200 border-t-[#0047FF] rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-[11px] font-mono text-gray-500 uppercase tracking-wider">Loading</p>
+          <div className="w-8 h-8 border-2 border-gray-200 dark:border-gray-700 border-t-[#0047FF] rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-[11px] font-mono text-gray-500 dark:text-gray-400 uppercase tracking-wider">Loading</p>
         </div>
       </div>
     );
@@ -143,7 +150,7 @@ export const TrafficMap: React.FC<TrafficMapProps> = ({ className = '' }) => {
   if (error) {
     return (
       <div className={`py-12 text-center ${className}`}>
-        <p className="text-sm text-red-600 font-mono">
+        <p className="text-sm text-red-600 dark:text-red-400 font-mono">
           ERROR: COULD NOT LOAD TRAFFIC DATA
         </p>
       </div>
@@ -162,7 +169,7 @@ export const TrafficMap: React.FC<TrafficMapProps> = ({ className = '' }) => {
           const numericId = String(feature.id || '');
           const alpha2 = ISO_NUMERIC_TO_ALPHA2[numericId];
           const visits = alpha2 ? visitsByCode.get(alpha2) : undefined;
-          const fill = visits !== undefined ? colorScale(visits) : '#F5F5F5';
+          const fill = visits !== undefined ? colorScale(visits) : noDataFill;
           const d = pathGenerator(feature as GeoJSON.Feature);
           if (!d) return null;
           return (
@@ -170,25 +177,30 @@ export const TrafficMap: React.FC<TrafficMapProps> = ({ className = '' }) => {
               key={numericId}
               d={d}
               fill={fill}
-              stroke="#E0E0E0"
+              stroke={strokeColor}
               strokeWidth={0.5}
-              className="transition-colors duration-200 hover:fill-black cursor-pointer"
+              className="transition-colors duration-200 cursor-pointer"
               style={{ outline: 'none' }}
-              onMouseEnter={() => {
+              onMouseEnter={(e) => {
+                e.currentTarget.setAttribute('data-fill', fill);
+                e.currentTarget.setAttribute('fill', hoverFill);
                 if (alpha2 && visits !== undefined) {
                   setHovered({ code: alpha2, visits });
                 }
               }}
-              onMouseLeave={() => setHovered(null)}
+              onMouseLeave={(e) => {
+                e.currentTarget.setAttribute('fill', e.currentTarget.getAttribute('data-fill') || fill);
+                setHovered(null);
+              }}
             />
           );
         })}
       </svg>
       {/* Hover info bar */}
-      <div className="mt-4 flex items-center justify-between border-t-[0.5px] border-gray-200 pt-3">
-        <p className="text-[11px] font-mono text-gray-500 uppercase tracking-wider">
+      <div className="mt-4 flex items-center justify-between border-t-[0.5px] border-gray-200 dark:border-gray-800 pt-3">
+        <p className="text-[11px] font-mono text-gray-500 dark:text-gray-400 uppercase tracking-wider">
           {hovered ? (
-            <span className="text-black">
+            <span className="text-black dark:text-white">
               [{hovered.code}] — {hovered.visits.toLocaleString()} visits
             </span>
           ) : (
@@ -196,7 +208,7 @@ export const TrafficMap: React.FC<TrafficMapProps> = ({ className = '' }) => {
           )}
         </p>
         {trafficData && (
-          <p className="text-[10px] font-mono text-gray-400 uppercase tracking-wider">
+          <p className="text-[10px] font-mono text-gray-400 dark:text-gray-500 uppercase tracking-wider">
             Total: {trafficData.reduce((sum, d) => sum + d.visits, 0).toLocaleString()}
           </p>
         )}

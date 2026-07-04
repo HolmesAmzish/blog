@@ -6,6 +6,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Archive, Home, FileText, User } from 'lucide-react';
 import { useState } from 'react';
 import { LanguageSwitcher } from '../ui/LanguageSwitcher';
+import { ThemeSwitcher } from '../ui/ThemeSwitcher';
 import { useTranslation } from '../../context/TranslationContext';
 
 interface NavItem {
@@ -30,15 +31,15 @@ export const Header: React.FC = () => {
   const { t } = useTranslation();
 
   return (
-    <header className="sticky top-0 z-50 bg-white border-b-[0.5px] border-gray-200">
+    <header className="sticky top-0 z-50 bg-white dark:bg-black border-b-[0.5px] border-gray-200 dark:border-gray-800">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <span className="text-lg font-bold tracking-tight text-black">
+            <span className="text-lg font-bold tracking-tight text-black dark:text-white">
               ARORMS
             </span>
-            <span className="text-[10px] font-mono text-gray-400 uppercase tracking-widest">
+            <span className="text-[10px] font-mono text-gray-400 dark:text-gray-500 uppercase tracking-widest">
               /BLOG
             </span>
           </Link>
@@ -57,8 +58,8 @@ export const Header: React.FC = () => {
                       'px-4 py-2 text-[11px] font-mono uppercase tracking-wider',
                       'border-[0.5px] transition-all duration-200',
                       isActive
-                        ? 'border-black bg-black text-white'
-                        : 'border-transparent text-gray-600 hover:border-gray-200 hover:text-black'
+                        ? 'border-black bg-black text-white dark:border-white dark:bg-white dark:text-black'
+                        : 'border-transparent text-gray-600 hover:border-gray-200 hover:text-black dark:text-gray-300 dark:hover:border-gray-700 dark:hover:text-white'
                     ].join(' ')}
                   >
                     {t(`nav.${item.label}`)}
@@ -69,14 +70,16 @@ export const Header: React.FC = () => {
 
             {/* Language Switcher */}
             <LanguageSwitcher />
+            <ThemeSwitcher />
           </div>
 
           {/* Mobile menu button */}
           <div className="flex items-center gap-2 md:hidden">
             <LanguageSwitcher className="!p-1.5" />
+            <ThemeSwitcher className="!p-1.5" />
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 border-[0.5px] border-gray-200 hover:border-black transition-colors"
+              className="p-2 border-[0.5px] border-gray-200 hover:border-black dark:border-gray-700 dark:hover:border-white transition-colors"
               aria-label="Toggle menu"
             >
               {mobileMenuOpen ? (
@@ -91,7 +94,7 @@ export const Header: React.FC = () => {
 
       {/* Mobile Navigation */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t-[0.5px] border-gray-200 bg-white">
+        <div className="md:hidden border-t-[0.5px] border-gray-200 dark:border-gray-800 bg-white dark:bg-black">
           <nav className="px-4 py-2 space-y-1">
             {navItems.map((item) => {
               const isActive = location.pathname === item.path;
@@ -104,8 +107,8 @@ export const Header: React.FC = () => {
                     'flex items-center gap-3 px-4 py-3 text-[11px] font-mono uppercase tracking-wider',
                     'border-[0.5px] transition-all duration-200',
                     isActive
-                      ? 'border-black bg-black !text-white'
-                      : 'border-gray-100 text-gray-600 hover:border-gray-300'
+                      ? 'border-black bg-black !text-white dark:border-white dark:bg-white dark:!text-black'
+                      : 'border-gray-100 text-gray-600 hover:border-gray-300 dark:border-gray-800 dark:text-gray-300 dark:hover:border-gray-600'
                   ].join(' ')}
                 >
                   {item.icon}

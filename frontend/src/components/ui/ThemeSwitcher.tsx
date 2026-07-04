@@ -1,28 +1,32 @@
 /**
- * Language Switcher Component
- * Allows users to switch between supported languages
+ * Theme Switcher Component
+ * Dropdown to pick between system / light / dark
  */
-import { useLanguage } from '../../context/LanguageContext';
-import { LANGUAGE_CONFIG, type SupportedLanguage } from '../../context/LanguageContext';
-import { ChevronDown, Globe } from 'lucide-react';
 import { useState } from 'react';
+import { Sun, Moon, Monitor, ChevronDown } from 'lucide-react';
+import { useTheme } from '../../context/ThemeContext';
+import type { Theme } from '../../context/ThemeContext';
 import { useTranslation } from '../../context/TranslationContext';
 
-interface LanguageSwitcherProps {
+const THEME_ICONS: Record<Theme, React.ReactNode> = {
+  system: <Monitor className="w-3 h-3" />,
+  light: <Sun className="w-3 h-3" />,
+  dark: <Moon className="w-3 h-3" />,
+};
+
+const THEME_ORDER: Theme[] = ['system', 'light', 'dark'];
+
+interface ThemeSwitcherProps {
   className?: string;
 }
 
-/**
- * Language Switcher - Minimalist monospace style
- */
-export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ className = '' }) => {
+export const ThemeSwitcher: React.FC<ThemeSwitcherProps> = ({ className = '' }) => {
+  const { theme, setTheme } = useTheme();
   const { t } = useTranslation();
-  const { language, setLanguage } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
-  const currentConfig = LANGUAGE_CONFIG[language];
 
-  const handleLanguageChange = (newLang: SupportedLanguage) => {
-    setLanguage(newLang);
+  const handleSelect = (next: Theme) => {
+    setTheme(next);
     setIsOpen(false);
   };
 
@@ -36,15 +40,14 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ className = 
           hover:border-black dark:hover:border-white hover:text-black dark:hover:text-white
           transition-all duration-200
         `}
-        aria-label={t('nav.toggleMenu')}
+        aria-label={t('theme.toggle')}
         aria-expanded={isOpen}
       >
-        <Globe className="w-3 h-3" />
-        <span>{currentConfig.label}</span>
+        {THEME_ICONS[theme]}
+        <span>{t(`theme.${theme}`)}</span>
         <ChevronDown className="w-2 h-2" />
       </button>
 
-      {/* Dropdown Menu */}
       {isOpen && (
         <>
           <div
@@ -54,22 +57,22 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ className = 
           />
           <div className="absolute right-0 top-full mt-2 z-50 w-32 bg-white dark:bg-black border-[0.5px] border-gray-200 dark:border-gray-700 shadow-lg rounded-sm overflow-hidden">
             <div className="py-1">
-              {(Object.keys(LANGUAGE_CONFIG) as SupportedLanguage[]).map((lang) => {
-                const config = LANGUAGE_CONFIG[lang];
-                const isActive = language === lang;
-
+              {THEME_ORDER.map((opt) => {
+                const isActive = theme === opt;
                 return (
                   <button
-                    key={lang}
-                    onClick={() => handleLanguageChange(lang)}
+                    key={opt}
+                    onClick={() => handleSelect(opt)}
                     className={`
                       w-full px-4 py-2 text-left text-[10px] font-mono uppercase tracking-wider
+                      flex items-center gap-2
                       border-b-[0.5px] border-gray-100 dark:border-gray-800 last:border-0
                       hover:bg-[#0047FF] hover:text-white
                       ${isActive ? 'bg-[#0047FF] text-white' : 'text-gray-600 dark:text-gray-300'}
                     `}
                   >
-                    {config.label}
+                    {THEME_ICONS[opt]}
+                    {t(`theme.${opt}`)}
                   </button>
                 );
               })}

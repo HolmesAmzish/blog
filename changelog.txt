@@ -1,3 +1,10 @@
+0.7.0 2026-07-04
+1. add three-state theme switching (system/light/dark) with ThemeContext and ThemeSwitcher
+2. add FOUC-prevention inline script in index.html to apply theme before React renders
+3. configure Tailwind v4 @custom-variant dark to drive dark: utilities from a .dark class on <html>
+4. add dark variants across Header, Footer, App shell, LoadingScreen, LanguageSwitcher, ArticleCard, HomePage, ArticleListPage, ArticleDetailPage, ArchivePage, AboutPage
+5. add scoped highlight.js token colors for light (github) and dark (github-dark) themes in index.css, replacing the always-dark import bug
+
 0.6.1
 1. add TrafficMap component — custom D3 SVG world map with country traffic heatmap
 2. add fetchCountryTraffic API endpoint

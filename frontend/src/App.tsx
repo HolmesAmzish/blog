@@ -59,14 +59,14 @@ function App() {
             )}
 
             {/* Main Layout */}
-            <div className="min-h-screen flex flex-col bg-white">
+            <div className="min-h-screen flex flex-col bg-white dark:bg-black">
               <Header />
               <main className="flex-1">
                 <Suspense fallback={
                   <div className="min-h-[50vh] flex items-center justify-center">
                     <div className="text-center">
-                      <div className="w-8 h-8 border-2 border-gray-200 border-t-[#0047FF] rounded-full animate-spin mx-auto mb-4" />
-                      <p className="text-[11px] font-mono text-gray-500 uppercase tracking-wider">Loading</p>
+                      <div className="w-8 h-8 border-2 border-gray-200 dark:border-gray-700 border-t-[#0047FF] rounded-full animate-spin mx-auto mb-4" />
+                      <p className="text-[11px] font-mono text-gray-500 dark:text-gray-400 uppercase tracking-wider">Loading</p>
                     </div>
                   </div>
                 }>
@@ -152,13 +152,13 @@ function App() {
                       element={
                         <div className="min-h-screen flex items-center justify-center">
                           <div className="text-center">
-                            <h1 className="text-4xl font-bold text-black mb-4">404</h1>
-                            <p className="text-gray-600 font-mono mb-6">
+                            <h1 className="text-4xl font-bold text-black dark:text-white mb-4">404</h1>
+                            <p className="text-gray-600 dark:text-gray-300 font-mono mb-6">
                               PAGE NOT FOUND
                             </p>
                             <a
                               href="/"
-                              className="inline-flex items-center gap-2 px-6 py-3 bg-black text-white text-[11px] font-mono uppercase tracking-wider hover:bg-[#0047FF] transition-colors"
+                              className="inline-flex items-center gap-2 px-6 py-3 bg-black text-white dark:bg-white dark:text-black text-[11px] font-mono uppercase tracking-wider hover:bg-[#0047FF] dark:hover:bg-[#0047FF] dark:hover:text-white transition-colors"
                             >
                               GO HOME
                             </a>

@@ -11,6 +11,7 @@ import { useArticles } from '../../hooks/useArticles';
 import type { ArchiveTreeNode, CategoryTreeNode, ArticleListItem } from '../../types';
 import { useTranslation } from '../../context/TranslationContext';
 import { useLanguage } from '../../context/LanguageContext';
+import { useTheme } from '../../context/ThemeContext';
 
 /**
  * Recursively build tree nodes from CategoryTreeNode
@@ -96,6 +97,7 @@ const buildTreeData = (categoryTree: CategoryTreeNode | undefined, articles: Art
 export const ArchivePage: React.FC = () => {
   const { t } = useTranslation();
   const { language } = useLanguage();
+  const { resolved } = useTheme();
   const navigate = useNavigate();
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstance = useRef<ECharts | null>(null);
@@ -121,16 +123,23 @@ export const ArchivePage: React.FC = () => {
 
       const treeData = buildTreeData(categoryTree, articles, t('archive.uncategorized'));
 
+      const isDark = resolved === 'dark';
+      const textColor = isDark ? '#fff' : '#000';
+      const mutedColor = isDark ? '#9ca3af' : '#666';
+      const lineColor = isDark ? '#2d2d2d' : '#e5e7eb';
+      const tooltipBg = isDark ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)';
+      const tooltipBorder = isDark ? '#2d2d2d' : '#e5e7eb';
+
       const option = {
         backgroundColor: 'transparent',
         tooltip: {
           trigger: 'item',
           triggerOn: 'mousemove',
-          backgroundColor: 'rgba(255, 255, 255, 0.95)',
-          borderColor: '#e5e7eb',
+          backgroundColor: tooltipBg,
+          borderColor: tooltipBorder,
           borderWidth: 0.5,
           textStyle: {
-            color: '#000',
+            color: textColor,
             fontFamily: 'monospace',
             fontSize: 11,
           },
@@ -159,7 +168,7 @@ export const ArchivePage: React.FC = () => {
             symbolSize: 8,
             symbol: 'circle',
             itemStyle: {
-              color: '#000',
+              color: isDark ? '#fff' : '#000',
               borderColor: '#0047FF',
               borderWidth: 1,
             },
@@ -169,7 +178,7 @@ export const ArchivePage: React.FC = () => {
               align: 'right',
               fontFamily: 'monospace',
               fontSize: 11,
-              color: '#000',
+              color: textColor,
               formatter: (params: any) => {
                 const data = params.data;
                 if (!data) return '';
@@ -180,10 +189,10 @@ export const ArchivePage: React.FC = () => {
               rich: {
                 category: {
                   fontWeight: 'bold',
-                  color: '#000',
+                  color: textColor,
                 },
                 article: {
-                  color: '#666',
+                  color: mutedColor,
                 },
               },
             },
@@ -201,7 +210,7 @@ export const ArchivePage: React.FC = () => {
               focus: 'descendant',
               itemStyle: {
                 color: '#0047FF',
-                borderColor: '#000',
+                borderColor: isDark ? '#fff' : '#000',
                 borderWidth: 2,
               },
             },
@@ -210,7 +219,7 @@ export const ArchivePage: React.FC = () => {
             animationDurationUpdate: 750,
             initialTreeDepth: -1,
             lineStyle: {
-              color: '#e5e7eb',
+              color: lineColor,
               width: 1,
             },
           },
@@ -239,7 +248,7 @@ export const ArchivePage: React.FC = () => {
       chartInstance.current?.dispose();
       chartInstance.current = null;
     };
-  }, [categoryTree, articles, categoriesLoading, articlesLoading, t, navigate]);
+  }, [categoryTree, articles, categoriesLoading, articlesLoading, t, navigate, resolved]);
 
   const isLoading = categoriesLoading || articlesLoading;
 
@@ -247,19 +256,19 @@ export const ArchivePage: React.FC = () => {
     <div className="min-h-screen py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Page header */}
-        <div className="mb-12 pb-6 border-b-[0.5px] border-gray-200">
-          <h1 className="text-3xl font-bold tracking-tight text-black">
+        <div className="mb-12 pb-6 border-b-[0.5px] border-gray-200 dark:border-gray-800">
+          <h1 className="text-3xl font-bold tracking-tight text-black dark:text-white">
             {t('archive.archive')}
           </h1>
         </div>
 
         {/* Chart container */}
-        <div className="border-[0.5px] border-gray-200 bg-white">
+        <div className="border-[0.5px] border-gray-200 dark:border-gray-800 bg-white dark:bg-black">
           {isLoading ? (
             <div className="h-[600px] flex items-center justify-center">
               <div className="text-center">
-                <div className="w-8 h-8 border-2 border-gray-200 border-t-[#0047FF] rounded-full animate-spin mx-auto mb-4" />
-                <p className="text-[11px] font-mono text-gray-500">
+                <div className="w-8 h-8 border-2 border-gray-200 dark:border-gray-700 border-t-[#0047FF] rounded-full animate-spin mx-auto mb-4" />
+                <p className="text-[11px] font-mono text-gray-500 dark:text-gray-400">
                   {t('archive.archive')}...
                 </p>
               </div>
@@ -275,9 +284,9 @@ export const ArchivePage: React.FC = () => {
         </div>
 
         {/* Legend */}
-        <div className="mt-6 flex items-center gap-6 text-[10px] font-mono text-gray-500">
+        <div className="mt-6 flex items-center gap-6 text-[10px] font-mono text-gray-500 dark:text-gray-400">
           <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-black border border-[#0047FF]" />
+            <span className="w-3 h-3 rounded-full bg-black dark:bg-white border border-[#0047FF]" />
             <span>{t('articleDetail.category')}</span>
           </div>
           <div className="flex items-center gap-2">

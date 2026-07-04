@@ -6,6 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="ARORMS Blog - A technical blog exploring software architecture, distributed systems, and the art of clean code." />
     <title>ARORMS Blog</title>
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem('theme'); // 'light' | 'dark' | 'system' | null
+          var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          var isDark = t === 'dark' || ((t === 'system' || !t) && prefersDark);
+          document.documentElement.classList.toggle('dark', isDark);
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

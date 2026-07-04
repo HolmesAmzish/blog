@@ -100,7 +100,7 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
   return (
     <div
       className={`
-        fixed inset-0 z-[100] bg-white
+        fixed inset-0 z-[100] bg-white dark:bg-black
         flex flex-col items-center justify-center
         transition-opacity duration-500
         ${progress >= 100 ? 'opacity-0' : 'opacity-100'}
@@ -111,7 +111,7 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
         {/* Title with glitch effect */}
         <h1
           className="
-            text-4xl md:text-6xl font-bold tracking-tighter text-black
+            text-4xl md:text-6xl font-bold tracking-tighter text-black dark:text-white
             font-mono mb-4
           "
           style={{ fontFamily: 'monospace' }}
@@ -132,10 +132,10 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
         {/* Progress bar container */}
         <div className="w-64 md:w-80 mx-auto">
           {/* Progress bar background */}
-          <div className="h-[1px] w-full bg-gray-200 mb-2">
+          <div className="h-[1px] w-full bg-gray-200 dark:bg-gray-700 mb-2">
             {/* Progress bar fill */}
             <div
-              className="h-full bg-black transition-all duration-100 ease-out"
+              className="h-full bg-black dark:bg-white transition-all duration-100 ease-out"
               style={{ width: `${progress}%` }}
             />
           </div>
