@@ -1,3 +1,13 @@
+0.8.0 2026-07-22
+1. split backend into multi-module Gradle project (`:app` and `:common`)
+2. move entities/mappers into `cn.arorms.blog.app.entities` and `cn.arorms.blog.app.mappers`
+3. normalize import paths across services and repositories (no more `cn.arorms.blog.backend.*` references)
+4. move shared DTOs/requests/responses/enums/exceptions into `:common` module under `cn.arorms.blog.common.*`
+5. add `Article.toVo()` mapper for full content view alongside `toSummaryVo()`
+6. rewrite `ArticleRepositoryCustomImpl` using QueryDSL — drop all `@Query` annotations in favor of typed DSL
+7. expose `findById`, `create`, `update` in `ArticleService` interface and add missing `override` modifiers
+8. align `delete` semantics — let JPA's `EmptyResultDataAccessException` surface or pre-check via `existsById`
+
 0.7.0 2026-07-04
 1. add three-state theme switching (system/light/dark) with ThemeContext and ThemeSwitcher
 2. add FOUC-prevention inline script in index.html to apply theme before React renders

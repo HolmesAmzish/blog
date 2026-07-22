@@ -12,17 +12,18 @@ A full-stack blog application with:
 
 ```
 blog/
-├── backend/          # Spring Boot Kotlin application
-│   └── src/main/kotlin/cn/arorms/blog/backend/
-│       ├── config/   # Security, CORS configurations
-│       ├── controllers/ # REST API endpoints
-│       ├── services/   # Business logic
-│       ├── repositories/ # JPA repositories
-│       ├── entities/   # Database entities
-│       ├── dto/        # Data transfer objects
-│       ├── enums/      # Application enums
-│       └── exception/  # Exception handling
-└── frontend/         # React TypeScript application
+├── backend/          # Spring Boot Kotlin application (Gradle project root)
+│   ├── src/main/kotlin/cn/arorms/blog/backend/
+│   │   ├── config/   # Security, CORS configurations
+│   │   ├── controllers/ # REST API endpoints
+│   │   ├── services/   # Business logic
+│   │   ├── repositories/ # JPA repositories
+│   │   ├── entities/   # Database entities
+│   │   ├── dto/        # Data transfer objects
+│   │   ├── enums/      # Application enums
+│   │   └── exception/  # Exception handling
+│   └── build.gradle.kts
+└── frontend/         # React TypeScript application (npm-managed)
     └── src/
         ├── api/      # HTTP client
         ├── components/ # Reusable components
@@ -32,7 +33,7 @@ blog/
 
 ## Key Architectural Patterns
 
-**Backend**:
+**Backend** (standalone Gradle project in `backend/`):
 - JWT-based authentication using Spring Security OAuth2 Resource Server
 - RESTful API with public read-only endpoints and authenticated write endpoints
 - JPA entities with Kotlin data classes, lazy loading for relations
@@ -46,8 +47,9 @@ blog/
 
 ## Common Commands
 
-**Backend**:
+**Backend** (run from `backend/` directory):
 - `./gradlew bootRun` - Start Spring Boot dev server (port 8080)
+- `./gradlew build` - Build the project
 - `./gradlew test` - Run tests
 - HTTP tests: Use VS Code REST client with files in `backend/src/test/http/`
 
@@ -58,7 +60,7 @@ blog/
 
 ## Environment Configuration
 
-**Backend** requires these environment variables:
+**Backend** (configured in `backend/src/main/resources/`) requires these environment variables:
 - `DB_HOST` - PostgreSQL host (default: localhost)
 - `DB_NAME` - Database name (default: blog_db)
 - `DB_USERNAME` - Database user (default: postgres)
