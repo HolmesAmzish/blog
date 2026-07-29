@@ -9,7 +9,7 @@ import java.time.ZoneOffset
 
 class CountryTrafficRepositoryCustomImpl(
     private val queryFactory: JPAQueryFactory
-) : cn.arorms.blog.app.repositories.CountryTrafficRepositoryCustom {
+) : CountryTrafficRepositoryCustom {
 
     override fun getAggregatedTrafficMap(timeRange: Int): List<CountryTrafficMap> {
         val qTraffic = QCountryTraffic.countryTraffic

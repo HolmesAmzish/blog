@@ -35,10 +35,13 @@ class Picture(
     @Column(length = 500)
     var alt: String? = null, // Alt text for accessibility
 
-    @JsonIncludeProperties("id", "username", "displayName")
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "uploader_id")
-    var uploader: UserProfile? = null,
+//    @JsonIncludeProperties("id", "username", "displayName")
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "uploader_id")
+//    var uploader: UserProfile? = null,
+
+//    @Column(name = "uploader_user_id")
+//    var uploaderUserId: String,
 
     @Column(name = "created_at")
     val createdAt: LocalDateTime = LocalDateTime.now()

@@ -15,7 +15,9 @@ import cn.arorms.blog.common.responses.ArticleSummaryVo
 import cn.arorms.blog.common.responses.ArticleVo
 import cn.arorms.framework.common.domain.PageResponse
 import cn.arorms.framework.common.exception.ResourceNotFoundException
+import cn.arorms.framework.security.UserPrincipal
 import org.springframework.data.domain.Pageable
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -60,7 +62,7 @@ class ArticleServiceImpl(
     }
 
     @Transactional
-    override fun create(request: ArticleUpsertRequest) {
+    override fun create(authorId: String, request: ArticleUpsertRequest) {
         if (articleRepository.existsBySlug(request.slug)) {
             throw IllegalArgumentException("Article with slug '${request.slug}' already exists")
         }
@@ -68,6 +70,7 @@ class ArticleServiceImpl(
             slug = request.slug,
             status = request.status,
             category = request.categoryId?.let { categoryRepository.getReferenceById(it) },
+            authorId = authorId
         )
 
         request.translations.forEach { dto ->

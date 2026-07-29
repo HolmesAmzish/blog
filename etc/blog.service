@@ -1,0 +1,15 @@
+[Unit]
+Description=Blog Backend Service
+After=network.target
+
+[Service]
+User=cacc
+WorkingDirectory=/home/cacc/Workspace/blog/backend/build/libs
+EnvironmentFile=/home/cacc/Workspace/blog.env
+ExecStart=/usr/bin/java -jar backend-0.0.1-SNAPSHOT.jar
+
+Restart=always
+RestartSec=300
+
+[Install]
+WantedBy=multi-user.target

@@ -14,5 +14,5 @@ interface PictureRepository : JpaRepository<Picture, Long> {
 
     fun findByFilename(filename: String): Picture?
 
-    fun findByUploaderId(uploaderId: Long, pageable: Pageable): Page<Picture>
+//    fun findByUploaderId(uploaderId: Long, pageable: Pageable): Page<Picture>
 }

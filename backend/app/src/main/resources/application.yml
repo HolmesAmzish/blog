@@ -25,7 +25,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: ${JWT_ISSUER}
+          issuer-uri: ${JWT_ISSUER:http://192.168.0.111:9000/realms/arorms}
 
   servlet:
     multipart:
@@ -49,8 +49,7 @@ application:
   # JWT Configuration
   security:
     jwt:
-      secret-key: ${JWT_SECRET_KEY}
-      expiration: ${JWT_EXPIRATION:86400000}
+      audience: ${JWT_AUD:blog-backend}
 
   # Cloudflare Configuration, used for view statistics query
   cloudflare:

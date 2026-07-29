@@ -19,7 +19,7 @@ interface ArticleService {
 
     fun findById(id: Long): Article
 
-    fun create(request: ArticleUpsertRequest)
+    fun create(authorId: String, request: ArticleUpsertRequest)
 
     fun update(id: Long, request: ArticleUpsertRequest)
 

@@ -5,8 +5,8 @@ import cn.arorms.blog.app.repositories.CategoryRepository
 import cn.arorms.blog.app.repositories.CountryTrafficRepository
 import cn.arorms.blog.app.repositories.SiteStatisticRepository
 import cn.arorms.blog.app.repositories.TagRepository
-import cn.arorms.blog.common.AdaptiveGroup
-import cn.arorms.blog.common.CloudflareViewer
+import cn.arorms.blog.common.responses.AdaptiveGroup
+import cn.arorms.blog.common.responses.CloudflareViewer
 import cn.arorms.blog.app.entities.CountryTraffic
 import cn.arorms.blog.app.entities.SiteStatistics
 import cn.arorms.blog.common.enums.TimeRange
@@ -63,25 +63,26 @@ class SiteStatisticsService(
      * Calculate and save all site statistics
      * Runs daily at 12:00
      */
-    @Transactional
-    @Scheduled(cron = "0 0 12 * * ?")
-    fun updateDailyStatistics() {
-        val totalArticleView = articleRepository.getTotalViewCount()
-        val totalArticles = articleRepository.count()
-        val totalCategories = categoryRepository.count()
-        val totalTags = tagRepository.count()
+//    @Transactional
+//    @Scheduled(cron = "0 0 12 * * ?")
+//    fun updateDailyStatistics() {
+//        val totalArticleView = articleRepository.getTotalViewCount()
+//        val totalArticles = articleRepository.count()
+//        val totalCategories = categoryRepository.count()
+//        val totalTags = tagRepository.count()
+//
+//        val statistics = SiteStatistics(
+//            date = LocalDateTime.now(),
+//            totalArticleView = totalArticleView,
+//            totalArticles = totalArticles,
+//            totalCategories = totalCategories,
+//            totalTags = totalTags
+//        )
+//
+//        siteStatisticRepository.save(statistics)
+//    }
 
-        val statistics = SiteStatistics(
-            date = LocalDateTime.now(),
-            totalArticleView = totalArticleView,
-            totalArticles = totalArticles,
-            totalCategories = totalCategories,
-            totalTags = totalTags
-        )
-
-        siteStatisticRepository.save(statistics)
-    }
-
+    // TODO
     fun getHttpRequestsStatistics(startTime: Instant, endTime: Instant, host: String): List<AdaptiveGroup> {
         val startTimeStr = startTime.toString()
         val endTimeStr = endTime.toString()

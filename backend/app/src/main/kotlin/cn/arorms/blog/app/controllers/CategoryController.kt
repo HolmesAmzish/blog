@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*
 
 /**
  * REST Controller for Category operations
+ * @version 0.9.0 2026-07-29
  */
 @RestController
 @RequestMapping("/api/categories")
@@ -65,24 +66,5 @@ class CategoryController(private val categoryService: cn.arorms.blog.app.service
         return ResponseEntity.ok(tree)
     }
 
-    @PostMapping
-    fun createCategory(@RequestBody request: CategoryUpsertRequest): ResponseEntity<CategoryVo> {
-        val savedCategory = categoryService.create(request)
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedCategory)
-    }
 
-    @PutMapping("/{id}")
-    fun updateCategory(
-        @PathVariable id: Long,
-        @RequestBody request: CategoryUpsertRequest
-    ): ResponseEntity<CategoryVo> {
-        val updatedCategory = categoryService.update(id, request)
-        return ResponseEntity.ok(updatedCategory)
-    }
-
-    @DeleteMapping("/{id}")
-    fun deleteCategory(@PathVariable id: Long): ResponseEntity<Void> {
-        categoryService.delete(id)
-        return ResponseEntity.noContent().build()
-    }
 }

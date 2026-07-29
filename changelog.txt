@@ -1,3 +1,11 @@
+0.9.0 2026-07-29
+1. split frontend into public and admin monorepo (apps/admin, apps/public, packages/types)
+2. refactor frontend build tools from npm to pnpm with workspace support
+3. migrate authentication from self-issued JWT to Keycloak OAuth2 Resource Server
+4. replace Article.author entity relationship with authorId string (UUID from Keycloak)
+5. separate public and admin REST controllers — admin stubs in controllers/admin/
+6. replace ApiResponse wrapper with raw ResponseEntity in public controllers
+
 0.8.0 2026-07-22
 1. split backend into multi-module Gradle project (`:app` and `:common`)
 2. move entities/mappers into `cn.arorms.blog.app.entities` and `cn.arorms.blog.app.mappers`
