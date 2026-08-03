@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchTags, createTag, updateTag, deleteTag } from '../api/tag';
-import type { TagVo, TagUpsertRequest } from '@blog/types';
+import type { TagVo, TagUpsertRequest } from '@/types';
 
 export const useTags = (language?: string) =>
   useQuery<TagVo[], Error>({

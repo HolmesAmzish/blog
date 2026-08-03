@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { fetchPictureById } from '../api/picture';
-import type { PictureDTO } from '@blog/types';
+import type { PictureDTO } from '@/types';
 
 export const usePictureById = (id: number | null) =>
   useQuery<PictureDTO, Error>({

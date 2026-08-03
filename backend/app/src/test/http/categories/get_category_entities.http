@@ -1,2 +1,0 @@
-### GET all category entities (admin)
-GET http://localhost:8080/api/categories/entity

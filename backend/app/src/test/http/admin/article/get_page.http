@@ -1,0 +1,54 @@
+### GET admin article page (default pagination)
+GET /api/admin/article HTTP/1.1
+Host: {{host}}
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+### GET admin article page with custom pagination
+GET /api/admin/article?page=0&size=10&sort=createdAt,desc HTTP/1.1
+Host: {{host}}
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+### GET admin article page with pagination and sort by updatedAt
+GET /api/admin/article?page=0&size=5&sort=updatedAt,desc HTTP/1.1
+Host: {{host}}
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+### GET admin article page with keyword search
+GET /api/admin/article?page=0&size=20&sort=createdAt,desc&keyword=AI HTTP/1.1
+Host: {{host}}
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+### GET admin article page filtered by language
+GET /api/admin/article?page=0&size=10&sort=createdAt,desc&language=ZH HTTP/1.1
+Host: {{host}}
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+### GET admin article page filtered by article status
+GET /api/admin/article?page=0&size=10&sort=createdAt,desc&articleStatus=DRAFT HTTP/1.1
+Host: {{host}}
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+### GET admin article page filtered by category
+GET /api/admin/article?page=0&size=10&sort=createdAt,desc&categoryId=1 HTTP/1.1
+Host: {{host}}
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+### GET admin article page with combined filters
+GET /api/admin/article?page=0&size=10&sort=createdAt,desc&language=EN&keyword=Spring&articleStatus=PUBLISHED HTTP/1.1
+Host: {{host}}
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+### GET admin article page - second page
+GET /api/admin/article?page=1&size=10&sort=createdAt,desc HTTP/1.1
+Host: {{host}}
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+

@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchArticles, fetchArticleById, createArticle, updateArticle, deleteArticle } from '../api/article';
-import type { ArticleCreateRequest, ArticleUpdateRequest, ArticlePageResponse } from '@blog/types';
+import type { ArticleUpsertRequest, PageResponse, ArticleSummaryVo } from '@/types';
 
 export const ARTICLES_QUERY = 'admin-articles';
 
@@ -8,7 +8,7 @@ interface UseArticlesParams { page?: number; size?: number; isAdmin?: boolean; }
 
 export const useArticles = (params: UseArticlesParams = {}) => {
   const { page = 0, size = 10 } = params;
-  return useQuery<ArticlePageResponse, Error>({
+  return useQuery<PageResponse<ArticleSummaryVo>, Error>({
     queryKey: [ARTICLES_QUERY, { page, size }],
     queryFn: () => fetchArticles(page, size),
   });
@@ -24,7 +24,7 @@ export const useArticleById = (id: number | null) =>
 export const useCreateArticle = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (req: ArticleCreateRequest) => createArticle(req),
+    mutationFn: (req: ArticleUpsertRequest) => createArticle(req),
     onSuccess: () => qc.invalidateQueries({ queryKey: [ARTICLES_QUERY] }),
   });
 };
@@ -32,7 +32,7 @@ export const useCreateArticle = () => {
 export const useUpdateArticle = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, req }: { id: number; req: ArticleUpdateRequest }) => updateArticle(id, req),
+    mutationFn: ({ id, req }: { id: number; req: ArticleUpsertRequest }) => updateArticle(id, req),
     onSuccess: () => qc.invalidateQueries({ queryKey: [ARTICLES_QUERY] }),
   });
 };

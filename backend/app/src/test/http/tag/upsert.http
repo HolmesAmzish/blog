@@ -1,7 +1,8 @@
 ### CREATE tag (requires auth)
-POST http://localhost:8080/api/tags
+POST /api/tags HTTP/1.1
+Host: {{host}}
 Content-Type: application/json
-Authorization: Bearer {{token}}
+Authorization: Bearer {{accessToken}}
 
 {
   "names": {

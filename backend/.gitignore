@@ -39,4 +39,4 @@ out/
 ### Kotlin ###
 .kotlin
 
-src/test/http/http-client.env.json
+app/src/test/http/http-client.env.json

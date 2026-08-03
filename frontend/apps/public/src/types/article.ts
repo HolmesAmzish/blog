@@ -1,0 +1,48 @@
+/**
+ * Article types — public-facing Vo, summary, page response, archive tree
+ * Mirrors backend common responses: ArticleVo / ArticleSummaryVo / ArchiveTreeNode
+ */
+import type { Language, ArticleStatus } from './common';
+import type { CategoryVo } from './category';
+import type { TagVo } from './tag';
+
+// --- List/summary item (mirrors backend ArticleSummaryVo) ---
+
+export interface ArticleSummaryVo {
+  id: number;
+  slug: string;
+  title: string;
+  summary: string | null;
+  status: ArticleStatus | null;
+  viewCount: number | null;
+  createdAt: string | null;
+  updatedAt: string | null;
+  category: CategoryVo | null;
+  tags: Array<TagVo> | null;
+}
+
+// --- Article Vo (public-facing article detail, mirrors backend ArticleVo) ---
+
+export interface ArticleVo {
+  id: number;
+  slug: string;
+  createdAt: string;
+  updatedAt: string;
+  viewCount: number;
+  isAiTranslated: boolean;
+  title: string;
+  summary: string;
+  content: string;
+  language: Language;
+  category: CategoryVo;
+  tags: Array<TagVo>;
+}
+
+// --- Archive tree node (for echarts tree visualization) ---
+
+export interface ArchiveTreeNode {
+  name: string;
+  value?: number;
+  children?: ArchiveTreeNode[];
+  article?: ArticleSummaryVo;
+}

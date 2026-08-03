@@ -7,9 +7,12 @@ import org.springframework.graphql.client.HttpGraphQlClient
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.http.HttpHeaders
 
+/**
+ * @version 0.9.1 2026-08-03
+ */
 @Configuration
 class GraphQlConfig (
-    @Value("\${application.cloudflare.token}")
+    @Value($$"${application.cloudflare.token}")
     private var cloudflareToken: String
 ) {
     @Bean

@@ -39,7 +39,7 @@ npm install
 
 2. Create environment file:
 ```bash
-cp .env.example .env
+cp .env.development.example .env.development
 ```
 
 3. Update `.env` with your API URL:

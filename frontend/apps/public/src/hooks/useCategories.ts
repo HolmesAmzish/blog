@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { fetchCategories, fetchCategoryTree } from '../api/category';
-import type { CategoryVo, CategoryTreeNode } from '@blog/types';
+import type { CategoryVo, CategoryTreeNode } from '@/types';
 
 export const useCategories = (language?: string) =>
   useQuery<CategoryVo[], Error>({

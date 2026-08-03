@@ -20,12 +20,12 @@ spring:
       hibernate:
         format_sql: true
 
-  # JWT Configuration
+  # JWT Configuration (issuer pinned per profile)
   security:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: ${JWT_ISSUER:http://192.168.0.111:9000/realms/arorms}
+          issuer-uri: ${JWT_ISSUER:http://localhost:9000/realms/arorms}
 
   servlet:
     multipart:

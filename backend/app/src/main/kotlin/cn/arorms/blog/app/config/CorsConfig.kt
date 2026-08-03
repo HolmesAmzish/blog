@@ -7,7 +7,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 /**
  * CorsConfig.kt
  * @author Cacciatore
- * @version 1.0 2026-03-12
+ * @version 0.3 2026-03-12
  */
 @Configuration
 class CorsConfig : WebMvcConfigurer {

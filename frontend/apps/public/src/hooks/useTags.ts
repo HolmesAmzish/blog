@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { fetchTags } from '../api/tag';
-import type { TagVo } from '@blog/types';
+import type { TagVo } from '@/types';
 
 export const useTags = (language?: string) =>
   useQuery<TagVo[], Error>({

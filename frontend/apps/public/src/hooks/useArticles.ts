@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { fetchPublishedArticles, fetchArticleBySlug } from '../api/article';
-import type { ArticlePageResponse, ArticleVo } from '@blog/types';
+import type { ArticleVo, PageResponse, ArticleSummaryVo } from '@/types';
 
 export const useArticles = (params: { page?: number; size?: number; categoryId?: number; language?: string; keyword?: string } = {}) => {
   const { page = 0, size = 10, categoryId, language, keyword } = params;
-  return useQuery<ArticlePageResponse, Error>({
+  return useQuery<PageResponse<ArticleSummaryVo>, Error>({
     queryKey: ['articles', { page, size, categoryId, language, keyword }],
     queryFn: () => fetchPublishedArticles(page, size, categoryId, language, keyword),
     staleTime: 5 * 60 * 1000,

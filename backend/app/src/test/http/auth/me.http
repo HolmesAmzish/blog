@@ -1,4 +1,0 @@
-### GET me
-GET http://localhost:8080/api/auth/me
-Content-Type: application/json
-Authorization: Bearer {{accessToken}}

@@ -5,12 +5,12 @@ import { useCategories } from '../../hooks/useCategories';
 import { Filter } from 'lucide-react';
 import { useTranslation } from '../../context/TranslationContext';
 import { useLanguage } from '../../context/LanguageContext';
-import type { ArticleListItem } from '@blog/types';
+import type { ArticleSummaryVo } from '@/types';
 
-interface ArticleGroup { month: string; articles: ArticleListItem[]; }
+interface ArticleGroup { month: string; articles: ArticleSummaryVo[]; }
 
-const groupArticlesByMonth = (articles: ArticleListItem[]): ArticleGroup[] => {
-  const groups: Record<string, ArticleListItem[]> = {};
+const groupArticlesByMonth = (articles: ArticleSummaryVo[]): ArticleGroup[] => {
+  const groups: Record<string, ArticleSummaryVo[]> = {};
   articles.forEach(a => {
     if (!a.createdAt) return;
     const d = new Date(a.createdAt);
@@ -30,7 +30,7 @@ const formatMonth = (m: string) => {
 
 const formatDate = (s: string | null) => s ? new Date(s).toLocaleDateString('en-US', { month: 'long', day: 'numeric' }) : '';
 
-const ArticleListItemComp: React.FC<{ article: ArticleListItem }> = ({ article }) => (
+const ArticleSummaryVoComp: React.FC<{ article: ArticleSummaryVo }> = ({ article }) => (
   <Link to={`/article/${article.slug}`} className="block py-3 hover:bg-black dark:hover:bg-white group duration-300 border-b border-gray-300 dark:border-gray-700">
     <div className="flex items-center gap-4">
       <div className="relative flex-1 group-hover:px-4 duration-300">
@@ -129,7 +129,7 @@ export const ArticleListPage: React.FC = () => {
             <div key={g.month} className="mb-12">
               <h2 className="pb-2 text-xs text-gray-600 dark:text-gray-400 font-mono">{formatMonth(g.month)}</h2>
               <div className="border-t border-gray-500 dark:border-gray-600">
-                {g.articles.map(a => <ArticleListItemComp key={a.id} article={a} />)}
+                {g.articles.map(a => <ArticleSummaryVoComp key={a.id} article={a} />)}
               </div>
             </div>
           ))}</div>
@@ -138,7 +138,7 @@ export const ArticleListPage: React.FC = () => {
         {data && (
           <div className="mt-6 text-center">
             <p className="text-[10px] font-mono text-gray-400 dark:text-gray-500">
-              {t('articles.showing')} {data.content.length} {t('articles.of')} {data.totalElements} {t('articles.articles')}
+              {t('articles.showing')} {data.content.length} {t('articles.of')} {data.total} {t('articles.articles')}
             </p>
           </div>
         )}

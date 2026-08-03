@@ -1,14 +1,14 @@
 import { Link } from 'react-router-dom';
-import type { ArticleListItem } from '@blog/types';
+import type { ArticleSummaryVo } from '@/types';
 
 interface ArticleCardProps {
-  article: ArticleListItem;
+  article: ArticleSummaryVo;
   index?: number;
   className?: string;
   showTags?: boolean;
 }
 
-const formatDate = (article: ArticleListItem): string => {
+const formatDate = (article: ArticleSummaryVo): string => {
   const dateString = article.createdAt || article.updatedAt;
   if (!dateString) return '---';
   return new Date(dateString).toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' });

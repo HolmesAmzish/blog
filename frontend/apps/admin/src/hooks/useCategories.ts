@@ -1,11 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchCategories, createCategory, updateCategory, deleteCategory } from '../api/category';
-import type { CategoryVo, CategoryUpsertRequest } from '@blog/types';
+import type { CategoryEntity, CategoryUpsertRequest } from '@/types';
 
-export const useCategories = (language?: string) =>
-  useQuery<CategoryVo[], Error>({
-    queryKey: ['admin-categories', language],
-    queryFn: () => fetchCategories(language),
+export const useCategories = () =>
+  useQuery<CategoryEntity[], Error>({
+    queryKey: ['admin-categories'],
+    queryFn: fetchCategories,
     staleTime: 10 * 60 * 1000,
   });
 
@@ -20,7 +20,7 @@ export const useCreateCategory = () => {
 export const useUpdateCategory = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (req: CategoryUpsertRequest) => updateCategory(req),
+    mutationFn: ({ id, req }: { id: number; req: CategoryUpsertRequest }) => updateCategory(id, req),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-categories'] }),
   });
 };

@@ -4,9 +4,9 @@
 import { UserManager, type User } from 'oidc-client-ts';
 
 const OIDC_CONFIG = {
-  authority: 'http://localhost:9000/realms/blog',
-  client_id: 'blog-admin',
-  redirect_uri: window.location.origin + '/callback',
+  authority: import.meta.env.VITE_OAUTH_AUTH_SERVER ?? 'http://localhost:9000/realms/arorms',
+  client_id: import.meta.env.VITE_OAUTH_CLIENT_ID ?? 'blog-react-admin',
+  redirect_uri: import.meta.env.VITE_OAUTH_REDIRECT_URI ?? window.location.origin + '/callback',
   post_logout_redirect_uri: window.location.origin + '/login',
   response_type: 'code',
   scope: 'openid profile email',

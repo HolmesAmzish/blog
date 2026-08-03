@@ -7,7 +7,7 @@ import java.time.LocalDateTime
  * Unified DTO for article list views, with resolved language-specific fields
  */
 data class ArticleSummaryVo(
-//    val id: Long,
+    val id: Long,
     val slug: String,
     val title: String,
     val summary: String?,

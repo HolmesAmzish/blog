@@ -2,12 +2,18 @@
  * Admin Login — redirects to Keycloak OIDC
  */
 import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { login, isAuthenticated } from '../../api/auth';
 
 export function AdminLoginPage() {
+  const navigate = useNavigate();
+
   useEffect(() => {
-    isAuthenticated().then(authed => { if (!authed) login(); });
-  }, []);
+    isAuthenticated().then(authed => {
+      if (authed) navigate('/admin', { replace: true });
+      else login();
+    });
+  }, [navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black">

@@ -2,10 +2,7 @@ package cn.arorms.blog.app.controllers
 
 import cn.arorms.blog.common.responses.CategoryVo
 import cn.arorms.blog.common.responses.CategoryTreeNode
-import cn.arorms.blog.common.requests.CategoryUpsertRequest
-import cn.arorms.blog.app.entities.Category
 import cn.arorms.blog.common.enums.Language
-import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
@@ -26,24 +23,6 @@ class CategoryController(private val categoryService: cn.arorms.blog.app.service
     ): ResponseEntity<List<CategoryVo>> {
         val categories = categoryService.findAll(language)
         return ResponseEntity.ok(categories)
-    }
-
-    /**
-     * @return List<CategoryEntity>, raw entity data for admin
-     */
-    @GetMapping("/entity")
-    fun getAllCategoryEntities(): ResponseEntity<List<Category>> {
-        val categories = categoryService.findAllEntities()
-        return ResponseEntity.ok(categories)
-    }
-
-    @GetMapping("/{id}")
-    fun getCategoryById(
-        @PathVariable id: Long,
-        @RequestParam(defaultValue = "EN") language: Language
-    ): ResponseEntity<CategoryVo> {
-        val category = categoryService.findById(id, language)
-        return ResponseEntity.ok(category)
     }
 
     @GetMapping("/slug/{slug}")

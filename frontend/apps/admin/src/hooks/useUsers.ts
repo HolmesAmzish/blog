@@ -1,9 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchUsers, deleteUser, updateUserRole, setUserEnabled } from '../api/user';
-import type { UserDTO } from '@blog/types';
+import type { UserVo } from '@/types';
 
 export const useUsers = () =>
-  useQuery<UserDTO[], Error>({
+  useQuery<UserVo[], Error>({
     queryKey: ['admin-users'],
     queryFn: fetchUsers,
   });

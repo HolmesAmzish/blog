@@ -3,12 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import type { ECharts } from 'echarts';
 import { useCategoryTree } from '../../hooks/useCategories';
 import { useArticles } from '../../hooks/useArticles';
-import type { ArchiveTreeNode, CategoryTreeNode, ArticleListItem } from '@blog/types';
+import type { ArchiveTreeNode, CategoryTreeNode, ArticleSummaryVo } from '@/types';
 import { useTranslation } from '../../context/TranslationContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
 
-const buildCategoryNodes = (categories: CategoryTreeNode[], articles: ArticleListItem[]): ArchiveTreeNode[] =>
+const buildCategoryNodes = (categories: CategoryTreeNode[], articles: ArticleSummaryVo[]): ArchiveTreeNode[] =>
   categories.map(category => {
     const node: ArchiveTreeNode = { name: category.name, children: [] };
     const children = node.children!;
@@ -18,7 +18,7 @@ const buildCategoryNodes = (categories: CategoryTreeNode[], articles: ArticleLis
     return children.length ? node : { ...node };
   }).filter(n => n.children?.length);
 
-const buildTreeData = (categoryTree: CategoryTreeNode | undefined, articles: ArticleListItem[], uncategorizedLabel: string): ArchiveTreeNode => {
+const buildTreeData = (categoryTree: CategoryTreeNode | undefined, articles: ArticleSummaryVo[], uncategorizedLabel: string): ArchiveTreeNode => {
   const root: ArchiveTreeNode = { name: 'ARORMS.BLOG', children: [] };
   if (!categoryTree?.children) return root;
   root.children = buildCategoryNodes(categoryTree.children, articles);

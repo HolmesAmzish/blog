@@ -1,4 +1,4 @@
-import type { Language } from '@blog/types';
+import type { Language } from '@/types';
 
 export function getLocalizedName(names: Record<Language, string> | undefined, language: Language): string {
   if (!names) return '';

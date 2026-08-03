@@ -1,0 +1,11 @@
+### GET admin article by ID
+GET /api/admin/article/2 HTTP/1.1
+Host: {{host}}
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+### GET admin article by ID (non-existent)
+GET /api/admin/article/99999 HTTP/1.1
+Host: {{host}}
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}

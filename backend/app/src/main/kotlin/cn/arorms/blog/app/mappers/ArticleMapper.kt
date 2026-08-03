@@ -3,13 +3,13 @@ package cn.arorms.blog.app.mappers
 import cn.arorms.blog.app.entities.*
 import cn.arorms.blog.common.enums.Language
 import cn.arorms.blog.common.responses.*
-import kotlin.collections.get
 
 // Article -> ArticleSummaryVo
 fun Article.toSummaryVo(lang: Language = Language.EN): ArticleSummaryVo {
     val translation = translations[lang] ?: translations[Language.EN]
 
     return ArticleSummaryVo(
+        id = this.id!!,
         slug = this.slug,
         title = translation?.title ?: "",
         summary = translation?.summary,

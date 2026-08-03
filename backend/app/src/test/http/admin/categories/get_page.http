@@ -1,0 +1,4 @@
+### GET all category entities (admin)
+GET /api/admin/categories HTTP/1.1
+Host: {{host}}
+Authorization: Bearer {{accessToken}}

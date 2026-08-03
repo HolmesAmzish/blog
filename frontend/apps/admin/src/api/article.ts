@@ -2,23 +2,21 @@
  * Admin article API — full CRUD on /api/admin/article
  */
 import { get, post, put, del } from './client';
-import type { ArticleCreateRequest, ArticleUpdateRequest } from '@blog/types';
+import type { ArticleUpsertRequest, Article, PageResponse, ArticleSummaryVo } from '@/types';
 
-const BASE_PATH = '/admin/article';
-
-export const fetchArticles = async (page = 0, size = 10): Promise<any> => {
+export const fetchArticles = async (page = 0, size = 10): Promise<PageResponse<ArticleSummaryVo>> => {
   const params = new URLSearchParams({ page: String(page), size: String(size) });
-  return get<any>(`${BASE_PATH}?${params}`);
+  return get<PageResponse<ArticleSummaryVo>>(`/api/admin/article?${params}`);
 };
 
-export const fetchArticleById = async (id: number): Promise<any> =>
-  get<any>(`${BASE_PATH}/${id}`);
+export const fetchArticleById = async (id: number): Promise<Article> =>
+  get<Article>(`/api/admin/article/${id}`);
 
-export const createArticle = async (request: ArticleCreateRequest): Promise<void> =>
-  post<void>(BASE_PATH, request);
+export const createArticle = async (request: ArticleUpsertRequest): Promise<void> =>
+  post<void>('/api/admin/article', request);
 
-export const updateArticle = async (id: number, request: ArticleUpdateRequest): Promise<void> =>
-  put<void>(`${BASE_PATH}/${id}`, request);
+export const updateArticle = async (id: number, request: ArticleUpsertRequest): Promise<void> =>
+  put<void>(`/api/admin/article/${id}`, request);
 
 export const deleteArticle = async (id: number): Promise<void> =>
-  del<void>(`${BASE_PATH}/${id}`);
+  del<void>(`/api/admin/article/${id}`);

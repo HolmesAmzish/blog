@@ -1,17 +1,16 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { LanguageProvider } from './context/LanguageContext';
-import { TranslationProvider } from './context/TranslationContext';
 import { AdminLayout } from './components/admin/AdminLayout';
 import { ProtectedRoute } from './components/admin/ProtectedRoute';
 import { AdminLoginPage } from './features/login/AdminLoginPage';
-import { AdminDashboardPage } from './features/admin/dashboard/AdminDashboardPage';
-import { AdminArticlesPage } from './features/admin/articles/AdminArticlesPage';
-import { AdminArticleEditPage } from './features/admin/articles/AdminArticleEditPage';
-import { AdminCategoriesPage } from './features/admin/categories/AdminCategoriesPage';
-import { AdminTagsPage } from './features/admin/tags/AdminTagsPage';
-import { AdminUsersPage } from './features/admin/users/AdminUsersPage';
-import { AdminPicturesPage } from './features/admin/pictures/AdminPicturesPage';
+import { CallbackPage } from './features/login/CallbackPage';
+import { AdminDashboardPage } from './features/dashboard/AdminDashboardPage';
+import { AdminArticlesPage } from './features/articles/AdminArticlesPage';
+import { AdminArticleEditPage } from './features/articles/AdminArticleEditPage';
+import { AdminCategoriesPage } from './features/categories/AdminCategoriesPage';
+import { AdminTagsPage } from './features/tags/AdminTagsPage';
+import { AdminUsersPage } from './features/users/AdminUsersPage';
+import { AdminPicturesPage } from './features/pictures/AdminPicturesPage';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 5 * 60 * 1000, retry: 1 } },
@@ -20,12 +19,10 @@ const queryClient = new QueryClient({
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <LanguageProvider>
-        <TranslationProvider>
           <BrowserRouter>
             <Routes>
               <Route path="/login" element={<AdminLoginPage />} />
-              <Route path="/callback" element={<AdminLoginPage />} />
+              <Route path="/callback" element={<CallbackPage />} />
               <Route
                 path="/admin"
                 element={<ProtectedRoute><AdminLayout><AdminDashboardPage /></AdminLayout></ProtectedRoute>}
@@ -62,8 +59,6 @@ function App() {
               <Route path="*" element={<Navigate to="/admin" replace />} />
             </Routes>
           </BrowserRouter>
-        </TranslationProvider>
-      </LanguageProvider>
     </QueryClientProvider>
   );
 }

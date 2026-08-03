@@ -2,7 +2,7 @@
  * Public category API — read-only
  */
 import { get } from './client';
-import type { CategoryVo, CategoryTreeNode } from '@blog/types';
+import type { CategoryVo, CategoryTreeNode } from '@/types';
 
 export const fetchCategories = async (language?: string): Promise<CategoryVo[]> => {
   const params = language ? `?language=${language}` : '';
