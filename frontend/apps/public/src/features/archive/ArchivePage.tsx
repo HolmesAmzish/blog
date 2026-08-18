@@ -1,44 +1,19 @@
 import { useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import type { ECharts } from 'echarts';
 import { useCategoryTree } from '../../hooks/useCategories';
-import { useArticles } from '../../hooks/useArticles';
-import type { ArchiveTreeNode, CategoryTreeNode, ArticleSummaryVo } from '@/types';
 import { useTranslation } from '../../context/TranslationContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
-
-const buildCategoryNodes = (categories: CategoryTreeNode[], articles: ArticleSummaryVo[]): ArchiveTreeNode[] =>
-  categories.map(category => {
-    const node: ArchiveTreeNode = { name: category.name, children: [] };
-    const children = node.children!;
-    const categoryArticles = articles.filter(a => a.category?.id === category.id);
-    categoryArticles.forEach(a => children.push({ name: a.title, value: a.viewCount ?? 0, article: a }));
-    if (category.children?.length) children.push(...buildCategoryNodes(category.children, articles));
-    return children.length ? node : { ...node };
-  }).filter(n => n.children?.length);
-
-const buildTreeData = (categoryTree: CategoryTreeNode | undefined, articles: ArticleSummaryVo[], uncategorizedLabel: string): ArchiveTreeNode => {
-  const root: ArchiveTreeNode = { name: 'ARORMS.BLOG', children: [] };
-  if (!categoryTree?.children) return root;
-  root.children = buildCategoryNodes(categoryTree.children, articles);
-  const uncategorized = articles.filter(a => !a.category);
-  if (uncategorized.length) root.children.push({ name: uncategorizedLabel, children: uncategorized.map(a => ({ name: a.title, value: a.viewCount ?? 0, article: a })) });
-  return root;
-};
 
 export const ArchivePage: React.FC = () => {
   const { t } = useTranslation();
   const { language } = useLanguage();
   const { resolved } = useTheme();
-  const navigate = useNavigate();
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstance = useRef<ECharts | null>(null);
 
   const { data: categoryTree, isLoading: catLoading } = useCategoryTree(language);
-  const { data: articlesData, isLoading: artLoading } = useArticles({ page: 0, size: 1000, language });
-  const isLoading = catLoading || artLoading;
-  const articles = articlesData?.content || [];
+  const isLoading = catLoading;
 
   useEffect(() => {
     if (!chartRef.current || isLoading) return;
@@ -47,7 +22,7 @@ export const ArchivePage: React.FC = () => {
     import('echarts').then(echarts => {
       if (disposed || !chartRef.current) return;
       chartInstance.current = echarts.init(chartRef.current);
-      const treeData = buildTreeData(categoryTree, articles, t('archive.uncategorized'));
+      const treeData = categoryTree ? [categoryTree] : [];
       const isDark = resolved === 'dark';
       const textColor = isDark ? '#fff' : '#000';
       const lineColor = isDark ? '#2d2d2d' : '#e5e7eb';
@@ -66,14 +41,13 @@ export const ArchivePage: React.FC = () => {
         }],
       } as any);
 
-      chartInstance.current.on('click', (params: any) => { if (params.data?.article) navigate(`/article/${params.data.article.slug}`); });
       const onResize = () => chartInstance.current?.resize();
       window.addEventListener('resize', onResize);
       return () => { window.removeEventListener('resize', onResize); };
     });
 
     return () => { disposed = true; chartInstance.current?.dispose(); chartInstance.current = null; };
-  }, [categoryTree, articles, isLoading, t, navigate, resolved]);
+  }, [categoryTree, isLoading, t, resolved]);
 
   return (
     <div className="min-h-screen py-12">
@@ -92,7 +66,6 @@ export const ArchivePage: React.FC = () => {
         </div>
         <div className="mt-6 flex items-center gap-6 text-[10px] font-mono text-gray-500 dark:text-gray-400">
           <span className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-black dark:bg-white border border-[#0047FF]" /> Category</span>
-          <span className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-[#0047FF]" /> Article</span>
         </div>
       </div>
     </div>

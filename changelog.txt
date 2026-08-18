@@ -1,4 +1,11 @@
-0.9.1
+0.9.2 2026-08-18
+1. migrate OAuth server to production (auth.arorms.cn), remove hardcoded localhost fallbacks
+2. refactor frontend API client
+3. simplify archive page — remove article nodes from tree, show only category structure
+4. remove ArchiveTreeNode type (no longer needed)
+5. update admin env config to use production OAuth endpoints
+
+0.9.1 2026-08-03
 1. splite types packages into public and admin
 2. extract graphql request of cloudflare task into a schedule component
 

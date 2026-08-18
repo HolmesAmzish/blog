@@ -6,10 +6,10 @@ import type { CategoryVo, CategoryTreeNode } from '@/types';
 
 export const fetchCategories = async (language?: string): Promise<CategoryVo[]> => {
   const params = language ? `?language=${language}` : '';
-  return get<CategoryVo[]>(`/categories${params}`);
+  return get<CategoryVo[]>(`/api/categories${params}`);
 };
 
 export const fetchCategoryTree = async (language?: string): Promise<CategoryTreeNode> => {
   const params = language ? `?language=${language}` : '';
-  return get<CategoryTreeNode>(`/categories/tree${params}`);
+  return get<CategoryTreeNode>(`/api/categories/tree${params}`);
 };

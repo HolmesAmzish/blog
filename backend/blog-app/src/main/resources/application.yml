@@ -25,7 +25,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: ${JWT_ISSUER:http://localhost:9000/realms/arorms}
+          issuer-uri: ${JWT_ISSUER:https://auth.arorms.cn/realms/arorms}
 
   servlet:
     multipart:
@@ -37,10 +37,10 @@ spring:
   ai:
     openai:
       api-key: ${OPENAI_APIKEY}
-      base-url: ${OPENAI_BASEURL:https://api.minimaxi.com/v1}
+      base-url: ${OPENAI_BASEURL}
       chat:
         options:
-          model: ${OPENAI_MODEL:MiniMax-M3}
+          model: ${OPENAI_MODEL}
 
 storage:
   location: ${UPLOAD_PATH:upload}

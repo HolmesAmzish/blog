@@ -18,4 +18,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "backend"
 
-include("common", "app")
+include("blog-common", "blog-app")

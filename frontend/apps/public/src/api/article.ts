@@ -12,10 +12,10 @@ export const fetchPublishedArticles = async (
   if (categoryId) params.set('categoryId', String(categoryId));
   if (language) params.set('language', language);
   if (keyword) params.set('keyword', keyword);
-  return get<PageResponse<ArticleSummaryVo>>(`/articles?${params}`);
+  return get<PageResponse<ArticleSummaryVo>>(`/api/articles?${params}`);
 };
 
 export const fetchArticleBySlug = async (slug: string, language?: string): Promise<ArticleVo> => {
   const params = language ? `?language=${language}` : '';
-  return get<ArticleVo>(`/articles/${slug}${params}`);
+  return get<ArticleVo>(`/api/articles/${slug}${params}`);
 };

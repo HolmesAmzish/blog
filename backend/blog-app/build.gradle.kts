@@ -24,7 +24,7 @@ allOpen {
 }
 
 dependencies {
-    implementation(project(":common"))
+    implementation(project(":blog-common"))
 
     // ===== Spring Boot =====
     implementation(libs.bundles.spring.web)

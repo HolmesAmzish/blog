@@ -6,5 +6,5 @@ import type { TagVo } from '@/types';
 
 export const fetchTags = async (language?: string): Promise<TagVo[]> => {
   const params = language ? `?language=${language}` : '';
-  return get<TagVo[]>(`/tags${params}`);
+  return get<TagVo[]>(`/api/tags${params}`);
 };

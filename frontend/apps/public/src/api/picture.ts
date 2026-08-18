@@ -5,4 +5,4 @@ import { get } from './client';
 import type { PictureDTO } from '@/types';
 
 export const fetchPictureById = async (id: number): Promise<PictureDTO> =>
-  get<PictureDTO>(`/pictures/${id}`);
+  get<PictureDTO>(`/api/pictures/${id}`);

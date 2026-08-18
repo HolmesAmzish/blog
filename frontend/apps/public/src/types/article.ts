@@ -1,13 +1,12 @@
 /**
  * Article types — public-facing Vo, summary, page response, archive tree
- * Mirrors backend common responses: ArticleVo / ArticleSummaryVo / ArchiveTreeNode
+ * Mirrors backend common responses: ArticleVo / ArticleSummaryVo
  */
 import type { Language, ArticleStatus } from './common';
 import type { CategoryVo } from './category';
 import type { TagVo } from './tag';
 
-// --- List/summary item (mirrors backend ArticleSummaryVo) ---
-
+// List/summary item
 export interface ArticleSummaryVo {
   id: number;
   slug: string;
@@ -21,8 +20,7 @@ export interface ArticleSummaryVo {
   tags: Array<TagVo> | null;
 }
 
-// --- Article Vo (public-facing article detail, mirrors backend ArticleVo) ---
-
+// Article Vo
 export interface ArticleVo {
   id: number;
   slug: string;
@@ -36,13 +34,4 @@ export interface ArticleVo {
   language: Language;
   category: CategoryVo;
   tags: Array<TagVo>;
-}
-
-// --- Archive tree node (for echarts tree visualization) ---
-
-export interface ArchiveTreeNode {
-  name: string;
-  value?: number;
-  children?: ArchiveTreeNode[];
-  article?: ArticleSummaryVo;
 }
