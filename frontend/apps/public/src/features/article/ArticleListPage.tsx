@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useArticles } from '../../hooks/useArticles';
 import { useCategories } from '../../hooks/useCategories';
 import { Filter } from 'lucide-react';
@@ -55,10 +55,24 @@ export const ArticleListPage: React.FC = () => {
   const { t } = useTranslation();
   const { language } = useLanguage();
   const [page, setPage] = useState(0);
-  const [selectedCategory, setSelectedCategory] = useState<number | undefined>();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const rawCategoryId = searchParams.get('categoryId');
+  const parsed = rawCategoryId ? Number(rawCategoryId) : undefined;
+  const selectedCategory = parsed !== undefined && Number.isFinite(parsed) ? parsed : undefined;
   const [searchInput, setSearchInput] = useState('');
   const [searchKeyword, setSearchKeyword] = useState('');
   const size = 40;
+
+  const setSelectedCategory = (id: number | undefined) => {
+    const next = new URLSearchParams(searchParams);
+    if (id === undefined || id === null) next.delete('categoryId');
+    else next.set('categoryId', String(id));
+    setSearchParams(next, { replace: true });
+    setPage(0);
+  };
+
+  // When categoryId is changed externally (e.g. navigation from /archive), reset pagination
+  useEffect(() => { setPage(0); }, [rawCategoryId]);
 
   const { data, isLoading, error } = useArticles({ page, size, categoryId: selectedCategory, language, keyword: searchKeyword || undefined });
   const { data: categories } = useCategories(language);

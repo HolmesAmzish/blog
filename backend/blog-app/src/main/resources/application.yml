@@ -51,6 +51,9 @@ application:
     jwt:
       audience: ${JWT_AUD:blog-backend}
 
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:https://blog.arorms.cn,http://localhost:5174}
+
   # Cloudflare Configuration, used for view statistics query
   cloudflare:
     zone-id: ${CLOUDFLARE_ZONE_ID}

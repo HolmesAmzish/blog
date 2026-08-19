@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import * as topojson from 'topojson-client';
 import { geoEquirectangular, geoPath } from 'd3-geo';
 import { scaleLinear } from 'd3-scale';
 import { useTheme } from '../../context/ThemeContext';
 import { fetchCountryTraffic } from '../../api/siteStatistics';
+import worldTopology from '@/assets/world-110m.json';
 
 const ISO_NUMERIC_TO_ALPHA2: Record<string, string> = {
   '004': 'AF', '008': 'AL', '012': 'DZ', '024': 'AO', '032': 'AR', '036': 'AU',
@@ -41,7 +42,6 @@ interface HoveredCountry { code: string; visits: number }
 export const TrafficMap: React.FC<TrafficMapProps> = ({ className = '' }) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 400 });
-  const [geoData, setGeoData] = useState<GeoJSON.FeatureCollection | null>(null);
   const [hovered, setHovered] = useState<HoveredCountry | null>(null);
   const { resolved } = useTheme();
   const isDark = resolved === 'dark';
@@ -52,14 +52,8 @@ export const TrafficMap: React.FC<TrafficMapProps> = ({ className = '' }) => {
     staleTime: 60 * 60 * 1000,
   });
 
-  useEffect(() => {
-    fetch('/world-110m.json')
-      .then(res => res.json())
-      .then(topology => {
-        const features = topojson.feature(topology, topology.objects.countries) as unknown as GeoJSON.FeatureCollection;
-        setGeoData(features);
-      })
-      .catch(err => console.error('Failed to load world map:', err));
+  const geoData = useMemo(() => {
+    return topojson.feature(worldTopology as any, (worldTopology as any).objects.countries) as unknown as GeoJSON.FeatureCollection;
   }, []);
 
   useEffect(() => {

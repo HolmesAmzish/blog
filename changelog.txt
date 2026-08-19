@@ -1,3 +1,10 @@
+0.10.0 2026-08-19
+1. overhaul admin UI — new AdminLayout with grouped nav, mobile drawer and theme switcher
+2. refactor admin API clients to /api/admin/* (category/tag/picture/auth/user), add llm client and language-aware category fetch
+3. backend: make CORS configurable via CORS_ALLOWED_ORIGINS env, fix /api/admin/auth/me to return UserPrincipal, migrate Jackson to tools.jackson
+4. public frontend: archive tree click navigates to filtered article list via ?categoryId, list page syncs filter to URL; bundle world map statically and fix header offset
+5. deploy & tooling: split nginx into blog-public.conf / blog-admin.conf, rename blog.service/env to blog-spring.*, move HTTP tests to top-level test/http and clean obsolete tests
+
 0.9.2 2026-08-18
 1. migrate OAuth server to production (auth.arorms.cn), remove hardcoded localhost fallbacks
 2. refactor frontend API client

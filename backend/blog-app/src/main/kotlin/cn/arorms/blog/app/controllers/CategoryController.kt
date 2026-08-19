@@ -8,7 +8,8 @@ import org.springframework.web.bind.annotation.*
 
 /**
  * REST Controller for Category operations
- * @version 0.9.0 2026-07-29
+ * @version 0.10.0 2026-08-19
+ * @since 2026-02-05
  */
 @RestController
 @RequestMapping("/api/categories")
@@ -44,6 +45,4 @@ class CategoryController(private val categoryService: cn.arorms.blog.app.service
         val tree = categoryService.buildCategoryTree(language)
         return ResponseEntity.ok(tree)
     }
-
-
 }

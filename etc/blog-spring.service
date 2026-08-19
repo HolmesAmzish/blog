@@ -1,0 +1,15 @@
+[Unit]
+Description=Blog Backend Service
+After=network.target
+
+[Service]
+User=cacc
+WorkingDirectory=/home/cacc/Repositories/blog/backend/build/libs
+EnvironmentFile=/home/cacc/Repositories/blog/etc/blog-spring.env
+ExecStart=/usr/bin/java -jar backend-0.9.3-SNAPSHOT.jar
+
+Restart=always
+RestartSec=300
+
+[Install]
+WantedBy=multi-user.target

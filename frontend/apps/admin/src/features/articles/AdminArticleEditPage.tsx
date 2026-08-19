@@ -1,7 +1,3 @@
-/**
- * Admin Article Edit Page
- * Create or edit article with multilingual support
- */
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -12,13 +8,7 @@ import { ARTICLES_QUERY } from '../../hooks/useArticles';
 import type { Article, ArticleUpsertRequest, ArticleTranslationUpsertRequest, Language } from '@/types';
 import { Save, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 
-type TranslationForm = {
-  title: string;
-  summary: string;
-  content: string;
-  isAiTranslated: boolean;
-};
-
+type TranslationForm = { title: string; summary: string; content: string; isAiTranslated: boolean };
 const LANGUAGES: Language[] = ['EN', 'ZH'];
 
 export function AdminArticleEditPage() {
@@ -31,36 +21,23 @@ export function AdminArticleEditPage() {
     ZH: { title: '', summary: '', content: '', isAiTranslated: false },
     EN: { title: '', summary: '', content: '', isAiTranslated: false },
   });
-
   const [slug, setSlug] = useState('');
   const [status, setStatus] = useState<'DRAFT' | 'PUBLISHED' | 'ARCHIVED'>('DRAFT');
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [tagIds, setTagIds] = useState<number[]>([]);
-  const [activeTab, setActiveTab] = useState<Language>('ZH');
+  const [activeTab, setActiveTab] = useState<Language>('EN');
   const [previewMode, setPreviewMode] = useState(false);
 
-  // Fetch article if editing
   const { data: article } = useQuery<Article | undefined>({
     queryKey: ['article', id],
     queryFn: () => fetchArticleById(Number(id)),
     enabled: isEdit,
   });
+  const { data: categories } = useQuery({ queryKey: ['categories'], queryFn: () => fetchCategories() });
+  const { data: tags } = useQuery({ queryKey: ['tags'], queryFn: () => fetchTags() });
 
-  // Fetch categories and tags
-  const { data: categories } = useQuery({
-    queryKey: ['categories'],
-    queryFn: () => fetchCategories(),
-  });
-
-  const { data: tags } = useQuery({
-    queryKey: ['tags'],
-    queryFn: () => fetchTags(),
-  });
-
-  // Populate form when editing
   useEffect(() => {
     if (article) {
-      // Build translations from article's translations map
       const newTranslations: Record<Language, TranslationForm> = {
         ZH: { title: '', summary: '', content: '', isAiTranslated: false },
         EN: { title: '', summary: '', content: '', isAiTranslated: false },
@@ -74,7 +51,6 @@ export function AdminArticleEditPage() {
           isAiTranslated: trans.isAiTranslated || false,
         };
       });
-
       setTranslations(newTranslations);
       setSlug(article.slug);
       setStatus(article.status ?? 'DRAFT');
@@ -83,37 +59,20 @@ export function AdminArticleEditPage() {
     }
   }, [article]);
 
-  // Create/Update mutation
   const mutation = useMutation({
-    mutationFn: (data: ArticleUpsertRequest) => {
-      if (isEdit) {
-        return updateArticle(Number(id), data);
-      }
-      return createArticle(data);
-    },
+    mutationFn: (data: ArticleUpsertRequest) => (isEdit ? updateArticle(Number(id), data) : createArticle(data)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [ARTICLES_QUERY] });
       navigate('/admin/articles');
     },
   });
 
-  // Generate slug from title
-  const generateSlug = (title: string) => {
-    return title
-      .toLowerCase()
-      .replace(/[^a-z0-9一-龥]+/g, '-')
-      .replace(/^-|-$/g, '');
-  };
+  const generateSlug = (title: string) =>
+    title.toLowerCase().replace(/[^a-z0-9\u4e00-\u9fa5]+/g, '-').replace(/^-|-$/g, '');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Check if at least one language has a title
-    const hasContent = LANGUAGES.some(
-      (lang) => translations[lang].title.trim()
-    );
-    if (!hasContent) return;
-
+    if (!LANGUAGES.some((lang) => translations[lang].title.trim())) return;
     const translationsRequest: Array<ArticleTranslationUpsertRequest> = [];
     LANGUAGES.forEach((lang) => {
       if (translations[lang].title.trim()) {
@@ -127,9 +86,7 @@ export function AdminArticleEditPage() {
         });
       }
     });
-
     const requestSlug = slug || generateSlug(translations.EN.title) || generateSlug(translations[activeTab].title);
-
     const request: ArticleUpsertRequest = {
       id: isEdit ? Number(id) : null,
       slug: requestSlug,
@@ -141,241 +98,189 @@ export function AdminArticleEditPage() {
     mutation.mutate(request);
   };
 
-  const handleTranslationChange = (field: keyof TranslationForm, value: string) => {
-    setTranslations((prev) => ({
-      ...prev,
-      [activeTab]: { ...prev[activeTab], [field]: value },
-    }));
-  };
+  const handleTranslationChange = (field: keyof TranslationForm, value: string) =>
+    setTranslations((prev) => ({ ...prev, [activeTab]: { ...prev[activeTab], [field]: value } }));
 
-  const handleTagToggle = (tagId: number) => {
-    setTagIds((prev) =>
-      prev.includes(tagId) ? prev.filter((t) => t !== tagId) : [...prev, tagId]
-    );
-  };
+  const handleTagToggle = (tagId: number) =>
+    setTagIds((prev) => (prev.includes(tagId) ? prev.filter((t) => t !== tagId) : [...prev, tagId]));
 
   const currentTranslation = translations[activeTab];
 
   return (
-    <>
-      <div className="p-8 max-w-5xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => navigate('/admin/articles')}
-              className="p-2 hover:bg-gray-100 transition-colors"
-            >
-              <ArrowLeft size={20} className="text-gray-600" />
-            </button>
-            <div>
-              <h1 className="text-2xl font-bold text-black font-mono tracking-tight">
-                {isEdit ? 'EDIT ARTICLE' : 'NEW ARTICLE'}
-              </h1>
-              <p className="text-gray-500 text-sm font-mono mt-1">
-                {isEdit ? 'Update article content' : 'Create a new article'}
-              </p>
-            </div>
-          </div>
+    <div className="max-w-[1120px] mx-auto space-y-5 animate-fade-in">
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
           <button
-            onClick={() => setPreviewMode(!previewMode)}
-            className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-600 text-sm font-mono hover:bg-gray-50 transition-colors"
+            onClick={() => navigate('/admin/articles')}
+            className="w-9 h-9 rounded-full bg-white border border-[#e8e8ed] flex items-center justify-center hover:bg-[#f5f5f7] transition-colors"
           >
-            {previewMode ? <EyeOff size={16} /> : <Eye size={16} />}
-            {previewMode ? 'Edit' : 'Preview'}
+            <ArrowLeft size={16} className="text-[#1d1d1f]" />
           </button>
+          <div>
+            <h1 className="text-[18px] font-semibold tracking-tight text-[#1d1d1f] leading-none">
+              {isEdit ? 'Edit article' : 'New article'}
+            </h1>
+            <p className="text-[12px] text-[#86868b] mt-1">{isEdit ? 'Update content and metadata' : 'Write in Markdown. Keep it simple.'}</p>
+          </div>
         </div>
+        <button
+          onClick={() => setPreviewMode(!previewMode)}
+          className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-white border border-[#e8e8ed] text-[12px] font-medium text-[#1d1d1f] hover:bg-[#f5f5f7]"
+        >
+          {previewMode ? <EyeOff size={14} /> : <Eye size={14} />}
+          {previewMode ? 'Edit' : 'Preview'}
+        </button>
+      </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Main Content */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Left: Title & Content with Language Tabs */}
-            <div className="lg:col-span-2 space-y-6">
-              {/* Language Tabs */}
-              <div className="bg-white border border-gray-200 p-4">
-                <div className="flex gap-2 mb-4">
-                  {LANGUAGES.map((lang) => (
-                    <button
-                      key={lang}
-                      type="button"
-                      onClick={() => setActiveTab(lang)}
-                      className={`px-4 py-2 text-xs font-mono uppercase tracking-wider border transition-colors ${
-                        activeTab === lang
-                          ? 'bg-[#0047FF] text-white border-[#0047FF]'
-                          : 'border-gray-300 text-gray-600 hover:border-[#0047FF]'
-                      }`}
-                    >
-                      {lang === 'ZH' ? '中文' : 'English'}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Title */}
-                <div className="mb-4">
-                  <label className="block text-xs font-mono text-gray-500 uppercase tracking-wider mb-2">
-                    Title ({activeTab === 'ZH' ? '中文' : 'English'}) *
-                  </label>
-                  <input
-                    type="text"
-                    value={currentTranslation.title}
-                    onChange={(e) => handleTranslationChange('title', e.target.value)}
-                    className="w-full text-xl font-mono text-black border-0 border-b border-gray-200 pb-2 focus:border-[#0047FF] focus:outline-none"
-                    placeholder={`Enter article title in ${activeTab === 'ZH' ? 'Chinese' : 'English'}...`}
-                    required
-                  />
-                </div>
-
-                {/* Summary */}
-                <div className="mb-4">
-                  <label className="block text-xs font-mono text-gray-500 uppercase tracking-wider mb-2">
-                    Summary ({activeTab === 'ZH' ? '中文' : 'English'})
-                  </label>
-                  <textarea
-                    value={currentTranslation.summary}
-                    onChange={(e) => handleTranslationChange('summary', e.target.value)}
-                    rows={3}
-                    className="w-full font-mono text-gray-700 border-0 focus:outline-none resize-none"
-                    placeholder="Brief summary of the article..."
-                  />
-                </div>
-
-                {/* Content */}
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="text-xs font-mono text-gray-500 uppercase tracking-wider">
-                      Content ({activeTab === 'ZH' ? '中文' : 'English'}) - Markdown
-                    </label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        id="isAiTranslated"
-                        checked={currentTranslation.isAiTranslated}
-                        onChange={(e) => setTranslations((prev) => ({
-                          ...prev,
-                          [activeTab]: { ...prev[activeTab], isAiTranslated: e.target.checked },
-                        }))}
-                        className="w-4 h-4 text-[#0047FF] border-gray-300 rounded focus:ring-[#0047FF]"
-                      />
-                      <label htmlFor="isAiTranslated" className="text-xs font-mono text-gray-600">
-                        AI Translated
-                      </label>
-                    </div>
-                  </div>
-                  {previewMode ? (
-                    <div className="prose prose-sm max-w-none min-h-[400px] font-mono text-gray-700">
-                      {currentTranslation.content || 'No content yet...'}
-                    </div>
-                  ) : (
-                    <textarea
-                      value={currentTranslation.content}
-                      onChange={(e) => handleTranslationChange('content', e.target.value)}
-                      rows={20}
-                      className="w-full font-mono text-sm text-gray-700 border-0 focus:outline-none resize-none"
-                      placeholder="Write your article content in Markdown..."
-                    />
-                  )}
-                </div>
-              </div>
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-5 items-start">
+        <div className="space-y-5">
+          <div className="admin-card p-5">
+            <div className="inline-flex p-1 rounded-full bg-[#f5f5f7] border border-[#e8e8ed]/60 mb-5">
+              {LANGUAGES.map((lang) => (
+                <button
+                  key={lang}
+                  type="button"
+                  onClick={() => setActiveTab(lang)}
+                  className={`px-4 py-1.5 rounded-full text-[12px] font-medium transition-colors ${
+                    activeTab === lang ? 'bg-[#1d1d1f] text-white shadow-sm' : 'text-[#86868b] hover:text-[#1d1d1f]'
+                  }`}
+                >
+                  {lang === 'ZH' ? '中文' : 'English'}
+                </button>
+              ))}
             </div>
 
-            {/* Right: Settings */}
-            <div className="space-y-6">
-              {/* Slug */}
-              <div className="bg-white border border-gray-200 p-6">
-                <label className="block text-xs font-mono text-gray-500 uppercase tracking-wider mb-2">
-                  Slug
-                </label>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-[11px] font-medium tracking-wide text-[#86868b] mb-2">Title · {activeTab}</label>
                 <input
                   type="text"
-                  value={slug}
-                  onChange={(e) => setSlug(e.target.value)}
-                  className="w-full font-mono text-sm text-gray-700 border border-gray-200 px-3 py-2 focus:border-[#0047FF] focus:outline-none"
-                  placeholder="article-url-slug"
+                  value={currentTranslation.title}
+                  onChange={(e) => handleTranslationChange('title', e.target.value)}
+                  className="w-full text-[18px] font-medium text-[#1d1d1f] placeholder:text-[#a1a1a6] bg-transparent border-0 border-b border-[#e8e8ed] rounded-none px-0 py-2 focus:outline-none focus:border-[#0047FF]"
+                  placeholder={activeTab === 'ZH' ? 'Enter title…' : 'Enter title…'}
+                  required
                 />
-                <p className="text-xs text-gray-400 mt-1 font-mono">
-                  Auto-generated from first non-empty title if empty
-                </p>
               </div>
 
-              {/* Status */}
-              <div className="bg-white border border-gray-200 p-6">
-                <label className="block text-xs font-mono text-gray-500 uppercase tracking-wider mb-2">
-                  Status
-                </label>
-                <select
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value as typeof status)}
-                  className="w-full font-mono text-sm text-gray-700 border border-gray-200 px-3 py-2 focus:border-[#0047FF] focus:outline-none"
-                >
-                  <option value="DRAFT">Draft</option>
-                  <option value="PUBLISHED">Published</option>
-                  <option value="ARCHIVED">Archived</option>
-                </select>
+              <div>
+                <label className="block text-[11px] font-medium tracking-wide text-[#86868b] mb-2">Summary</label>
+                <textarea
+                  value={currentTranslation.summary}
+                  onChange={(e) => handleTranslationChange('summary', e.target.value)}
+                  rows={2}
+                  className="w-full text-[13px] text-[#1d1d1f] placeholder:text-[#a1a1a6] bg-[#f5f5f7] border border-transparent focus:bg-white focus:border-[#e8e8ed] rounded-xl px-3 py-2.5 focus:outline-none resize-none"
+                  placeholder="One-line summary…"
+                />
               </div>
 
-              {/* Category */}
-              <div className="bg-white border border-gray-200 p-6">
-                <label className="block text-xs font-mono text-gray-500 uppercase tracking-wider mb-2">
-                  Category
-                </label>
-                <select
-                  value={categoryId || ''}
-                  onChange={(e) =>
-                    setCategoryId(e.target.value ? Number(e.target.value) : null)
-                  }
-                  className="w-full font-mono text-sm text-gray-700 border border-gray-200 px-3 py-2 focus:border-[#0047FF] focus:outline-none"
-                >
-                  <option value="">No Category</option>
-                  {categories?.map((cat) => (
-                    <option key={cat.id} value={String(cat.id)}>
-                      {cat.names.EN || cat.names.ZH || ''}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Tags */}
-              <div className="bg-white border border-gray-200 p-6">
-                <label className="block text-xs font-mono text-gray-500 uppercase tracking-wider mb-2">
-                  Tags
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {tags?.map((tag) => (
-                    <button
-                      key={tag.id}
-                      type="button"
-                      onClick={() => handleTagToggle(tag.id as number)}
-                      className={`px-3 py-1 text-xs font-mono border transition-colors ${
-                        tagIds.includes(tag.id as number)
-                          ? 'bg-[#0047FF] text-white border-[#0047FF]'
-                          : 'border-gray-300 text-gray-600 hover:border-[#0047FF]'
-                      }`}
-                    >
-                      {tag.name}
-                    </button>
-                  ))}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-[11px] font-medium tracking-wide text-[#86868b]">Content · Markdown</label>
+                  <label className="inline-flex items-center gap-2 text-[11px] text-[#6e6e73] cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={currentTranslation.isAiTranslated}
+                      onChange={(e) =>
+                        setTranslations((prev) => ({ ...prev, [activeTab]: { ...prev[activeTab], isAiTranslated: e.target.checked } }))
+                      }
+                      className="w-3.5 h-3.5 rounded border-[#d2d2d7] text-[#0047FF] focus:ring-[#0047FF]/20"
+                    />
+                    AI translated
+                  </label>
                 </div>
+                {previewMode ? (
+                  <div className="min-h-[420px] rounded-xl bg-[#fbfbfd] border border-[#e8e8ed] p-4 text-[13px] leading-relaxed text-[#1d1d1f] whitespace-pre-wrap">
+                    {currentTranslation.content || 'No content yet…'}
+                  </div>
+                ) : (
+                  <textarea
+                    value={currentTranslation.content}
+                    onChange={(e) => handleTranslationChange('content', e.target.value)}
+                    rows={20}
+                    className="w-full text-[13px] leading-relaxed text-[#1d1d1f] placeholder:text-[#a1a1a6] bg-white border border-[#e8e8ed] rounded-xl px-3 py-3 focus:outline-none focus:border-[#0047FF]/40 focus:ring-4 focus:ring-[#0047FF]/10 resize-y min-h-[420px] font-mono"
+                    placeholder="Write your article in Markdown…"
+                  />
+                )}
               </div>
-
-              {/* Submit Button */}
-              <button
-                type="submit"
-                disabled={mutation.isPending || !LANGUAGES.some((l) => translations[l].title.trim())}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#0047FF] text-white text-sm font-mono uppercase tracking-wider hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Save size={16} />
-                {mutation.isPending ? 'Saving...' : isEdit ? 'Update Article' : 'Create Article'}
-              </button>
-
-              {mutation.isError && (
-                <p className="text-red-500 text-xs font-mono text-center">
-                  Error saving article
-                </p>
-              )}
             </div>
           </div>
-        </form>
-      </div>
-    </>
+        </div>
+
+        <div className="space-y-4 lg:sticky lg:top-[76px]">
+          <div className="admin-card p-4">
+            <label className="block text-[11px] font-medium tracking-wide text-[#86868b] mb-2">Slug</label>
+            <input
+              type="text"
+              value={slug}
+              onChange={(e) => setSlug(e.target.value)}
+              className="w-full text-[13px] bg-[#f5f5f7] border border-transparent focus:bg-white focus:border-[#e8e8ed] rounded-xl px-3 py-2.5 focus:outline-none"
+              placeholder="article-url-slug"
+            />
+            <p className="text-[11px] text-[#86868b] mt-2">Auto-generated if empty.</p>
+          </div>
+
+          <div className="admin-card p-4">
+            <label className="block text-[11px] font-medium tracking-wide text-[#86868b] mb-2">Status</label>
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value as typeof status)}
+              className="w-full text-[13px] bg-[#f5f5f7] border border-transparent focus:bg-white focus:border-[#e8e8ed] rounded-xl px-3 py-2.5 focus:outline-none"
+            >
+              <option value="DRAFT">Draft</option>
+              <option value="PUBLISHED">Published</option>
+              <option value="ARCHIVED">Archived</option>
+            </select>
+          </div>
+
+          <div className="admin-card p-4">
+            <label className="block text-[11px] font-medium tracking-wide text-[#86868b] mb-2">Category</label>
+            <select
+              value={categoryId || ''}
+              onChange={(e) => setCategoryId(e.target.value ? Number(e.target.value) : null)}
+              className="w-full text-[13px] bg-[#f5f5f7] border border-transparent focus:bg-white focus:border-[#e8e8ed] rounded-xl px-3 py-2.5 focus:outline-none"
+            >
+              <option value="">No category</option>
+              {categories?.map((cat) => (
+                <option key={cat.id} value={String(cat.id)}>
+                  {cat.names.EN || cat.names.ZH || ''}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="admin-card p-4">
+            <label className="block text-[11px] font-medium tracking-wide text-[#86868b] mb-2">Tags</label>
+            <div className="flex flex-wrap gap-2">
+              {tags?.map((tag) => (
+                <button
+                  key={tag.id}
+                  type="button"
+                  onClick={() => handleTagToggle(tag.id as number)}
+                  className={`px-2.5 py-1 rounded-full text-[12px] font-medium border transition-colors ${
+                    tagIds.includes(tag.id as number)
+                      ? 'bg-[#0047FF] text-white border-[#0047FF]'
+                      : 'bg-white text-[#6e6e73] border-[#e8e8ed] hover:border-[#d2d2d7]'
+                  }`}
+                >
+                  {tag.name}
+                </button>
+              ))}
+              {tags?.length === 0 && <span className="text-[12px] text-[#86868b]">No tags yet.</span>}
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={mutation.isPending || !LANGUAGES.some((l) => translations[l].title.trim())}
+            className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-[#0047FF] text-white text-[13px] font-medium rounded-full hover:bg-[#0036CC] disabled:opacity-40 disabled:cursor-not-allowed transition-colors shadow-sm"
+          >
+            <Save size={14} />
+            {mutation.isPending ? 'Saving…' : isEdit ? 'Update article' : 'Create article'}
+          </button>
+          {mutation.isError && <p className="text-[12px] text-red-600 text-center">Failed to save. Check required fields.</p>}
+        </div>
+      </form>
+    </div>
   );
 }

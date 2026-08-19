@@ -1,0 +1,7 @@
+### GET all category entities (admin)
+GET {{baseUrl}}/api/admin/categories HTTP/1.1
+Authorization: Bearer {{accessToken}}
+
+### GET detail
+GET {{baseUrl}}/api/admin/categories/1
+Authorization: Bearer {{accessToken}}

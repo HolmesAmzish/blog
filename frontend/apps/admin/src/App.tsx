@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ThemeProvider } from './context/ThemeContext';
 import { AdminLayout } from './components/admin/AdminLayout';
 import { ProtectedRoute } from './components/admin/ProtectedRoute';
 import { AdminLoginPage } from './features/login/AdminLoginPage';
@@ -19,7 +20,8 @@ const queryClient = new QueryClient({
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-          <BrowserRouter>
+      <ThemeProvider>
+        <BrowserRouter>
             <Routes>
               <Route path="/login" element={<AdminLoginPage />} />
               <Route path="/callback" element={<CallbackPage />} />
@@ -58,7 +60,8 @@ function App() {
               <Route path="/" element={<Navigate to="/admin" replace />} />
               <Route path="*" element={<Navigate to="/admin" replace />} />
             </Routes>
-          </BrowserRouter>
+        </BrowserRouter>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

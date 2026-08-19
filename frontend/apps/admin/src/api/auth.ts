@@ -68,3 +68,12 @@ export const getUserInfo = async (): Promise<{ username: string; email: string }
     return null;
   }
 };
+
+/**
+ * Backend admin auth — GET /api/admin/auth/me
+ * @see AuthController @RequestMapping("/api/admin/auth") + @GetMapping("/me")
+ */
+export const fetchMe = async (): Promise<unknown> => {
+  const { get } = await import('./client');
+  return get<unknown>('/api/admin/auth/me');
+};

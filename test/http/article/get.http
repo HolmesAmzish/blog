@@ -1,0 +1,17 @@
+### GET published articles (public)
+GET {{baseUrl}}/api/articles
+
+### GET all articles with pagination
+GET {{baseUrl}}/api/articles?page=0&size=5&sortBy=createdAt&sortDir=desc
+
+### GET published articles with filter
+GET {{baseUrl}}/api/articles?language=ZH
+
+### GET published articles with keyword search
+GET {{baseUrl}}/api/articles?keyword=AI&language=EN
+
+### GET article by slug (public - EN)
+GET {{baseUrl}}/api/articles/hello
+
+### GET article by slug (public - ZH)
+GET {{baseUrl}}/api/articles/hello?language=ZH

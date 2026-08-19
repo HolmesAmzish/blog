@@ -1,7 +1,3 @@
-/**
- * Admin Categories Page
- * Category management with create functionality
- */
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchCategories, createCategory, updateCategory, deleteCategory } from '../../api/category';
@@ -9,359 +5,141 @@ import type { CategoryEntity, CategoryUpsertRequest } from '@/types';
 import { Language } from '@/types';
 import { Plus, Edit, Trash2, FolderTree, X } from 'lucide-react';
 
-type CategoryForm = {
-  nameZh: string;
-  nameEn: string;
-  slug: string;
-  parentId: number | null;
-};
+type CategoryForm = { nameZh: string; nameEn: string; slug: string; parentId: number | null };
 
-/**
- * Admin Categories Page Component
- */
 export function AdminCategoriesPage() {
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<CategoryEntity | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
+  const [form, setForm] = useState<CategoryForm>({ nameZh: '', nameEn: '', slug: '', parentId: null });
 
-  const [form, setForm] = useState<CategoryForm>({
-    nameZh: '',
-    nameEn: '',
-    slug: '',
-    parentId: null,
-  });
+  const { data: categories, isLoading } = useQuery({ queryKey: ['categories'], queryFn: fetchCategories });
+  const createMutation = useMutation({ mutationFn: createCategory, onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['categories'] }); closeModal(); } });
+  const deleteMutation = useMutation({ mutationFn: deleteCategory, onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['categories'] }); setDeleteConfirm(null); } });
+  const updateMutation = useMutation({ mutationFn: ({ id, data }: { id: number; data: CategoryUpsertRequest }) => updateCategory(id, data), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['categories'] }); closeModal(); } });
 
-  // Fetch categories
-  const { data: categories, isLoading } = useQuery({
-    queryKey: ['categories'],
-    queryFn: fetchCategories,
-  });
-
-  // Create mutation
-  const createMutation = useMutation({
-    mutationFn: createCategory,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['categories'] });
-      closeModal();
-    },
-  });
-
-  // Delete mutation
-  const deleteMutation = useMutation({
-    mutationFn: deleteCategory,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['categories'] });
-      setDeleteConfirm(null);
-    },
-  });
-
-  // Update mutation
-  const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: CategoryUpsertRequest }) => updateCategory(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['categories'] });
-      closeModal();
-    },
-  });
-
-  const openCreateModal = () => {
-    setForm({ nameZh: '', nameEn: '', slug: '', parentId: null });
-    setEditingCategory(null);
-    setIsModalOpen(true);
-  };
-
-  const openEditModal = (category: CategoryEntity) => {
-    setForm({
-      nameZh: category.names.ZH || '',
-      nameEn: category.names.EN || '',
-      slug: category.slug,
-      parentId: category.parent?.id ?? null,
-    });
-    setEditingCategory(category);
-    setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setEditingCategory(null);
-    setForm({ nameZh: '', nameEn: '', slug: '', parentId: null });
-  };
-
+  const openCreateModal = () => { setForm({ nameZh: '', nameEn: '', slug: '', parentId: null }); setEditingCategory(null); setIsModalOpen(true); };
+  const openEditModal = (c: CategoryEntity) => { setForm({ nameZh: c.names.ZH || '', nameEn: c.names.EN || '', slug: c.slug, parentId: c.parent?.id ?? null }); setEditingCategory(c); setIsModalOpen(true); };
+  const closeModal = () => { setIsModalOpen(false); setEditingCategory(null); setForm({ nameZh: '', nameEn: '', slug: '', parentId: null }); };
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.nameZh.trim() && !form.nameEn.trim()) return;
-
     const names: Record<Language, string> = { ZH: '', EN: '' };
     if (form.nameZh.trim()) names.ZH = form.nameZh;
     if (form.nameEn.trim()) names.EN = form.nameEn;
-
     const primaryName = form.nameZh.trim() || form.nameEn.trim();
-    const data: CategoryUpsertRequest = {
-      names,
-      slug: form.slug || primaryName.toLowerCase().replace(/[^a-z0-9一-龥]+/g, '-'),
-      parentId: form.parentId,
-    };
+    const data: CategoryUpsertRequest = { names, slug: form.slug || primaryName.toLowerCase().replace(/[^a-z0-9\u4e00-\u9fa5]+/g, '-'), parentId: form.parentId };
+    if (editingCategory?.id) updateMutation.mutate({ id: editingCategory.id, data }); else createMutation.mutate(data);
+  };
+  const handleDelete = (id: number) => deleteMutation.mutate(id);
 
-    if (editingCategory?.id) {
-      updateMutation.mutate({ id: editingCategory.id, data });
-    } else {
-      createMutation.mutate(data);
+  const flatten = (list: CategoryEntity[], depth = 0): { category: CategoryEntity; depth: number }[] => {
+    const res: { category: CategoryEntity; depth: number }[] = [];
+    const roots = list.filter((c) => !c.parent?.id);
+    for (const cat of roots) {
+      res.push({ category: cat, depth });
+      if (cat.id != null) res.push(...descendants(cat.id, list, depth + 1));
     }
+    return res;
   };
-
-  const handleDelete = (id: number) => {
-    deleteMutation.mutate(id);
+  const descendants = (pid: number, list: CategoryEntity[], depth: number): { category: CategoryEntity; depth: number }[] => {
+    const res: { category: CategoryEntity; depth: number }[] = [];
+    const children = list.filter((c) => c.parent?.id === pid);
+    for (const ch of children) { res.push({ category: ch, depth }); if (ch.id != null) res.push(...descendants(ch.id, list, depth + 1)); }
+    return res;
   };
-
-  // Build hierarchical categories for display
-  const flattenCategories = (
-    categoryList: CategoryEntity[],
-    depth: number = 0
-  ): { category: CategoryEntity; depth: number }[] => {
-    const result: { category: CategoryEntity; depth: number }[] = [];
-
-    // Get root categories (no parent)
-    const rootCategories = categoryList.filter((c) => !c.parent?.id);
-    for (const category of rootCategories) {
-      result.push({ category, depth });
-      // Recursively get all descendants by passing full list each time
-      if (category.id != null) {
-        const descendants = getDescendants(category.id, categoryList, depth + 1);
-        result.push(...descendants);
-      }
-    }
-
-    return result;
-  };
-
-  const getDescendants = (
-    parentId: number,
-    categoryList: CategoryEntity[],
-    depth: number
-  ): { category: CategoryEntity; depth: number }[] => {
-    const result: { category: CategoryEntity; depth: number }[] = [];
-    const children = categoryList.filter((c) => c.parent?.id === parentId);
-    for (const child of children) {
-      result.push({ category: child, depth });
-      // Pass full list to find grandchildren
-      if (child.id != null) {
-        result.push(...getDescendants(child.id, categoryList, depth + 1));
-      }
-    }
-    return result;
-  };
-
-  const allCategoriesFlat = flattenCategories(categories || []);
+  const flat = flatten(categories || []);
 
   return (
-    <>
-      <div className="p-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-2xl font-bold text-black font-mono tracking-tight">
-              CATEGORIES
-            </h1>
-            <p className="text-gray-500 text-sm font-mono mt-1">
-              Manage article categories
-            </p>
-          </div>
-          <button
-            onClick={openCreateModal}
-            className="flex items-center gap-2 px-4 py-2 bg-[#0047FF] text-white text-sm font-mono uppercase tracking-wider hover:bg-blue-700 transition-colors"
-          >
-            <Plus size={16} />
-            New Category
-          </button>
+    <div className="space-y-5 animate-fade-in">
+      <div className="flex items-end justify-between gap-4">
+        <div>
+          <h1 className="text-[22px] font-semibold tracking-tight text-[#1d1d1f]">Categories</h1>
+          <p className="text-[13px] text-[#86868b] mt-1">Organize your articles into structured categories.</p>
         </div>
-
-        {/* Categories List View */}
-            {isLoading ? (
-          <div className="text-center py-12 text-gray-500 font-mono text-sm">
-            Loading categories...
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {allCategoriesFlat.length === 0 ? (
-              <div className="text-center py-12 bg-white border border-gray-200">
-                <FolderTree size={48} className="mx-auto text-gray-300 mb-4" />
-                <p className="text-gray-500 font-mono text-sm mb-4">No categories found</p>
-                <button
-                  onClick={openCreateModal}
-                  className="px-4 py-2 bg-[#0047FF] text-white text-sm font-mono uppercase tracking-wider hover:bg-blue-700 transition-colors"
-                >
-                  Create First Category
-                </button>
-              </div>
-            ) : (
-              allCategoriesFlat.map(({ category, depth }) => (
-                <div
-                  key={category.id}
-                  className="bg-white border border-gray-200 hover:border-[#0047FF] transition-colors flex items-center group"
-                >
-                  {/* Indentation for hierarchy */}
-                  <div className="w-8" style={{ width: `${depth * 24 + 8}px` }} />
-
-                  <div className="p-4 flex-1 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <FolderTree size={18} className="text-gray-600" />
-                      <div>
-                        <h3 className="text-sm font-mono font-bold text-black">
-                          {category.names.EN || category.names.ZH || ''}
-                        </h3>
-                        <p className="text-xs font-mono text-gray-500">
-                          {category.slug}
-                        </p>
-                        <p className="text-xs font-mono text-gray-400 mt-1">
-                          ZH: {category.names.ZH || '-'} | EN: {category.names.EN || '-'}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button
-                        onClick={() => openEditModal(category)}
-                        className="p-2 text-gray-400 hover:text-[#0047FF] transition-colors"
-                      >
-                        <Edit size={16} />
-                      </button>
-                      <button
-                        onClick={() => setDeleteConfirm(category.id as number)}
-                        className="p-2 text-gray-400 hover:text-red-500 transition-colors"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        )}
+        <button onClick={openCreateModal} className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#0047FF] text-white text-[13px] font-medium rounded-full hover:bg-[#0036CC] transition-colors shadow-sm">
+          <Plus size={14} /> New category
+        </button>
       </div>
 
-      {/* Create Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 w-full max-w-md border border-gray-200">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-mono font-bold text-black">
-                {editingCategory ? 'EDIT CATEGORY' : 'NEW CATEGORY'}
-              </h2>
-              <button onClick={closeModal} className="p-1 hover:bg-gray-100">
-                <X size={20} className="text-gray-500" />
-              </button>
+      {isLoading ? (
+        <div className="admin-card p-10 text-center text-[13px] text-[#86868b]">Loading…</div>
+      ) : flat.length === 0 ? (
+        <div className="admin-card p-10 text-center">
+          <FolderTree size={32} className="mx-auto text-[#d2d2d7] mb-3" />
+          <p className="text-[13px] text-[#86868b] mb-3">No categories yet.</p>
+          <button onClick={openCreateModal} className="px-4 py-2 rounded-full bg-[#0047FF] text-white text-[13px] font-medium hover:bg-[#0036CC]">Create category</button>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {flat.map(({ category, depth }) => (
+            <div key={category.id} className="admin-card px-4 py-4 flex items-center gap-3 group hover:border-[#d2d2d7] dark:hover:border-[#3a3a3c]">
+              <div style={{ width: depth * 16 }} className="shrink-0" />
+              <div className="w-8 h-8 rounded-lg bg-[#f5f5f7] flex items-center justify-center text-[#1d1d1f] shrink-0">
+                <FolderTree size={14} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-[13px] font-medium text-[#1d1d1f]">{category.names.EN || category.names.ZH}</div>
+                <div className="text-[12px] text-[#86868b] font-mono">/{category.slug} <span className="ml-2 text-[#a1a1a6]">{category.names.ZH && category.names.EN ? `${category.names.ZH} · ${category.names.EN}` : ''}</span></div>
+              </div>
+              <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                <button onClick={() => openEditModal(category)} className="p-2 rounded-lg hover:bg-[#f5f5f7] dark:hover:bg-[#2c2c2e] text-[#86868b] hover:text-[#0047FF]"><Edit size={14} /></button>
+                <button onClick={() => setDeleteConfirm(category.id as number)} className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/15 text-[#86868b] hover:text-red-600 dark:hover:text-red-400"><Trash2 size={14} /></button>
+              </div>
             </div>
+          ))}
+        </div>
+      )}
 
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl border border-[#e8e8ed]">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-[15px] font-semibold text-[#1d1d1f]">{editingCategory ? 'Edit category' : 'New category'}</h2>
+              <button onClick={closeModal} className="p-1.5 rounded-full hover:bg-[#f5f5f7]"><X size={16} className="text-[#86868b]" /></button>
+            </div>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-mono text-gray-500 uppercase tracking-wider mb-2">
-                  Chinese Name (中文)
-                </label>
-                <input
-                  type="text"
-                  value={form.nameZh}
-                  onChange={(e) => setForm({ ...form, nameZh: e.target.value })}
-                  className="w-full border border-gray-200 px-3 py-2 text-sm font-mono focus:border-[#0047FF] focus:outline-none"
-                  placeholder="中文名称"
-                />
+                <label className="block text-[11px] font-medium tracking-wide text-[#86868b] mb-1.5">English name</label>
+                <input value={form.nameEn} onChange={(e) => setForm({ ...form, nameEn: e.target.value })} className="w-full bg-[#f5f5f7] border border-transparent focus:bg-white focus:border-[#e8e8ed] rounded-xl px-3 py-2.5 text-[13px] focus:outline-none" placeholder="e.g. Technology" />
               </div>
-
               <div>
-                <label className="block text-xs font-mono text-gray-500 uppercase tracking-wider mb-2">
-                  English Name (English)
-                </label>
-                <input
-                  type="text"
-                  value={form.nameEn}
-                  onChange={(e) => setForm({ ...form, nameEn: e.target.value })}
-                  className="w-full border border-gray-200 px-3 py-2 text-sm font-mono focus:border-[#0047FF] focus:outline-none"
-                  placeholder="English name"
-                />
+                <label className="block text-[11px] font-medium tracking-wide text-[#86868b] mb-1.5">Chinese name (optional)</label>
+                <input value={form.nameZh} onChange={(e) => setForm({ ...form, nameZh: e.target.value })} className="w-full bg-[#f5f5f7] border border-transparent focus:bg-white focus:border-[#e8e8ed] rounded-xl px-3 py-2.5 text-[13px] focus:outline-none" placeholder="中文名称" />
               </div>
-
               <div>
-                <label className="block text-xs font-mono text-gray-500 uppercase tracking-wider mb-2">
-                  Slug
-                </label>
-                <input
-                  type="text"
-                  value={form.slug}
-                  onChange={(e) => setForm({ ...form, slug: e.target.value })}
-                  className="w-full border border-gray-200 px-3 py-2 text-sm font-mono focus:border-[#0047FF] focus:outline-none"
-                  placeholder="category-slug"
-                />
-                <p className="text-xs text-gray-400 mt-1 font-mono">Auto-generated if empty</p>
+                <label className="block text-[11px] font-medium tracking-wide text-[#86868b] mb-1.5">Slug</label>
+                <input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} className="w-full bg-[#f5f5f7] border border-transparent focus:bg-white focus:border-[#e8e8ed] rounded-xl px-3 py-2.5 text-[13px] font-mono focus:outline-none" placeholder="category-slug" />
               </div>
-
               <div>
-                <label className="block text-xs font-mono text-gray-500 uppercase tracking-wider mb-2">
-                  Parent Category
-                </label>
-                <select
-                  value={form.parentId || ''}
-                  onChange={(e) => setForm({ ...form, parentId: e.target.value ? Number(e.target.value) : null })}
-                  className="w-full border border-gray-200 px-3 py-2 text-sm font-mono focus:border-[#0047FF] focus:outline-none"
-                >
-                  <option value="">None (Top Level)</option>
-                  {categories?.filter((cat) => cat.id !== editingCategory?.id).map((cat) => (
-                    <option key={cat.id} value={String(cat.id)}>
-                      {cat.names.EN || cat.names.ZH || ''}
-                    </option>
-                  ))}
+                <label className="block text-[11px] font-medium tracking-wide text-[#86868b] mb-1.5">Parent</label>
+                <select value={form.parentId || ''} onChange={(e) => setForm({ ...form, parentId: e.target.value ? Number(e.target.value) : null })} className="w-full bg-[#f5f5f7] border border-transparent rounded-xl px-3 py-2.5 text-[13px] focus:outline-none">
+                  <option value="">None (top level)</option>
+                  {categories?.filter((c) => c.id !== editingCategory?.id).map((c) => <option key={c.id} value={String(c.id)}>{c.names.EN || c.names.ZH}</option>)}
                 </select>
-                <p className="text-xs text-gray-400 mt-1 font-mono">
-                  Leave empty for top-level category
-                </p>
               </div>
-
-              <div className="flex gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-600 text-sm font-mono uppercase tracking-wider hover:bg-gray-50 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={createMutation.isPending || updateMutation.isPending || (!form.nameZh.trim() && !form.nameEn.trim())}
-                  className="flex-1 px-4 py-2 bg-[#0047FF] text-white text-sm font-mono uppercase tracking-wider hover:bg-blue-700 transition-colors disabled:opacity-50"
-                >
-                  {createMutation.isPending || updateMutation.isPending ? 'Saving...' : editingCategory ? 'Update' : 'Create'}
-                </button>
+              <div className="flex gap-3 pt-2">
+                <button type="button" onClick={closeModal} className="flex-1 py-2.5 rounded-full bg-[#f5f5f7] text-[#1d1d1f] text-[13px] font-medium hover:bg-[#e8e8ed]">Cancel</button>
+                <button type="submit" disabled={createMutation.isPending || updateMutation.isPending || (!form.nameZh.trim() && !form.nameEn.trim())} className="flex-1 py-2.5 rounded-full bg-[#0047FF] text-white text-[13px] font-medium hover:bg-[#0036CC] disabled:opacity-40"> {createMutation.isPending || updateMutation.isPending ? 'Saving…' : editingCategory ? 'Update' : 'Create'}</button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
       {deleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 w-full max-w-sm border border-gray-200">
-            <h2 className="text-lg font-mono font-bold text-black mb-4">DELETE CATEGORY</h2>
-            <p className="text-sm font-mono text-gray-600 mb-6">
-              Are you sure you want to delete this category? This action cannot be undone.
-            </p>
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-sm border border-[#e8e8ed] shadow-xl">
+            <h2 className="text-[15px] font-semibold text-[#1d1d1f] mb-2">Delete category?</h2>
+            <p className="text-[13px] text-[#6e6e73] mb-5">This cannot be undone.</p>
             <div className="flex gap-3">
-              <button
-                onClick={() => setDeleteConfirm(null)}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-600 text-sm font-mono uppercase tracking-wider hover:bg-gray-50 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => handleDelete(deleteConfirm)}
-                disabled={deleteMutation.isPending}
-                className="flex-1 px-4 py-2 bg-red-500 text-white text-sm font-mono uppercase tracking-wider hover:bg-red-600 transition-colors disabled:opacity-50"
-              >
-                {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
-              </button>
+              <button onClick={() => setDeleteConfirm(null)} className="flex-1 py-2.5 rounded-full bg-[#f5f5f7] text-[13px] font-medium">Cancel</button>
+              <button onClick={() => handleDelete(deleteConfirm)} disabled={deleteMutation.isPending} className="flex-1 py-2.5 rounded-full bg-red-600 text-white text-[13px] font-medium hover:bg-red-700 disabled:opacity-40">{deleteMutation.isPending ? 'Deleting…' : 'Delete'}</button>
             </div>
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }

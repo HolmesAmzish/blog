@@ -1,240 +1,189 @@
-/**
- * Admin Articles Page
- * Article management for admin panel
- */
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useArticles, ARTICLES_QUERY } from '../../hooks/useArticles';
 import { useCategories } from '../../hooks/useCategories';
-import { Plus, Search, Edit, Trash2, Eye } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
 import { deleteArticle } from '../../api/article';
 
-/**
- * Admin Articles Page Component
- */
 export function AdminArticlesPage() {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string | ''>('');
   const [categoryFilter, setCategoryFilter] = useState<number | ''>('');
 
   const { data: articlesData, isLoading } = useArticles({ page, size: 10, isAdmin: true });
   const { data: categories } = useCategories();
 
   const filteredArticles = articlesData?.content.filter((article) => {
-    const matchesSearch = search === '' ||
-      article.title.toLowerCase().includes(search.toLowerCase());
+    const matchesSearch = search === '' || article.title.toLowerCase().includes(search.toLowerCase());
     const matchesCategory = categoryFilter === '' || article.category?.id === categoryFilter;
     return matchesSearch && matchesCategory;
   });
 
   const deleteMutation = useMutation({
     mutationFn: deleteArticle,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [ARTICLES_QUERY] });
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: [ARTICLES_QUERY] }),
   });
 
   const handleDelete = (id: number) => {
-    if (confirm('Are you sure you want to delete this article?')) {
-      deleteMutation.mutate(id);
-    }
+    if (confirm('Delete this article? This cannot be undone.')) deleteMutation.mutate(id);
   };
 
   return (
-    <>
-      <div className="p-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-2xl font-bold text-black font-mono tracking-tight">
-              ARTICLES
-            </h1>
-            <p className="text-gray-500 text-sm font-mono mt-1">
-              Manage your blog articles
-            </p>
-          </div>
-          <Link
-            to="/admin/articles/new"
-            className="flex items-center gap-2 px-4 py-2 bg-[#0047FF] text-white text-sm font-mono uppercase tracking-wider hover:bg-blue-700 transition-colors"
-          >
-            <Plus size={16} />
-            New Article
-          </Link>
+    <div className="space-y-5 animate-fade-in">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div>
+          <h1 className="text-[22px] font-semibold tracking-tight text-[#1d1d1f]">Articles</h1>
+          <p className="text-[13px] text-[#86868b] mt-1">Create, edit and publish your content.</p>
         </div>
-
-        {/* Filters */}
-        <div className="bg-white border border-gray-200 p-4 mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-              <input
-                type="text"
-                placeholder="Search articles..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-200 text-sm font-mono focus:outline-none focus:border-[#0047FF]"
-              />
-            </div>
-
-            {/* Status Filter */}
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as string | '')}
-              className="px-4 py-2 border border-gray-200 text-sm font-mono focus:outline-none focus:border-[#0047FF] bg-white"
-            >
-              <option value="">All Status</option>
-              <option value="DRAFT">Draft</option>
-              <option value="PUBLISHED">Published</option>
-              <option value="ARCHIVED">Archived</option>
-            </select>
-
-            {/* Category Filter */}
-            <select
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value ? Number(e.target.value) : '')}
-              className="px-4 py-2 border border-gray-200 text-sm font-mono focus:outline-none focus:border-[#0047FF] bg-white"
-            >
-              <option value="">All Categories</option>
-              {categories?.map((cat) => (
-                <option key={cat.id} value={cat.id!}>
-                  {cat.names.EN || cat.names.ZH || ''}
-                </option>
-              ))}
-            </select>
-
-            {/* Reset */}
-            <button
-              onClick={() => {
-                setSearch('');
-                setStatusFilter('');
-                setCategoryFilter('');
-              }}
-              className="px-4 py-2 border border-gray-200 text-sm font-mono text-gray-600 hover:bg-gray-50 transition-colors"
-            >
-              Reset Filters
-            </button>
-          </div>
-        </div>
-
-        {/* Articles Table */}
-        <div className="bg-white border border-gray-200">
-          {/* Table Header */}
-          <div className="grid grid-cols-12 gap-4 p-4 border-b border-gray-200 bg-gray-50">
-            <div className="col-span-5 text-xs font-mono uppercase tracking-wider text-gray-500">
-              Title
-            </div>
-            <div className="col-span-2 text-xs font-mono uppercase tracking-wider text-gray-500">
-              Category
-            </div>
-            <div className="col-span-2 text-xs font-mono uppercase tracking-wider text-gray-500">
-              Status
-            </div>
-            <div className="col-span-1 text-xs font-mono uppercase tracking-wider text-gray-500">
-              Views
-            </div>
-            <div className="col-span-2 text-xs font-mono uppercase tracking-wider text-gray-500 text-right">
-              Actions
-            </div>
-          </div>
-
-          {/* Table Body */}
-          {isLoading ? (
-            <div className="p-8 text-center text-gray-500 font-mono text-sm">
-              Loading articles...
-            </div>
-          ) : filteredArticles?.length === 0 ? (
-            <div className="p-8 text-center text-gray-500 font-mono text-sm">
-              No articles found
-            </div>
-          ) : (
-            <div className="divide-y divide-gray-100">
-              {filteredArticles?.map((article) => (
-                <div key={article.id} className="grid grid-cols-12 gap-4 p-4 hover:bg-gray-50">
-                  <div className="col-span-5">
-                    <p className="text-sm font-mono text-black font-medium">
-                      {article.title}
-                    </p>
-                    <p className="text-xs font-mono text-gray-500 mt-1">
-                      {article.createdAt ? new Date(article.createdAt).toLocaleDateString() : ''}
-                    </p>
-                  </div>
-                  <div className="col-span-2 text-sm font-mono text-gray-600">
-                    {article.category ? article.category.name : '—'}
-                  </div>
-                  <div className="col-span-2">
-                    <span className={`px-2 py-1 text-xs font-mono uppercase ${
-                      article.status === 'PUBLISHED'
-                        ? 'bg-green-100 text-green-700'
-                        : article.status === 'DRAFT'
-                        ? 'bg-yellow-100 text-yellow-700'
-                        : article.status === 'ARCHIVED'
-                        ? 'bg-gray-100 text-gray-700'
-                        : 'bg-gray-100 text-gray-700'
-                    }`}>
-                      {article.status || '—'}
-                    </span>
-                  </div>
-                  <div className="col-span-1 text-sm font-mono text-gray-600">
-                    {article.viewCount || 0}
-                  </div>
-                  <div className="col-span-2 flex items-center justify-end gap-2">
-                    <Link
-                      to={`/article/${article.slug}`}
-                      className="p-2 text-gray-400 hover:text-black transition-colors"
-                      title="View"
-                    >
-                      <Eye size={16} />
-                    </Link>
-                    <Link
-                      to={`/admin/articles/${article.id}`}
-                      className="p-2 text-gray-400 hover:text-[#0047FF] transition-colors"
-                      title="Edit"
-                    >
-                      <Edit size={16} />
-                    </Link>
-                    <button
-                      onClick={() => handleDelete(article.id)}
-                      className="p-2 text-gray-400 hover:text-red-500 transition-colors"
-                      title="Delete"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Pagination */}
-          {articlesData && articlesData.totalPages > 1 && (
-            <div className="flex items-center justify-between p-4 border-t border-gray-200">
-              <p className="text-sm font-mono text-gray-500">
-                Showing {page * 10 + 1} - {Math.min((page + 1) * 10, articlesData.total)} of {articlesData.total}
-              </p>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setPage(p => Math.max(0, p - 1))}
-                  disabled={page === 0}
-                  className="px-3 py-1 text-sm font-mono border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Previous
-                </button>
-                <button
-                  onClick={() => setPage(p => p + 1)}
-                  disabled={page >= articlesData.totalPages - 1}
-                  className="px-3 py-1 text-sm font-mono border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Next
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
+        <Link
+          to="/admin/articles/new"
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#0047FF] text-white text-[13px] font-medium rounded-full hover:bg-[#0036CC] transition-colors shadow-sm"
+        >
+          <Plus size={14} />
+          New Article
+        </Link>
       </div>
-    </>
+
+      <div className="admin-card p-4 flex flex-col lg:flex-row gap-3">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#86868b]" size={14} />
+          <input
+            type="text"
+            placeholder="Search by title…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-[#f5f5f7] border border-transparent focus:bg-white focus:border-[#e8e8ed] focus:outline-none text-[13px] placeholder:text-[#86868b]"
+          />
+        </div>
+        <select
+          value={categoryFilter}
+          onChange={(e) => setCategoryFilter(e.target.value ? Number(e.target.value) : '')}
+          className="px-3 py-2.5 rounded-xl bg-[#f5f5f7] border border-transparent text-[13px] text-[#1d1d1f] focus:bg-white focus:border-[#e8e8ed] focus:outline-none min-w-[180px]"
+        >
+          <option value="">All categories</option>
+          {categories?.map((cat) => (
+            <option key={cat.id} value={cat.id!}>
+              {cat.names.EN || cat.names.ZH || ''}
+            </option>
+          ))}
+        </select>
+        {(search || categoryFilter !== '') && (
+          <button
+            onClick={() => {
+              setSearch('');
+              setCategoryFilter('');
+            }}
+            className="px-4 py-2.5 rounded-xl bg-white dark:bg-[#1c1c1e] border border-[#e8e8ed] dark:border-[#2c2c2e] text-[13px] text-[#1d1d1f] dark:text-white hover:bg-[#f5f5f7] dark:hover:bg-[#2c2c2e] transition-colors"
+          >
+            Clear
+          </button>
+        )}
+      </div>
+
+      <div className="admin-card overflow-hidden">
+        <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-3 bg-[#fbfbfd] dark:bg-[#111113] border-b border-[#e8e8ed] dark:border-[#2c2c2e] text-[11px] font-medium tracking-wide text-[#86868b] dark:text-[#98989d]">
+          <div className="col-span-6">Title</div>
+          <div className="col-span-2">Category</div>
+          <div className="col-span-2">Status</div>
+          <div className="col-span-2 text-right">Actions</div>
+        </div>
+
+        {isLoading ? (
+          <div className="p-10 text-center text-[13px] text-[#86868b]">Loading articles…</div>
+        ) : filteredArticles?.length === 0 ? (
+          <div className="p-10 text-center">
+            <p className="text-[13px] text-[#86868b]">No articles found.</p>
+            <Link to="/admin/articles/new" className="inline-flex mt-3 text-[13px] font-medium text-[#0047FF] hover:underline">
+              Create the first one
+            </Link>
+          </div>
+        ) : (
+          <div className="divide-y divide-[#e8e8ed] dark:divide-[#2c2c2e]">
+            {filteredArticles?.map((article) => (
+              <div
+                key={article.id}
+                className="px-6 py-4 flex flex-col md:grid md:grid-cols-12 gap-3 items-start md:items-center hover:bg-[#fbfbfd] dark:hover:bg-[#1c1c1e] transition-colors"
+                onDoubleClick={() => (window.location.href = `/admin/articles/${article.id}`)}
+              >
+                <div className="col-span-6 min-w-0 w-full">
+                  <p className="text-[13px] font-medium text-[#1d1d1f] truncate">{article.title}</p>
+                  <p className="text-[12px] text-[#86868b] mt-1">
+                    {article.createdAt ? new Date(article.createdAt).toLocaleDateString() : ''} · {article.viewCount ?? 0} views
+                  </p>
+                </div>
+                <div className="col-span-2 text-[13px] text-[#6e6e73]">{article.category ? article.category.name : '—'}</div>
+                <div className="col-span-2">
+                  <span
+                    className={`inline-flex px-2.5 py-1 rounded-full text-[11px] font-medium border ${
+                      article.status === 'PUBLISHED'
+                        ? 'bg-green-50 dark:bg-green-500/15 text-green-700 dark:text-green-400 border-green-200 dark:border-green-500/30'
+                        : article.status === 'DRAFT'
+                          ? 'bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-500/30'
+                          : 'bg-[#f5f5f7] dark:bg-[#2c2c2e] text-[#6e6e73] dark:text-[#98989d] border-[#e8e8ed] dark:border-[#3a3a3c]'
+                    }`}
+                  >
+                    {article.status ?? '—'}
+                  </span>
+                </div>
+                <div className="col-span-2 flex items-center justify-end gap-1 w-full md:w-auto">
+                  <Link
+                    to={`/admin/articles/${article.id}`}
+                    className="p-2 rounded-lg hover:bg-white dark:hover:bg-[#2c2c2e] border border-transparent hover:border-[#e8e8ed] dark:hover:border-[#3a3a3c] text-[#86868b] hover:text-[#0047FF] transition-colors"
+                    title="Edit"
+                  >
+                    <Edit size={14} />
+                  </Link>
+                  <a
+                    href={`/article/${article.slug}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="p-2 rounded-lg hover:bg-white dark:hover:bg-[#2c2c2e] border border-transparent hover:border-[#e8e8ed] dark:hover:border-[#3a3a3c] text-[#86868b] hover:text-[#1d1d1f] dark:hover:text-white transition-colors"
+                    title="View"
+                  >
+                    <Eye size={14} />
+                  </a>
+                  <button
+                    onClick={() => handleDelete(article.id)}
+                    className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/15 text-[#86868b] hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                    title="Delete"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {articlesData && articlesData.totalPages > 1 && (
+          <div className="flex items-center justify-between px-6 py-4 border-t border-[#e8e8ed] dark:border-[#2c2c2e] bg-[#fbfbfd] dark:bg-[#111113]">
+            <p className="text-[12px] text-[#86868b]">
+              {page * 10 + 1}–{Math.min((page + 1) * 10, articlesData.total)} of {articlesData.total}
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setPage((p) => Math.max(0, p - 1))}
+                disabled={page === 0}
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-white border border-[#e8e8ed] text-[12px] font-medium text-[#1d1d1f] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#f5f5f7]"
+              >
+                <ChevronLeft size={14} /> Prev
+              </button>
+              <span className="text-[12px] text-[#86868b] px-2">
+                {page + 1} / {articlesData.totalPages}
+              </span>
+              <button
+                onClick={() => setPage((p) => p + 1)}
+                disabled={page >= articlesData.totalPages - 1}
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-white border border-[#e8e8ed] text-[12px] font-medium text-[#1d1d1f] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#f5f5f7]"
+              >
+                Next <ChevronRight size={14} />
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

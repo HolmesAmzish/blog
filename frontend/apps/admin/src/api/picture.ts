@@ -1,3 +1,8 @@
+/**
+ * Picture API — aligns with backend PictureController @RequestMapping("/api/pictures")
+ * @see /home/cacc/Repositories/blog/backend/blog-app/src/main/kotlin/cn/arorms/blog/app/controllers/PictureController.kt:22
+ * NOTE: backend currently all endpoints commented out → admin UI will 404 until backend re-enabled.
+ */
 import { get, post, put, del } from './client';
 import type { PictureDTO } from '@/types';
 

@@ -22,8 +22,8 @@ spring-ai-starter-model-openai = { module = "org.springframework.ai:spring-ai-st
 
 # --- Kotlin ---
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect" }
-jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin" }
-jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind" }
+jackson-module-kotlin = { module = "tools.jackson.module:jackson-module-kotlin" }
+jackson-databind = { module = "tools.jackson.core:jackson-databind" }
 
 querydsl-jpa = { module = "com.querydsl:querydsl-jpa", version.ref = "querydsl" }
 querydsl-apt = { module = "com.querydsl:querydsl-apt", version.ref = "querydsl" }

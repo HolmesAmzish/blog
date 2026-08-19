@@ -8,13 +8,15 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 /**
- * @version 0.9.0 2026-07-29
+ * @author cacc
+ * @version 0.10.0 2026-08-19
+ * @since 2026-07-29
  */
 @RestController
 @RequestMapping("/api/admin/auth")
 class AuthController {
     @GetMapping("/me")
-    fun getMe(@AuthenticationPrincipal userPrincipal: UserPrincipal): ResponseEntity<String> {
-        return ResponseEntity.ok(userPrincipal.toString())
+    fun getMe(@AuthenticationPrincipal userPrincipal: UserPrincipal): ResponseEntity<UserPrincipal> {
+        return ResponseEntity.ok(userPrincipal)
     }
 }

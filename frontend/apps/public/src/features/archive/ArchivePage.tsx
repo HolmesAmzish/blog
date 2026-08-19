@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { ECharts } from 'echarts';
 import { useCategoryTree } from '../../hooks/useCategories';
 import { useTranslation } from '../../context/TranslationContext';
@@ -9,6 +10,7 @@ export const ArchivePage: React.FC = () => {
   const { t } = useTranslation();
   const { language } = useLanguage();
   const { resolved } = useTheme();
+  const navigate = useNavigate();
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstance = useRef<ECharts | null>(null);
 
@@ -31,7 +33,7 @@ export const ArchivePage: React.FC = () => {
         backgroundColor: 'transparent',
         tooltip: { trigger: 'item', triggerOn: 'mousemove', backgroundColor: isDark ? 'rgba(0,0,0,0.95)' : 'rgba(255,255,255,0.95)', borderColor: lineColor, borderWidth: 0.5, textStyle: { color: textColor, fontFamily: 'monospace', fontSize: 11 } },
         series: [{
-          type: 'tree', data: [treeData], top: '5%', left: '10%', bottom: '5%', right: '20%',
+          type: 'tree', data: treeData, top: '5%', left: '10%', bottom: '5%', right: '20%',
           symbolSize: 8, symbol: 'circle',
           itemStyle: { color: isDark ? '#fff' : '#000', borderColor: '#0047FF', borderWidth: 1 },
           label: { position: 'left', verticalAlign: 'middle', align: 'right', fontFamily: 'monospace', fontSize: 11, color: textColor },
@@ -41,13 +43,22 @@ export const ArchivePage: React.FC = () => {
         }],
       } as any);
 
+      // Click category node -> jump to /articles?categoryId=<id>
+      // Root node id === -1 (synthetic ARORMS.BLOG) should be ignored
+      chartInstance.current.on('click', (params: any) => {
+        const node = params?.data as { id?: number; name?: string } | undefined;
+        const id = node?.id;
+        if (id === undefined || id === null || id === -1) return;
+        navigate(`/articles?categoryId=${id}`);
+      });
+
       const onResize = () => chartInstance.current?.resize();
       window.addEventListener('resize', onResize);
       return () => { window.removeEventListener('resize', onResize); };
     });
 
-    return () => { disposed = true; chartInstance.current?.dispose(); chartInstance.current = null; };
-  }, [categoryTree, isLoading, t, resolved]);
+    return () => { disposed = true; chartInstance.current?.off('click'); chartInstance.current?.dispose(); chartInstance.current = null; };
+  }, [categoryTree, isLoading, t, resolved, navigate]);
 
   return (
     <div className="min-h-screen py-12">

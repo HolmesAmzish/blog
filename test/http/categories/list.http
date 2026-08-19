@@ -5,7 +5,7 @@ GET http://localhost:8080/api/categories
 GET http://localhost:8080/api/categories?language=ZH
 
 ### GET category tree
-GET http://localhost:8080/api/categories/tree?language=ZH
+GET {{baseUrl}}/api/categories/tree
 
-### GET category by ID
-GET http://localhost:8080/api/categories/1?language=EN
+### GET category tree
+GET {{baseUrl}}/api/categories/tree?language=ZH
