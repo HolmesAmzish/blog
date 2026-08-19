@@ -18,8 +18,8 @@ Authorization: Bearer {{accessToken}}
   ]
 }
 
-### UPDATE article (requires auth)
-PUT http://localhost:8080/api/articles/1
+### UPDATE article
+PUT {{baseUrl}}/api/admin/articles/1
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 

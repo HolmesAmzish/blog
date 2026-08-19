@@ -1,3 +1,6 @@
+0.10.1 2026-08-19
+1. fix article status update bug
+
 0.10.0 2026-08-19
 1. overhaul admin UI — new AdminLayout with grouped nav, mobile drawer and theme switcher
 2. refactor admin API clients to /api/admin/* (category/tag/picture/auth/user), add llm client and language-aware category fetch

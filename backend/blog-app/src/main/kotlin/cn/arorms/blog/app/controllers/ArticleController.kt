@@ -12,7 +12,8 @@ import org.springframework.web.bind.annotation.*
 
 /**
  * REST Controller for Article operations
- * @version 0.9.1 2026-08-03
+ * @version 0.10.1 2026-08-19
+ * @since 2026-07-22
  */
 @RestController
 @RequestMapping("/api/articles")
@@ -28,7 +29,7 @@ class ArticleController(
         pageable: Pageable,
         request: ArticleQueryRequest,
     ): ResponseEntity<PageResponse<ArticleSummaryVo>> {
-        val summaryPageResponse = articleService.getArticlePage(pageable, request)
+        val summaryPageResponse = articleService.getPublishedArticlePage(pageable, request)
         return ResponseEntity.ok(summaryPageResponse)
     }
 

@@ -22,11 +22,12 @@ import org.springframework.web.bind.annotation.RestController
 
 /**
  * Admin Article Controller
- * @version 0.9.0 2026-07-29
+ * @version 0.10.1 2026-08-19
+ * @since 2026-07-29
  * @author cacc
  */
 @RestController
-@RequestMapping("/api/admin/article")
+@RequestMapping("/api/admin/articles")
 public class ArticleAdminController (
     private val articleService: ArticleService,
 ) {
@@ -67,7 +68,7 @@ public class ArticleAdminController (
         @PathVariable id: Long,
         @RequestBody request: ArticleUpsertRequest
     ): ResponseEntity<Void> {
-//        val updatedArticle = articleService.update(id, request)
+        articleService.update(id, request)
         return ResponseEntity.noContent().build()
     }
 

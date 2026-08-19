@@ -11,6 +11,11 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.support.PageableExecutionUtils
 
+/**
+ * @author cacc
+ * @version 0.10.1 2026-08-19
+ * @since 2026-07-22
+ */
 class ArticleRepositoryCustomImpl(
     private val queryFactory: JPAQueryFactory,
 ) : ArticleRepositoryCustom {
@@ -21,6 +26,10 @@ class ArticleRepositoryCustomImpl(
 
         if (request.categoryId != null) {
             builder.and(article.category.id.eq(request.categoryId))
+        }
+
+        if (request.articleStatus != null) {
+            builder.and(article.status.eq(request.articleStatus))
         }
 
         if (!request.keyword.isNullOrBlank()) {

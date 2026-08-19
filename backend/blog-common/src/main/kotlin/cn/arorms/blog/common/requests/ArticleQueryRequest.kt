@@ -7,5 +7,5 @@ data class ArticleQueryRequest(
     val language: Language? = Language.EN,
     val keyword: String?,
     val categoryId: Long?,
-    val articleStatus: ArticleStatus? = ArticleStatus.PUBLISHED
+    val articleStatus: ArticleStatus? = null
 )

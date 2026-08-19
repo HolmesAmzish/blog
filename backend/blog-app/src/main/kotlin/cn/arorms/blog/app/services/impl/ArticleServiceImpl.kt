@@ -6,6 +6,7 @@ import cn.arorms.blog.app.repositories.TagRepository
 import cn.arorms.blog.app.services.ArticleService
 import cn.arorms.blog.app.entities.Article
 import cn.arorms.blog.app.entities.ArticleTranslation
+import cn.arorms.blog.common.enums.ArticleStatus
 import cn.arorms.blog.common.enums.Language
 import cn.arorms.blog.app.mappers.toSummaryVo
 import cn.arorms.blog.app.mappers.toVo
@@ -15,12 +16,14 @@ import cn.arorms.blog.common.responses.ArticleSummaryVo
 import cn.arorms.blog.common.responses.ArticleVo
 import cn.arorms.framework.common.domain.PageResponse
 import cn.arorms.framework.common.exception.ResourceNotFoundException
-import cn.arorms.framework.security.UserPrincipal
 import org.springframework.data.domain.Pageable
-import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
+/**
+ * @version 0.10.1 2026-08-19
+ * @since 2026-07-22
+ */
 @Service
 class ArticleServiceImpl(
     private val articleRepository: ArticleRepository,
@@ -29,7 +32,7 @@ class ArticleServiceImpl(
 ) : ArticleService {
 
     override fun getArticlePage(pageable: Pageable, query: ArticleQueryRequest?): PageResponse<ArticleSummaryVo> {
-        val request = query ?: ArticleQueryRequest(language = Language.EN, keyword = null, categoryId = null)
+        val request = query ?: ArticleQueryRequest(language = Language.EN, keyword = null, categoryId = null, articleStatus = null)
 
         val articlePage = articleRepository.findArticlePage(pageable, request)
         val summaryPage = articlePage.map { article ->
@@ -45,7 +48,8 @@ class ArticleServiceImpl(
     }
 
     override fun getPublishedArticlePage(pageable: Pageable, query: ArticleQueryRequest?): PageResponse<ArticleSummaryVo> {
-        val request = query ?: ArticleQueryRequest(language = Language.EN, keyword = null, categoryId = null)
+        val base = query ?: ArticleQueryRequest(language = Language.EN, keyword = null, categoryId = null, articleStatus = null)
+        val request = base.copy(articleStatus = ArticleStatus.PUBLISHED)
 
         val articlePage = articleRepository.findArticlePage(pageable, request)
         val summaryPage = articlePage.map { article ->
