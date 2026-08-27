@@ -1,10 +1,15 @@
 package cn.arorms.blog.app.mappers
 
-import cn.arorms.blog.app.entities.*
+import cn.arorms.blog.app.entities.Article
 import cn.arorms.blog.common.enums.Language
-import cn.arorms.blog.common.responses.*
+import cn.arorms.blog.common.responses.ArticleSummaryVo
+import cn.arorms.blog.common.responses.ArticleVo
+import cn.arorms.blog.common.responses.CategoryVo
 
-// Article -> ArticleSummaryVo
+/**
+ * @version 1.0.0 2026-08-27
+ * @since 2026-03-09
+ */
 fun Article.toSummaryVo(lang: Language = Language.EN): ArticleSummaryVo {
     val translation = translations[lang] ?: translations[Language.EN]
 
@@ -22,7 +27,6 @@ fun Article.toSummaryVo(lang: Language = Language.EN): ArticleSummaryVo {
     )
 }
 
-// Article -> ArticleVo
 fun Article.toVo(lang: Language = Language.EN): ArticleVo {
     val translation = translations[lang] ?: translations[Language.EN]
 
@@ -42,21 +46,3 @@ fun Article.toVo(lang: Language = Language.EN): ArticleVo {
         tags = this.tags.map { it.toVo() }
     )
 }
-
-// Category -> CategoryVo
-fun Category.toVo(lang: Language = Language.EN): CategoryVo {
-    val categoryName = this.names[lang]
-        ?: this.names[Language.EN]
-        ?: this.names.values.firstOrNull()
-        ?: ""
-
-    return CategoryVo(
-        id = this.id,
-        name = categoryName,
-        slug = this.slug,
-        parentId = this.parent?.id
-    )
-}
-
-// Tag -> TagVo
-fun Tag.toVo(): TagVo = TagVo(id = id, name = name, slug = slug)

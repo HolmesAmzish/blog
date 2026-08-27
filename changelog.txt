@@ -1,3 +1,9 @@
+1.0.0
+1. migrate picture storage from local filesystem to MinIO via AWS SDK v2 S3 protocol
+2. add admin picture endpoints under /api/admin/pictures (upload/list/update/delete)
+3. add PictureVo and PictureUpdateRequest in common module
+4. update admin pictures page for MinIO URLs, tag selection, and gallery toggle
+
 0.10.1 2026-08-19
 1. fix article status update bug
 
@@ -16,8 +22,8 @@
 5. update admin env config to use production OAuth endpoints
 
 0.9.1 2026-08-03
-1. splite types packages into public and admin
-2. extract graphql request of cloudflare task into a schedule component
+1. split types packages into public and admin
+2. extract graphql request of Cloudflare task into a schedule component
 
 0.9.0 2026-07-29
 1. split frontend into public and admin monorepo (apps/admin, apps/public, packages/types)

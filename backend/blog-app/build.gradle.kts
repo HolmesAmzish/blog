@@ -53,6 +53,8 @@ dependencies {
     testImplementation(libs.spring.boot.starter.webmvc.test)
     testImplementation(libs.kotlin.test.junit5)
     testRuntimeOnly(libs.junit.platform.launcher)
+
+    implementation(libs.aws.s3)
 }
 
 dependencyManagement {

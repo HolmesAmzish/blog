@@ -8,11 +8,11 @@ import org.springframework.stereotype.Repository
 
 /**
  * Repository interface for Picture entity
+ * @version 1.0.0 2026-08-24
+ * @since 2026-03-09
  */
 @Repository
 interface PictureRepository : JpaRepository<Picture, Long> {
-
     fun findByFilename(filename: String): Picture?
-
-//    fun findByUploaderId(uploaderId: Long, pageable: Pageable): Page<Picture>
+    fun findByShowInGalleryTrue(pageable: Pageable): Page<Picture>
 }

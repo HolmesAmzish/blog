@@ -6,6 +6,8 @@ import java.time.LocalDateTime
 
 /**
  * Image entity for resource management
+ * @version 1.0.0 2026-08-27
+ * @since 2026-03-09
  */
 @Entity
 @Table(name = "pictures")
@@ -35,13 +37,19 @@ class Picture(
     @Column(length = 500)
     var alt: String? = null, // Alt text for accessibility
 
-//    @JsonIncludeProperties("id", "username", "displayName")
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "uploader_id")
-//    var uploader: UserProfile? = null,
+    @Column(name = "uploader_id")
+    var uploaderId: String,
 
-//    @Column(name = "uploader_user_id")
-//    var uploaderUserId: String,
+    @ManyToMany
+    @JoinTable(
+        name = "picture_tags_map",
+        joinColumns = [JoinColumn(name = "picture_id")],
+        inverseJoinColumns = [JoinColumn(name = "tag_id")]
+    )
+    var tags: MutableSet<Tag> = mutableSetOf(),
+
+    @Column(name = "show_in_gallery")
+    var showInGallery: Boolean = true,
 
     @Column(name = "created_at")
     val createdAt: LocalDateTime = LocalDateTime.now()

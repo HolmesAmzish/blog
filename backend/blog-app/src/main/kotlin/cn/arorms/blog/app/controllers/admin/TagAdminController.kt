@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController
 
 /**
  * @version 0.9.1 2026-08-03
+ * @since 2026-03-09
  */
 @RestController
 @RequestMapping("/api/admin/tags")

@@ -7,7 +7,7 @@ spring:
   # Database Configuration (credentials from environment variables)
   datasource:
     url: jdbc:postgresql://${DB_HOST:localhost}:5432/${DB_NAME:blog_db}
-    username: ${DB_USERNAME:postgres}
+    username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
@@ -25,7 +25,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: ${JWT_ISSUER:https://auth.arorms.cn/realms/arorms}
+          issuer-uri: ${JWT_ISSUER}
 
   servlet:
     multipart:
@@ -43,7 +43,14 @@ spring:
           model: ${OPENAI_MODEL}
 
 storage:
-  location: ${UPLOAD_PATH:upload}
+  s3:
+    endpoint: ${S3_ENDPOINT}
+    bucket: ${S3_BUCKET}
+    access-key: ${S3_ACCESS_KEY}
+    secret-key: ${S3_SECRET_KEY}
+    region: ${S3_REGION:us-east-1}
+    path-style: ${S3_PATH_STYLE:true}
+#    public-url-prefix: ${S3_PUBLIC_URL_PREFIX:}
 
 application:
   # JWT Configuration

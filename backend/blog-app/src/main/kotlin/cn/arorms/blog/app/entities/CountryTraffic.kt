@@ -4,7 +4,7 @@ import jakarta.persistence.*
 import java.time.LocalDate
 
 @Entity
-@Table(name = "country_traffics")
+@Table(name = "statistics_country_traffics")
 class CountryTraffic(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,

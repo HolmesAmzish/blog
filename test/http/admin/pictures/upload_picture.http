@@ -1,0 +1,23 @@
+### Upload Picture
+POST {{baseUrl}}/api/admin/pictures/upload
+Authorization: Bearer {{accessToken}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxk
+
+------WebKitFormBoundary7MA4YWxk
+Content-Disposition: form-data; name="file"; filename="Screenshot From 2026-08-12 13-12-15.png"
+Content-Type: image/jpeg
+
+< /home/cacc/Pictures/Screenshots/Screenshot From 2026-08-12 13-12-15.png
+------WebKitFormBoundary7MA4YWxk
+Content-Disposition: form-data; name="alt"
+
+test
+------WebKitFormBoundary7MA4YWxk
+Content-Disposition: form-data; name="showInGallery"
+
+false
+------WebKitFormBoundary7MA4YWxk
+Content-Disposition: form-data; name="tagIds"
+
+8
+------WebKitFormBoundary7MA4YWxk--

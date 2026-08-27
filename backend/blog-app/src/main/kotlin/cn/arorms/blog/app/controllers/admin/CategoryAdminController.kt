@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController
 
 /**
  * @version 0.9.0 2026-07-29
+ * @since 2026-07-29
  */
 @RestController
 @RequestMapping("/api/admin/categories")

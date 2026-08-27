@@ -34,11 +34,6 @@ class Article(
     @JoinColumn(name = "category_id")
     var category: Category? = null,
 
-//    @JsonIncludeProperties("id", "username", "displayName")
-//    @ManyToOne(fetch = FetchType.EAGER)
-//    @JoinColumn(name = "author_id")
-//    var author: UserProfile? = null,
-
     @Column(name = "author_id", comment = "User UUID of the author")
     var authorId: String,
 
