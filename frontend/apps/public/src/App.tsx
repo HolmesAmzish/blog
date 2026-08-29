@@ -15,6 +15,7 @@ const ArticleListPage = lazy(() => import('./features/article/ArticleListPage').
 const ArticleDetailPage = lazy(() => import('./features/article/ArticleDetailPage').then(m => ({ default: m.ArticleDetailPage })));
 const ArchivePage = lazy(() => import('./features/archive/ArchivePage').then(m => ({ default: m.ArchivePage })));
 const AboutPage = lazy(() => import('./features/about/AboutPage').then(m => ({ default: m.AboutPage })));
+const GalleryPage = lazy(() => import('./features/gallery/GalleryPage').then(m => ({ default: m.GalleryPage })));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -52,6 +53,7 @@ function App() {
                     <Route path="/articles" element={<ArticleListPage />} />
                     <Route path="/article/:slug" element={<ArticleDetailPage />} />
                     <Route path="/archive" element={<ArchivePage />} />
+                    <Route path="/gallery" element={<GalleryPage />} />
                     <Route path="/about" element={<AboutPage />} />
                     <Route path="*" element={
                       <div className="min-h-screen flex items-center justify-center">

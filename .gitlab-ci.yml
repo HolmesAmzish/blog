@@ -1,0 +1,35 @@
+workflow:
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/'
+
+variables:
+  GRADLE_USER_HOME: "$CI_PROJECT_DIR/.gradle"
+
+cache:
+  key:
+    files: [frontend/pnpm-lock.yaml]
+  paths: [.pnpm-store, .gradle]
+  policy: pull-push
+
+build-deploy:
+  stage: deploy
+  tags: [deploy]
+  script:
+    # Compile
+    - cd backend && ./gradlew :blog-app:bootJar
+    - cp blog-app/build/libs/backend.jar /opt/arorms/blog/backend.jar
+    - cd ..
+
+    - cd frontend && pnpm install && pnpm --filter @blog/public build
+    - rsync -az --delete apps/public/dist/ /var/www/arorms/blog/
+    - cd..
+
+    # Install service and nginx conf
+    - cp etc/blog-nginx-public.conf /etc/nginx/sites-available/blog.conf
+    - cp etc/blog-spring.service /etc/systemd/system/blog-spring.service
+    - sudo systemctl daemon-reload
+#    - cp etc/blog-spring.env
+
+    # Restart service and nginx
+    - sudo systemctl restart blog-spring.service
+    - sudo systemctl reload nginx

@@ -63,6 +63,11 @@ dependencyManagement {
     }
 }
 
+// Specific the compile file
+tasks.bootJar {
+    archiveFileName.set("backend.jar")
+}
+
 tasks.withType<Test> {
     useJUnitPlatform()
 }

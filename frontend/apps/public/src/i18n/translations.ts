@@ -1,6 +1,6 @@
 export const en = {
   app: { title: 'ARORMS', subtitle: 'BLOG' },
-  nav: { home: 'HOME', articles: 'ARTICLES', archive: 'ARCHIVE', about: 'ABOUT', toggleMenu: 'Toggle menu' },
+  nav: { home: 'HOME', articles: 'ARTICLES', archive: 'ARCHIVE', gallery: 'GALLERY', about: 'ABOUT', toggleMenu: 'Toggle menu' },
   footer: {
     brandDescription: 'A technical blog exploring software architecture, distributed systems, and the art of clean code.',
     navigation: 'NAVIGATION', connect: 'CONNECT', copyright: 'ALL RIGHTS RESERVED.',
@@ -37,7 +37,7 @@ export const en = {
 
 export const zh = {
   app: { title: 'ARORMS', subtitle: '博客' },
-  nav: { home: '首页', articles: '文章', archive: '归档', about: '关于', toggleMenu: '切换菜单' },
+  nav: { home: '首页', articles: '文章', archive: '归档', gallery: '画廊', about: '关于', toggleMenu: '切换菜单' },
   footer: {
     brandDescription: '探讨软件架构、分布式系统与优雅代码的艺术和技术博客。',
     navigation: '导航', connect: '联系', copyright: '版权所有。',

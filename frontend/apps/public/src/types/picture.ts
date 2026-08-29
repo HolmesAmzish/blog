@@ -1,10 +1,11 @@
 /**
- * Picture types — DTO
- * Mirrors backend Picture entity
+ * Picture types — Vo
+ * Mirrors backend PictureVo
  */
+import type { TagVo } from './tag';
 
-export interface PictureDTO {
-  id: number | null;
+export interface PictureVo {
+  id: number;
   filename: string;
   originalFilename: string;
   mimeType: string;
@@ -12,5 +13,10 @@ export interface PictureDTO {
   url: string;
   thumbnailUrl: string | null;
   alt: string | null;
+  showInGallery: boolean;
+  tags: TagVo[];
   createdAt: string;
 }
+
+// Keep alias for backward compat
+export type PictureDTO = PictureVo;

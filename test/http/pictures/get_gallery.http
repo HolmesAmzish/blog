@@ -1,0 +1,3 @@
+### Gallery
+GET {{baseUrl}}/api/pictures?page=0&size=24
+Accept: application/json

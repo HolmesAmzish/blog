@@ -17,6 +17,10 @@ apiClient.interceptors.request.use(async (config) => {
       config.headers.Authorization = `Bearer ${user.access_token}`;
     }
   } catch {}
+  // Let browser set multipart boundary for FormData
+  if (config.data instanceof FormData) {
+    delete (config.headers as any)['Content-Type'];
+  }
   return config;
 });
 

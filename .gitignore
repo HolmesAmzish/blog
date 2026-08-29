@@ -52,5 +52,5 @@ application-local.properties
 
 /uploads
 
-/etc/blog-spring.env
-/test/http/admin/http-client.private.env.json
+*.env
+http-client.private.env.json

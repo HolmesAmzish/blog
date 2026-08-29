@@ -23,10 +23,10 @@ class PictureController(private val pictureService: PictureService) {
 
     // Gallery API
     @GetMapping
-    fun getAllPictures(
+    fun getGalleryPictures(
         pageable: Pageable,
     ): ResponseEntity<PageResponse<PictureVo>> {
-        val page = pictureService.findAll(pageable)
+        val page = pictureService.findGalleryPictures(pageable)
         val pageResponse = PageResponse.fromPage(page)
         return ResponseEntity.ok(pageResponse)
     }
