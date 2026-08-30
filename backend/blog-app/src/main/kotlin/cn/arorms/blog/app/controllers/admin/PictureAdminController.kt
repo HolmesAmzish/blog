@@ -23,7 +23,7 @@ import org.springframework.web.multipart.MultipartFile
 
 /**
  * REST Controller for Picture operations
- * @version 1.0.0 2026-08-24
+ * @version 1.1.0 2026-08-30
  * @since 2026-08-24
  */
 @RestController

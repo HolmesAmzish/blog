@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository
 
 /**
  * Repository interface for Picture entity
- * @version 1.0.0 2026-08-24
+ * @version 1.1.0 2026-08-30
  * @since 2026-03-09
  */
 @Repository

@@ -25,6 +25,11 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.util.*
 
+/**
+ * @version 1.1.0 2026-08-30
+ * @since 2026-08-30
+ * @author cacc
+ */
 @Service
 class PictureServiceImpl(
     private val pictureRepository: PictureRepository,
