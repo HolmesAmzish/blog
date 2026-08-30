@@ -13,7 +13,6 @@ export default defineConfig({
           'vendor-data': ['axios', '@tanstack/react-query'],
           'vendor-markdown': ['react-markdown', 'remark-gfm', 'remark-math', 'rehype-katex', 'rehype-highlight', 'highlight.js'],
           'vendor-icons': ['lucide-react'],
-          'vendor-echarts': ['echarts'],
         },
       },
     },
