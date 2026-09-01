@@ -12,8 +12,9 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.support.PageableExecutionUtils
 
 /**
+ * Article repository custom implementation
  * @author cacc
- * @version 0.10.1 2026-08-19
+ * @version 1.1.2 2026-09-01
  * @since 2026-07-22
  */
 class ArticleRepositoryCustomImpl(
@@ -91,7 +92,4 @@ class ArticleRepositoryCustomImpl(
             .from(article)
             .where(article.category.id.eq(categoryId))
             .fetchOne() ?: 0L
-
-    override fun getTotalViewCount(): Long =
-        queryFactory.select(article.viewCount.sum()).from(article).fetchOne() ?: 0L
 }

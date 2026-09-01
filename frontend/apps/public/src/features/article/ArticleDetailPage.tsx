@@ -7,7 +7,7 @@ import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import rehypeHighlight from 'rehype-highlight';
 import 'katex/dist/katex.min.css';
-import { Calendar, Eye, Tag, ArrowLeft } from 'lucide-react';
+import { Calendar, Tag, ArrowLeft } from 'lucide-react';
 
 const formatDate = (s: string | null): string => s ? new Date(s).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '---';
 
@@ -66,7 +66,6 @@ export const ArticleDetailPage: React.FC = () => {
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-black dark:text-white mb-6 leading-tight">{article.title || 'Untitled'}</h1>
           <div className="flex flex-wrap items-center gap-4 text-[11px] font-mono text-gray-500 dark:text-gray-400">
             <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {formatDate(article.createdAt)}</span>
-            <span className="flex items-center gap-1"><Eye className="w-3 h-3" /> {article.viewCount.toString().padStart(4, '0')} VIEWS</span>
           </div>
         </header>
 

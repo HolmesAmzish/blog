@@ -112,7 +112,7 @@ export function AdminArticlesPage() {
                                 <div className="col-span-6 min-w-0 w-full">
                                     <p className="text-[13px] font-medium text-foreground truncate">{article.title}</p>
                                     <p className="text-[12px] text-muted-foreground mt-1">
-                                        {article.createdAt ? new Date(article.createdAt).toLocaleDateString() : ''} · {article.viewCount ?? 0} views
+                                        {article.createdAt ? new Date(article.createdAt).toLocaleDateString() : ''}
                                     </p>
                                 </div>
                                 <div

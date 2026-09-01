@@ -1,14 +1,19 @@
 package cn.arorms.blog.app.config
 
+import io.netty.channel.ChannelOption
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.graphql.client.HttpGraphQlClient
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.http.HttpHeaders
+import org.springframework.http.client.reactive.ReactorClientHttpConnector
+import reactor.netty.http.client.HttpClient
+import java.time.Duration
 
 /**
- * @version 0.9.1 2026-08-03
+ * @version 1.1.2 2026-09-01
+ * @since 2026-05-10
  */
 @Configuration
 class GraphQlConfig (
@@ -17,7 +22,12 @@ class GraphQlConfig (
 ) {
     @Bean
     fun cloudflareClient(): HttpGraphQlClient {
+        val httpClient = HttpClient.create()
+            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10_000)
+            .responseTimeout(Duration.ofSeconds(30))
+
         val webClient = WebClient.builder()
+            .clientConnector(ReactorClientHttpConnector(httpClient))
             .baseUrl("https://api.cloudflare.com/client/v4/graphql")
             .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer $cloudflareToken")
             .build()

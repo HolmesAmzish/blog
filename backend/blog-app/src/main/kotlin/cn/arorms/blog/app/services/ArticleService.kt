@@ -1,5 +1,10 @@
 package cn.arorms.blog.app.services
 
+/**
+ * Article service interface
+ * @author cacc
+ * @version 1.1.2 2026-09-01
+ */
 import cn.arorms.blog.app.entities.Article
 import cn.arorms.blog.common.enums.Language
 import cn.arorms.blog.common.requests.ArticleQueryRequest
@@ -24,7 +29,5 @@ interface ArticleService {
     fun update(id: Long, request: ArticleUpsertRequest)
 
     fun delete(id: Long)
-
-    fun incrementViewCount(id: Long)
 
 }

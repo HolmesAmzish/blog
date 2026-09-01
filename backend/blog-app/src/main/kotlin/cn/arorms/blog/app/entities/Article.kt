@@ -6,6 +6,11 @@ import com.fasterxml.jackson.annotation.JsonIncludeProperties
 import java.time.LocalDateTime
 import jakarta.persistence.*
 
+/**
+ * Article entity
+ * @author cacc
+ * @version 1.1.2 2026-09-01
+ */
 @Entity
 @Table(name = "articles")
 class Article(
@@ -25,9 +30,6 @@ class Article(
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 20)
     var status: ArticleStatus? = ArticleStatus.DRAFT,
-
-    @Column(name = "view_count")
-    var viewCount: Long = 0,
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JsonIncludeProperties("id", "name", "slug")

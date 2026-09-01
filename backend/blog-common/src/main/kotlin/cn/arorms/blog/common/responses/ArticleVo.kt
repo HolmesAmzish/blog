@@ -1,5 +1,10 @@
 package cn.arorms.blog.common.responses
 
+/**
+ * Article detail response Vo
+ * @author cacc
+ * @version 1.1.2 2026-09-01
+ */
 import cn.arorms.blog.common.enums.Language
 import java.time.LocalDateTime
 
@@ -10,7 +15,6 @@ data class ArticleVo(
     val updatedAt: LocalDateTime,
 //    val author: UserVo,
     val isAiTranslated: Boolean,
-    val viewCount: Long,
     val title: String,
     val summary: String,
     val content: String,

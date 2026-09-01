@@ -13,7 +13,6 @@ export interface ArticleSummaryVo {
   title: string;
   summary: string | null;
   status: ArticleStatus | null;
-  viewCount: number | null;
   createdAt: string | null;
   updatedAt: string | null;
   category: CategoryVo | null;
@@ -26,7 +25,6 @@ export interface ArticleVo {
   slug: string;
   createdAt: string;
   updatedAt: string;
-  viewCount: number;
   isAiTranslated: boolean;
   title: string;
   summary: string;

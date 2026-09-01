@@ -45,7 +45,6 @@ export function AdminDashboardPage() {
     const totalArticles = articlesData?.total || 0;
     const publishedArticles = articlesData?.content.filter((a) => a.status === 'PUBLISHED').length || 0;
     const draftArticles = articlesData?.content.filter((a) => a.status === 'DRAFT').length || 0;
-    const totalViews = articlesData?.content.reduce((sum, a) => sum + (a.viewCount || 0), 0) || 0;
 
     return (
         <div className="space-y-6 animate-fade-in">
@@ -78,25 +77,12 @@ export function AdminDashboardPage() {
                             <h2 className="text-[13px] font-semibold text-foreground">Analytics</h2>
                             <span className="text-[11px] text-muted-foreground bg-muted px-2 py-1 rounded-full">Last 30 days</span>
                         </div>
-                        <div className="flex items-end gap-6">
-                            <div>
-                                <div
-                                    className="flex items-center gap-2 text-muted-foreground text-[11px] font-medium tracking-wide">
-                                    <Eye size={12}/> Total views
-                                </div>
-                                <div
-                                    className="text-[32px] font-semibold tracking-tight text-foreground leading-none mt-2">
-                                    {totalViews.toLocaleString()}
-                                </div>
-                                <div className="text-[12px] text-muted-foreground mt-1">+12% vs last week</div>
-                            </div>
-                            <div className="flex-1 h-[64px] flex items-end gap-1.5 ml-4">
-                                {[18, 28, 22, 36, 30, 44, 38, 52, 40, 48, 56, 42].map((h, i) => (
-                                    <div key={i}
-                                         className="flex-1 rounded-full bg-gradient-to-t from-primary/15 to-primary"
-                                         style={{height: h}}/>
-                                ))}
-                            </div>
+                        <div className="h-[64px] flex items-end gap-1.5">
+                            {[18, 28, 22, 36, 30, 44, 38, 52, 40, 48, 56, 42].map((h, i) => (
+                                <div key={i}
+                                     className="flex-1 rounded-full bg-gradient-to-t from-primary/15 to-primary"
+                                     style={{height: h}}/>
+                            ))}
                         </div>
 
                         <div className="grid grid-cols-3 gap-3 mt-6 pt-6 border-t border-border">
@@ -136,7 +122,7 @@ export function AdminDashboardPage() {
                                         <div className="min-w-0 flex-1">
                                             <p className="text-[13px] font-medium text-foreground truncate pr-4">{article.title}</p>
                                             <p className="text-[12px] text-muted-foreground mt-1">
-                                                {article.category ? article.category.name : 'Uncategorized'} · {article.viewCount} views
+                                                {article.category ? article.category.name : 'Uncategorized'}
                                                 ·{' '}
                                                 {article.createdAt ? new Date(article.createdAt).toLocaleDateString() : ''}
                                             </p>

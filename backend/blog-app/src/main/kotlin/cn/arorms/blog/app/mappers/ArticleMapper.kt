@@ -7,7 +7,9 @@ import cn.arorms.blog.common.responses.ArticleVo
 import cn.arorms.blog.common.responses.CategoryVo
 
 /**
- * @version 1.0.0 2026-08-27
+ * Article entity to Vo mappers
+ * @author cacc
+ * @version 1.1.2 2026-09-01
  * @since 2026-03-09
  */
 fun Article.toSummaryVo(lang: Language = Language.EN): ArticleSummaryVo {
@@ -19,7 +21,6 @@ fun Article.toSummaryVo(lang: Language = Language.EN): ArticleSummaryVo {
         title = translation?.title ?: "",
         summary = translation?.summary,
         status = this.status,
-        viewCount = this.viewCount,
         createdAt = this.createdAt,
         updatedAt = this.updatedAt,
         category = this.category?.toVo(lang),
@@ -36,7 +37,6 @@ fun Article.toVo(lang: Language = Language.EN): ArticleVo {
         createdAt = this.createdAt,
         updatedAt = this.updatedAt,
         isAiTranslated = translation?.isAiTranslated ?: false,
-        viewCount = this.viewCount,
         title = translation?.title ?: "",
         summary = translation?.summary ?: "",
         content = translation?.content ?: "",

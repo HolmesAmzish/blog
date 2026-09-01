@@ -36,7 +36,6 @@ export interface Article {
     createdAt: string;
     updatedAt: string;
     status: ArticleStatus | null;
-    viewCount: number;
     category: CategoryVo | null;
     authorId: string;
     translations: Record<Language, ArticleTranslation>;
@@ -51,7 +50,6 @@ export interface ArticleSummaryVo {
     title: string;
     summary: string | null;
     status: ArticleStatus | null;
-    viewCount: number | null;
     createdAt: string | null;
     updatedAt: string | null;
     category: CategoryVo | null;

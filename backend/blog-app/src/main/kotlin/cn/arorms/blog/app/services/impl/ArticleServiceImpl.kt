@@ -21,7 +21,9 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 /**
- * @version 0.10.1 2026-08-19
+ * Article service implementation
+ * @author cacc
+ * @version 1.1.2 2026-09-01
  * @since 2026-07-22
  */
 @Service
@@ -153,13 +155,5 @@ class ArticleServiceImpl(
             throw ResourceNotFoundException("Article Not Found with id: $id")
         }
         return articleRepository.deleteById(id)
-    }
-
-    @Transactional
-    override fun incrementViewCount(id: Long) {
-        val article = articleRepository.findById(id)
-                .orElseThrow { ResourceNotFoundException("Article not found with id: $id") }
-        article.viewCount++
-        articleRepository.save(article)
     }
 }

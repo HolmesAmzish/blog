@@ -12,7 +12,8 @@ import org.springframework.web.bind.annotation.*
 
 /**
  * REST Controller for Article operations
- * @version 0.10.1 2026-08-19
+ * @author cacc
+ * @version 1.1.2 2026-09-01
  * @since 2026-07-22
  */
 @RestController
@@ -43,8 +44,6 @@ class ArticleController(
         @RequestParam(defaultValue = "EN") language: Language
     ): ResponseEntity<ArticleVo> {
         val articleVo = articleService.getBySlug(language, slug)
-        // Increment view count
-        articleService.incrementViewCount(articleVo.id)
         return ResponseEntity.ok(articleVo)
     }
 }
