@@ -9,16 +9,13 @@ pluginManagement {
 
 dependencyResolutionManagement {
     repositories {
-        maven { url = uri("https://maven.aliyun.com/repository/public") }
+        // Common artifact
+        maven("https://gitlab.arorms.cn/api/v4/projects/14/packages/maven")
+        // Security artifact
+        maven("https://gitlab.arorms.cn/api/v4/projects/17/packages/maven")
         mavenCentral()
+        maven { url = uri("https://maven.aliyun.com/repository/public") }
         maven { url = uri("https://repo.spring.io/milestone") }
-        maven {
-            url = uri("https://nexus.arorms.cn/repository/maven-public/")
-            credentials {
-                username = providers.gradleProperty("nexusUsername").orNull ?: ""
-                password = providers.gradleProperty("nexusPassword").orNull ?: ""
-            }
-        }
     }
 }
 

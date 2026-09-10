@@ -1,8 +1,6 @@
 spring:
   application:
     name: backend
-  server:
-    port: ${PORT:8080}
 
   # Database Configuration (credentials from environment variables)
   datasource:
@@ -42,6 +40,14 @@ spring:
         options:
           model: ${OPENAI_MODEL}
 
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD}
+      database: 0
+      timeout: 10s
+
 storage:
   s3:
     endpoint: ${S3_ENDPOINT}
@@ -50,7 +56,16 @@ storage:
     secret-key: ${S3_SECRET_KEY}
     region: ${S3_REGION:us-east-1}
     path-style: ${S3_PATH_STYLE:true}
-#    public-url-prefix: ${S3_PUBLIC_URL_PREFIX:}
+
+resilience4j:
+  retry:
+    instances:
+      fetchCloudflareStatistics:
+        maxAttempts: 2
+        waitDuration: 10s
+        retryExceptions:
+          - java.lang.Exception
+        ignoreExceptions: []
 
 application:
   # JWT Configuration
@@ -65,3 +80,6 @@ application:
   cloudflare:
     zone-id: ${CLOUDFLARE_ZONE_ID}
     token: ${CLOUDFLARE_TOKEN}
+
+server:
+  port: ${SERVER_PORT:8080}

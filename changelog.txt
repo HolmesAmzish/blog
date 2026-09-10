@@ -1,3 +1,13 @@
+1.2.0
+1. adjust cloudflare statistics fetch time
+
+1.1.2
+1. update default cloudflare graphql connect to Reactor Netty HttpClient
+2. remove article view count
+
+1.1.0
+1. add gallery page on public site
+
 1.0.0
 1. migrate picture storage from local filesystem to MinIO via AWS SDK v2 S3 protocol
 2. add admin picture endpoints under /api/admin/pictures (upload/list/update/delete)

@@ -1,6 +1,6 @@
 plugins {
-    alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.kotlin.spring)   // 如果 common 里有 @Component 等需要 open
+    id("org.jetbrains.kotlin.jvm")
+    id("org.jetbrains.kotlin.plugin.spring")
 }
 
 kotlin {
@@ -11,7 +11,8 @@ kotlin {
 }
 
 dependencies {
-    api(libs.arorms.common)
+    api("cn.arorms.framework:arorms-common:1.1.0-SNAPSHOT")
+    implementation("org.redisson:redisson-spring-boot-starter:3.45.0")
 
     testImplementation(kotlin("test"))
 }
