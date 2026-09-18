@@ -4,6 +4,10 @@ import cn.arorms.blog.common.enums.Language
 import com.fasterxml.jackson.annotation.JsonIgnore
 import jakarta.persistence.*
 
+/**
+ * @version 1.2.0 2026-09-18
+ * @since 2026-05-02
+ */
 @Entity
 @Table(
     name = "article_translations",
@@ -27,7 +31,7 @@ class ArticleTranslation(
     var summary: String? = null,
 
     @Column(columnDefinition = "TEXT")
-    var content: String? = null,
+    var content: String,
 
     var isAiTranslated: Boolean? = false,
 

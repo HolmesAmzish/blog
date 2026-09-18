@@ -36,6 +36,7 @@ spring:
     openai:
       api-key: ${OPENAI_APIKEY}
       base-url: ${OPENAI_BASEURL}
+      timeout: 100s
       chat:
         options:
           model: ${OPENAI_MODEL}

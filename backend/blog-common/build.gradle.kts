@@ -12,7 +12,7 @@ kotlin {
 
 dependencies {
     api("cn.arorms.framework:arorms-common:1.1.0-SNAPSHOT")
-    implementation("org.redisson:redisson-spring-boot-starter:3.45.0")
+//    implementation("org.redisson:redisson-spring-boot-starter:3.45.0")
 
     testImplementation(kotlin("test"))
 }

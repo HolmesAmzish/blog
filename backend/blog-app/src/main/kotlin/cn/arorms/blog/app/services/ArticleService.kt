@@ -2,8 +2,9 @@ package cn.arorms.blog.app.services
 
 /**
  * Article service interface
- * @author cacc
- * @version 1.1.2 2026-09-01
+ * @author Sheng
+ * @version 1.2.0 2026-09-11
+ * @since 2026-07-22
  */
 import cn.arorms.blog.app.entities.Article
 import cn.arorms.blog.common.enums.Language
@@ -24,10 +25,10 @@ interface ArticleService {
 
     fun findById(id: Long): Article
 
-    fun create(authorId: String, request: ArticleUpsertRequest)
-
-    fun update(id: Long, request: ArticleUpsertRequest)
+    /**
+     * Upsert article metadata
+     */
+    fun upsert(authorId: String, request: ArticleUpsertRequest)
 
     fun delete(id: Long)
-
 }

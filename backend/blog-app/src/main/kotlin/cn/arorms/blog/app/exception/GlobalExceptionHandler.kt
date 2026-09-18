@@ -1,4 +1,4 @@
-package cn.arorms.blog.common.exception
+package cn.arorms.blog.app.exception
 
 import cn.arorms.framework.common.exception.BaseExceptionHandler
 import org.springframework.http.ResponseEntity
@@ -9,6 +9,9 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 
 /**
  * Global exception handler for REST API
+ * @author Sheng
+ * @version 1.2.0 2026-09-17
+ * @since 2026-07-22
  */
 @RestControllerAdvice
 class GlobalExceptionHandler : BaseExceptionHandler() {

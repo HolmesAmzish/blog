@@ -2,6 +2,8 @@ package cn.arorms.blog.app.controllers.admin;
 
 import cn.arorms.blog.app.entities.Article
 import cn.arorms.blog.app.services.ArticleService
+import cn.arorms.blog.app.services.ArticleTranslationService
+import cn.arorms.blog.common.enums.Language
 import cn.arorms.blog.common.requests.ArticleQueryRequest
 import cn.arorms.blog.common.requests.ArticleUpsertRequest
 import cn.arorms.blog.common.responses.ArticleSummaryVo
@@ -22,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController
 
 /**
  * Admin Article Controller
- * @version 0.10.1 2026-08-19
+ * @version 1.2.0 2026-09-18
  * @since 2026-07-29
  * @author cacc
  */
@@ -30,6 +32,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/admin/articles")
 public class ArticleAdminController (
     private val articleService: ArticleService,
+    private val articleTranslationService: ArticleTranslationService,
 ) {
     /**
      * Used for admin manage page
@@ -59,16 +62,17 @@ public class ArticleAdminController (
         @AuthenticationPrincipal userPrincipal: UserPrincipal,
         @RequestBody request: ArticleUpsertRequest
     ): ResponseEntity<Void> {
-        articleService.create(userPrincipal.id, request)
+        articleService.upsert(userPrincipal.id, request)
         return ResponseEntity.status(HttpStatus.CREATED).build()
     }
 
     @PutMapping("/{id}")
     fun updateArticle(
         @PathVariable id: Long,
+        @AuthenticationPrincipal userPrincipal: UserPrincipal,
         @RequestBody request: ArticleUpsertRequest
     ): ResponseEntity<Void> {
-        articleService.update(id, request)
+        articleService.upsert(userPrincipal.id, request)
         return ResponseEntity.noContent().build()
     }
 
@@ -76,5 +80,11 @@ public class ArticleAdminController (
     fun deleteArticle(@PathVariable id: Long): ResponseEntity<Void> {
         articleService.delete(id)
         return ResponseEntity.noContent().build()
+    }
+
+    @PutMapping("/translate/{id}")
+    fun translate(@PathVariable id: Long, @RequestBody targetLanguage: Language): ResponseEntity<Void> {
+        articleTranslationService.translate(id, targetLanguage)
+        return ResponseEntity.noContent().build();
     }
 }

@@ -5,7 +5,7 @@ import java.time.LocalDateTime
 
 /**
  * Unified DTO for article list views, with resolved language-specific fields
- * @author cacc
+ * @author Sheng
  * @version 1.1.2 2026-09-01
  */
 data class ArticleSummaryVo(
