@@ -1,26 +1,32 @@
-import {useState, useEffect} from 'react';
+import {useState, useEffect, useRef} from 'react';
 import {useNavigate, useParams} from 'react-router-dom';
 import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
-import {fetchArticleById, createArticle, updateArticle} from '../../api/article';
+import {fetchArticleById, fetchArticles, createArticle, updateArticle} from '../../api/article';
+import {upsertArticleTranslation} from '../../api/articleTranslation';
 import {fetchCategories} from '../../api/category';
 import {fetchTags} from '../../api/tag';
 import {ARTICLES_QUERY} from '../../hooks/useArticles';
+import {useArticleTranslations, ARTICLE_TRANSLATIONS_QUERY} from '../../hooks/useArticleTranslations';
 import type {Article, ArticleUpsertRequest, ArticleTranslationUpsertRequest, Language} from '@/types';
 import {Save, ArrowLeft, Eye, EyeOff} from 'lucide-react';
 
 type TranslationForm = { title: string; summary: string; content: string; isAiTranslated: boolean };
 const LANGUAGES: Language[] = ['EN', 'ZH'];
+const EMPTY_TRANSLATION: TranslationForm = {title: '', summary: '', content: '', isAiTranslated: false};
 
 export function AdminArticleEditPage() {
     const {id} = useParams<{ id: string }>();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const isEdit = !!id;
+    const articleId = isEdit ? Number(id) : null;
 
     const [translations, setTranslations] = useState<Record<Language, TranslationForm>>({
-        ZH: {title: '', summary: '', content: '', isAiTranslated: false},
-        EN: {title: '', summary: '', content: '', isAiTranslated: false},
+        ZH: EMPTY_TRANSLATION,
+        EN: EMPTY_TRANSLATION,
     });
+    const [translationIds, setTranslationIds] = useState<Record<Language, number | null>>({ZH: null, EN: null});
+    const translationsHydrated = useRef(false);
     const [slug, setSlug] = useState('');
     const [status, setStatus] = useState<'DRAFT' | 'PUBLISHED' | 'ARCHIVED'>('DRAFT');
     const [categoryId, setCategoryId] = useState<number | null>(null);
@@ -33,25 +39,14 @@ export function AdminArticleEditPage() {
         queryFn: () => fetchArticleById(Number(id)),
         enabled: isEdit,
     });
+    // Translations are decoupled from the article entity: loaded per article
+    // from /api/admin/articles/{id}/translations
+    const {data: articleTranslations} = useArticleTranslations(articleId);
     const {data: categories} = useQuery({queryKey: ['categories'], queryFn: () => fetchCategories()});
     const {data: tags} = useQuery({queryKey: ['tags'], queryFn: () => fetchTags()});
 
     useEffect(() => {
         if (article) {
-            const newTranslations: Record<Language, TranslationForm> = {
-                ZH: {title: '', summary: '', content: '', isAiTranslated: false},
-                EN: {title: '', summary: '', content: '', isAiTranslated: false},
-            };
-            Object.entries(article.translations).forEach(([lang, trans]) => {
-                const language = lang as Language;
-                newTranslations[language] = {
-                    title: trans.title,
-                    summary: trans.summary || '',
-                    content: trans.content || '',
-                    isAiTranslated: trans.isAiTranslated || false,
-                };
-            });
-            setTranslations(newTranslations);
             setSlug(article.slug);
             setStatus(article.status ?? 'DRAFT');
             setCategoryId(article.category?.id ?? null);
@@ -59,10 +54,55 @@ export function AdminArticleEditPage() {
         }
     }, [article]);
 
+    useEffect(() => {
+        // Hydrate once only: a background refetch must not clobber unsaved edits
+        if (!articleTranslations || translationsHydrated.current) return;
+        translationsHydrated.current = true;
+        const next: Record<Language, TranslationForm> = {ZH: EMPTY_TRANSLATION, EN: EMPTY_TRANSLATION};
+        const nextIds: Record<Language, number | null> = {ZH: null, EN: null};
+        articleTranslations.forEach((trans) => {
+            next[trans.language] = {
+                title: trans.title,
+                summary: trans.summary || '',
+                content: trans.content || '',
+                isAiTranslated: trans.isAiTranslated || false,
+            };
+            nextIds[trans.language] = trans.id;
+        });
+        setTranslations(next);
+        setTranslationIds(nextIds);
+    }, [articleTranslations]);
+
     const mutation = useMutation({
-        mutationFn: (data: ArticleUpsertRequest) => (isEdit ? updateArticle(Number(id), data) : createArticle(data)),
+        mutationFn: async (data: ArticleUpsertRequest) => {
+            const requestSlug = data.slug;
+            const filledLanguages = LANGUAGES.filter((lang) => translations[lang].title.trim());
+            const translationRequests: Array<ArticleTranslationUpsertRequest> = filledLanguages.map((lang) => ({
+                id: translationIds[lang],
+                language: lang,
+                title: translations[lang].title,
+                summary: translations[lang].summary || null,
+                content: translations[lang].content || null,
+                isAiTranslated: translations[lang].isAiTranslated,
+            }));
+
+            if (isEdit) {
+                // metadata and each translation are updated independently
+                await updateArticle(Number(id), data);
+                await Promise.all(translationRequests.map((req) => upsertArticleTranslation(Number(id), req)));
+                return;
+            }
+
+            // create is metadata-only; the backend returns no id, so resolve it via the admin list
+            await createArticle(data);
+            const list = await fetchArticles(0, 100);
+            const created = list.content.find((a) => a.slug === requestSlug);
+            if (!created) throw new Error('Article created but could not be resolved by slug');
+            await Promise.all(translationRequests.map((req) => upsertArticleTranslation(created.id, req)));
+        },
         onSuccess: () => {
             queryClient.invalidateQueries({queryKey: [ARTICLES_QUERY]});
+            if (isEdit) queryClient.invalidateQueries({queryKey: [ARTICLE_TRANSLATIONS_QUERY, articleId]});
             navigate('/admin/articles');
         },
     });
@@ -73,19 +113,6 @@ export function AdminArticleEditPage() {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!LANGUAGES.some((lang) => translations[lang].title.trim())) return;
-        const translationsRequest: Array<ArticleTranslationUpsertRequest> = [];
-        LANGUAGES.forEach((lang) => {
-            if (translations[lang].title.trim()) {
-                translationsRequest.push({
-                    id: null,
-                    language: lang,
-                    title: translations[lang].title,
-                    summary: translations[lang].summary || null,
-                    content: translations[lang].content || null,
-                    isAiTranslated: translations[lang].isAiTranslated,
-                });
-            }
-        });
         const requestSlug = slug || generateSlug(translations.EN.title) || generateSlug(translations[activeTab].title);
         const request: ArticleUpsertRequest = {
             id: isEdit ? Number(id) : null,
@@ -93,7 +120,6 @@ export function AdminArticleEditPage() {
             status,
             categoryId,
             tagIds,
-            translations: translationsRequest,
         };
         mutation.mutate(request);
     };

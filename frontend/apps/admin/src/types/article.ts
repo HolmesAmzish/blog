@@ -28,7 +28,9 @@ export interface ArticleTranslationUpsertRequest {
     isAiTranslated: boolean;
 }
 
-// --- Full Article entity (admin detail, mirrors backend Article) ---
+// --- Article metadata entity (admin detail, mirrors backend Article) ---
+// translations are @JsonIgnore'd on the backend; fetch them via the
+// dedicated /api/admin/articles/{id}/translations endpoints instead
 
 export interface Article {
     id: number | null;
@@ -38,7 +40,6 @@ export interface Article {
     status: ArticleStatus | null;
     category: CategoryVo | null;
     authorId: string;
-    translations: Record<Language, ArticleTranslation>;
     tags: TagVo[];
 }
 
@@ -56,7 +57,7 @@ export interface ArticleSummaryVo {
     tags: Array<TagVo> | null;
 }
 
-// --- Mutation request (create: id null, update: id set; mirrors backend ArticleUpsertRequest) ---
+// --- Mutation request (metadata only; create: id null, update: id set; mirrors backend ArticleUpsertRequest) ---
 
 export interface ArticleUpsertRequest {
     id: number | null;
@@ -64,5 +65,4 @@ export interface ArticleUpsertRequest {
     status: ArticleStatus;
     categoryId: number | null;
     tagIds: number[];
-    translations: Array<ArticleTranslationUpsertRequest>;
 }

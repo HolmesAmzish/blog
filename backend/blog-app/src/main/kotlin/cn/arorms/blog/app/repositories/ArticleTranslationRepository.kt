@@ -11,5 +11,9 @@ import org.springframework.data.jpa.repository.JpaRepository
 interface ArticleTranslationRepository :
     JpaRepository<ArticleTranslation, Long>,
     ArticleTranslationRepositoryCustom {
+    fun findByArticle_Id(articleId: Long): List<ArticleTranslation>
+
     fun findByArticle_IdAndLanguage(articleId: Long, language: Language): ArticleTranslation?
+
+    fun deleteByArticle_IdAndLanguage(articleId: Long, language: Language): Long
 }

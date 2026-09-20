@@ -38,6 +38,23 @@ class ArticleTranslationServiceImpl (
         articleTranslationRepository.save(articleTranslation)
     }
 
+    @Transactional(readOnly = true)
+    override fun getTranslations(articleId: Long): List<ArticleTranslation> =
+        articleTranslationRepository.findByArticle_Id(articleId)
+
+    @Transactional(readOnly = true)
+    override fun getTranslation(articleId: Long, language: Language): ArticleTranslation =
+        articleTranslationRepository.findByArticle_IdAndLanguage(articleId, language)
+            ?: throw ResourceNotFoundException("Translation not found for article $articleId in language $language")
+
+    @Transactional
+    override fun deleteTranslation(articleId: Long, language: Language) {
+        val deleted = articleTranslationRepository.deleteByArticle_IdAndLanguage(articleId, language)
+        if (deleted == 0L) {
+            throw ResourceNotFoundException("Translation not found for article $articleId in language $language")
+        }
+    }
+
     /**
      * Translate article by LLM
      */

@@ -23,7 +23,7 @@ interface ArticleService {
 
     fun getBySlug(language: Language, slug: String): ArticleVo
 
-    fun findById(id: Long): Article
+    fun getById(id: Long): Article
 
     /**
      * Upsert article metadata

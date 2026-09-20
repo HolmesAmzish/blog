@@ -53,7 +53,7 @@ class LlmServiceImpl(chatModel: ChatModel) : LlmService {
             1. Forbidden to change words: Strictly forbidden to modify, replace, optimize, or polish any of the original words I provide.
             2. Literal translation priority: Maintain the word order and structure of the original sentences, making only minimal adjustments in cases where the grammar is completely nonsensical.
             3. Format retention: Retain original punctuation, line breaks, and indentations, including markdown symbols and formatting.
-            4. Zero explanation: Directly output the translation results; do not provide any forewords, afterwords, or translation explanations.
+            4. No explanation: Directly output the translation results; do not provide any forewords, afterwords, or translation explanations.
             The content is as follows:
             title: ${translationRequest.title}
             summary: ${translationRequest.summary}

@@ -2,6 +2,7 @@ package cn.arorms.blog.app.entities
 
 import cn.arorms.blog.common.enums.ArticleStatus
 import cn.arorms.blog.common.enums.Language
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonIncludeProperties
 import java.time.LocalDateTime
 import jakarta.persistence.*
@@ -39,6 +40,7 @@ class Article(
     @Column(name = "author_id", comment = "User UUID of the author")
     var authorId: String,
 
+    @JsonIgnore
     @OneToMany(mappedBy = "article", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
     @MapKeyEnumerated(EnumType.STRING)
     @MapKey(name = "language")

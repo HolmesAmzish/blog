@@ -47,7 +47,7 @@ class ArticleServiceImpl(
         return PageResponse.fromPage(summaryPage)
     }
 
-    override fun findById(id: Long): Article {
+    override fun getById(id: Long): Article {
         return articleRepository.findById(id)
                 .orElseThrow { ResourceNotFoundException("Article not found with id: $id") }
     }

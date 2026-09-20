@@ -3,14 +3,20 @@ import {Link} from 'react-router-dom';
 import {useMutation, useQueryClient} from '@tanstack/react-query';
 import {useArticles, ARTICLES_QUERY} from '../../hooks/useArticles';
 import {useCategories} from '../../hooks/useCategories';
-import {Plus, Search, Edit, Trash2, Eye, ChevronLeft, ChevronRight} from 'lucide-react';
+import {Plus, Search, Edit, Trash2, Eye, ChevronLeft, ChevronRight, Languages} from 'lucide-react';
 import {deleteArticle} from '../../api/article';
+import {translateArticle} from '../../api/articleTranslation';
+import {ARTICLE_TRANSLATIONS_QUERY} from '../../hooks/useArticleTranslations';
+import type {Language} from '@/types';
+
+const TRANSLATE_TARGETS: Language[] = ['EN', 'ZH'];
 
 export function AdminArticlesPage() {
     const queryClient = useQueryClient();
     const [page, setPage] = useState(0);
     const [search, setSearch] = useState('');
     const [categoryFilter, setCategoryFilter] = useState<number | ''>('');
+    const [translateMenuFor, setTranslateMenuFor] = useState<number | null>(null);
 
     const {data: articlesData, isLoading} = useArticles({page, size: 10, isAdmin: true});
     const {data: categories} = useCategories();
@@ -26,12 +32,34 @@ export function AdminArticlesPage() {
         onSuccess: () => queryClient.invalidateQueries({queryKey: [ARTICLES_QUERY]}),
     });
 
+    // LLM translation is admin-only; the public frontend never calls this
+    const translateMutation = useMutation({
+        mutationFn: ({id, language}: { id: number; language: Language }) => translateArticle(id, language),
+        onSuccess: (_data, {id}) => {
+            queryClient.invalidateQueries({queryKey: [ARTICLE_TRANSLATIONS_QUERY, id]});
+            queryClient.invalidateQueries({queryKey: [ARTICLES_QUERY]});
+            setTranslateMenuFor(null);
+        },
+        onError: () => setTranslateMenuFor(null),
+    });
+
     const handleDelete = (id: number) => {
         if (confirm('Delete this article? This cannot be undone.')) deleteMutation.mutate(id);
     };
 
+    const handleTranslate = (id: number, language: Language) => {
+        if (confirm(`Translate this article to ${language === 'ZH' ? 'Chinese' : 'English'} with AI?`)) {
+            translateMutation.mutate({id, language});
+        } else {
+            setTranslateMenuFor(null);
+        }
+    };
+
     return (
         <div className="space-y-5 animate-fade-in">
+            {translateMenuFor !== null && (
+                <div className="fixed inset-0 z-10" onClick={() => setTranslateMenuFor(null)}/>
+            )}
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
                 <div>
                     <h1 className="text-[22px] font-semibold tracking-tight text-foreground">Articles</h1>
@@ -131,6 +159,32 @@ export function AdminArticlesPage() {
  </span>
                                 </div>
                                 <div className="col-span-2 flex items-center justify-end gap-1 w-full md:w-auto">
+                                    <div className="relative">
+                                        <button
+                                            onClick={() => setTranslateMenuFor(translateMenuFor === article.id ? null : article.id)}
+                                            disabled={translateMutation.isPending}
+                                            className="p-2 rounded-lg hover:bg-card border border-transparent hover:border-border text-muted-foreground hover:text-primary transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                            title="Translate with AI"
+                                        >
+                                            <Languages size={14}/>
+                                        </button>
+                                        {translateMenuFor === article.id && (
+                                            <div
+                                                className="absolute right-0 top-full mt-1 z-20 w-36 admin-card p-1 shadow-lg">
+                                                <p className="px-2 py-1 text-[11px] text-muted-foreground">Translate
+                                                    to</p>
+                                                {TRANSLATE_TARGETS.map((lang) => (
+                                                    <button
+                                                        key={lang}
+                                                        onClick={() => handleTranslate(article.id, lang)}
+                                                        className="w-full text-left px-2 py-1.5 rounded-lg text-[12px] font-medium text-foreground hover:bg-muted transition-colors"
+                                                    >
+                                                        {lang === 'ZH' ? '中文 (ZH)' : 'English (EN)'}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
                                     <Link
                                         to={`/admin/articles/${article.id}`}
                                         className="p-2 rounded-lg hover:bg-card border border-transparent hover:border-border text-muted-foreground hover:text-primary transition-colors"

@@ -53,7 +53,7 @@ public class ArticleAdminController (
      */
     @GetMapping("/{id}")
     fun getArticleById(@PathVariable id: Long): ResponseEntity<Article> {
-        val article = articleService.findById(id)
+        val article = articleService.getById(id)
         return ResponseEntity.ok(article)
     }
 
