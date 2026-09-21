@@ -81,10 +81,4 @@ public class ArticleAdminController (
         articleService.delete(id)
         return ResponseEntity.noContent().build()
     }
-
-    @PutMapping("/translate/{id}")
-    fun translate(@PathVariable id: Long, @RequestBody targetLanguage: Language): ResponseEntity<Void> {
-        articleTranslationService.translate(id, targetLanguage)
-        return ResponseEntity.noContent().build();
-    }
 }

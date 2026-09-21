@@ -1,8 +1,8 @@
 package cn.arorms.blog.app.services.impl
 
 import cn.arorms.blog.app.services.LlmService
-import cn.arorms.blog.common.requests.ArticleTranslationRequest
-import cn.arorms.blog.common.responses.ArticleTranslationResult
+import cn.arorms.blog.common.requests.LlmArticleTranslationRequest
+import cn.arorms.blog.common.responses.LlmArticleTranslationResponse
 import org.springframework.ai.chat.client.ChatClient
 import org.springframework.ai.chat.model.ChatModel
 import org.springframework.ai.openai.OpenAiChatOptions
@@ -46,14 +46,15 @@ class LlmServiceImpl(chatModel: ChatModel) : LlmService {
             .content()
     }
 
-    override fun translate(translationRequest: ArticleTranslationRequest): ArticleTranslationResult {
+    override fun translate(translationRequest: LlmArticleTranslationRequest): LlmArticleTranslationResponse {
         val prompt = """
             You are an extremely precise professional translation expert. Translate the content I provide into ${translationRequest.targetLanguage}.
             **Strict Constraints:**
             1. Forbidden to change words: Strictly forbidden to modify, replace, optimize, or polish any of the original words I provide.
             2. Literal translation priority: Maintain the word order and structure of the original sentences, making only minimal adjustments in cases where the grammar is completely nonsensical.
             3. Format retention: Retain original punctuation, line breaks, and indentations, including markdown symbols and formatting.
-            4. No explanation: Directly output the translation results; do not provide any forewords, afterwords, or translation explanations.
+            4. Math and code untouched: Keep inline math ($...$), display math ($$...$$), inline code backticks, and code fence blocks (```language ... ```) exactly as-is; never translate or alter their contents.
+            5. No explanation: Directly output the translation results; do not provide any forewords, afterwords, or translation explanations.
             The content is as follows:
             title: ${translationRequest.title}
             summary: ${translationRequest.summary}
@@ -67,7 +68,7 @@ class LlmServiceImpl(chatModel: ChatModel) : LlmService {
                     .extraBody(mapOf("thinking" to mapOf("type" to "disabled")))
             )
             .call()
-            .entity(ArticleTranslationResult::class.java)
+            .entity(LlmArticleTranslationResponse::class.java)
             ?: throw IllegalStateException("LLM returned an empty translation result")
     }
 }

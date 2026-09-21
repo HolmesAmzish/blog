@@ -10,6 +10,7 @@ data class ArticleTranslationUpsertRequest(
     val id: Long? = null,
     val language: Language,
     val title: String,
+    val originalContent: String,
     val content: String,
     val summary: String?,
     val isAiTranslated: Boolean? = false,

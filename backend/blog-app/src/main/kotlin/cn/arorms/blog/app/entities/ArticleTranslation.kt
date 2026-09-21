@@ -30,6 +30,15 @@ class ArticleTranslation(
     @Column(length = 500)
     var summary: String? = null,
 
+    /**
+     * Original markdown content
+     */
+    @Column(name = "original_content", columnDefinition = "TEXT")
+    var originalContent: String,
+
+    /**
+     * HTML content
+     */
     @Column(columnDefinition = "TEXT")
     var content: String,
 

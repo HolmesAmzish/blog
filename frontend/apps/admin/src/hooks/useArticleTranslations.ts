@@ -45,13 +45,10 @@ export const useDeleteArticleTranslation = () => {
 };
 
 export const useTranslateArticle = () => {
-    const qc = useQueryClient();
     return useMutation({
         mutationFn: ({articleId, language}: { articleId: number; language: Language }) =>
             translateArticle(articleId, language),
-        onSuccess: (_data, {articleId}) => {
-            qc.invalidateQueries({queryKey: [ARTICLE_TRANSLATIONS_QUERY, articleId]});
-            qc.invalidateQueries({queryKey: [ARTICLES_QUERY]});
-        },
+        // no invalidation: translate does not write anything server-side;
+        // the caller fills the editor with the returned markdown
     });
 };

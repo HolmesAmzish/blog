@@ -6,7 +6,7 @@ package cn.arorms.blog.common.responses
  * @version 1.2.0 2026-09-17
  * @since 2026-09-17
  */
-data class ArticleTranslationResult(
+data class LlmArticleTranslationResponse(
     val title: String,
     val summary: String,
     val content: String

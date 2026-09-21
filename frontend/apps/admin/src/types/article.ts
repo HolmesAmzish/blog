@@ -6,26 +6,34 @@ import type {Language, ArticleStatus} from './common';
 import type {CategoryVo} from './category';
 import type {TagVo} from './tag';
 
-// --- Author id embedded in Article entity ---
-
 // --- Translations ---
 
+/** Mirrors backend ArticleTranslationAdminVo: markdown source only, no rendered HTML */
 export interface ArticleTranslation {
     id: number | null;
     language: Language;
     title: string;
     summary: string | null;
-    content: string | null;
+    originalContent: string;
     isAiTranslated: boolean;
 }
 
+/** Mirrors backend ArticleTranslationUpsertRequest: admin renders markdown → HTML on save and sends both */
 export interface ArticleTranslationUpsertRequest {
     id: number | null;
     language: Language | null;
     title: string;
     summary: string | null;
-    content: string | null;
+    originalContent: string;
+    content: string;
     isAiTranslated: boolean;
+}
+
+/** Mirrors backend LlmArticleTranslationResponse: translated markdown returned by the LLM */
+export interface LlmArticleTranslationResponse {
+    title: string;
+    summary: string;
+    content: string;
 }
 
 // --- Article metadata entity (admin detail, mirrors backend Article) ---

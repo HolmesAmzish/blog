@@ -3,7 +3,7 @@
  * Mirrors ArticleTranslationAdminController (/api/admin/articles/{articleId}/translations)
  */
 import {get, put, del} from './client';
-import type {ArticleTranslation, ArticleTranslationUpsertRequest, Language} from '@/types';
+import type {ArticleTranslation, ArticleTranslationUpsertRequest, Language, LlmArticleTranslationResponse} from '@/types';
 
 export const fetchArticleTranslations = async (articleId: number): Promise<ArticleTranslation[]> =>
     get<ArticleTranslation[]>(`/api/admin/articles/${articleId}/translations`);
@@ -21,8 +21,12 @@ export const deleteArticleTranslation = async (articleId: number, language: Lang
     del<void>(`/api/admin/articles/${articleId}/translations/${language}`);
 
 /**
- * PUT /api/admin/articles/translate/{id} — translate the article into the target language with LLM
- * (admin-only; the public frontend never calls this)
+ * PUT /api/admin/articles/{articleId}/translations/translate — translate the saved
+ * original (human-written) translation into the target language with LLM.
+ * Returns the translated markdown; the caller fills the editor and saves manually.
  */
-export const translateArticle = async (articleId: number, language: Language): Promise<void> =>
-    put<void>(`/api/admin/articles/translate/${articleId}`, language);
+export const translateArticle = async (
+    articleId: number,
+    language: Language
+): Promise<LlmArticleTranslationResponse> =>
+    put<LlmArticleTranslationResponse, Language>(`/api/admin/articles/${articleId}/translations/translate`, language);

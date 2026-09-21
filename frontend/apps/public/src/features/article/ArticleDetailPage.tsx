@@ -1,11 +1,6 @@
 import { useParams, Link } from 'react-router-dom';
 import { useArticleBySlug } from '../../hooks/useArticles';
 import { useLanguage } from '../../context/LanguageContext';
-import Markdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import remarkMath from 'remark-math';
-import rehypeKatex from 'rehype-katex';
-import rehypeHighlight from 'rehype-highlight';
 import 'katex/dist/katex.min.css';
 import { Calendar, Tag, ArrowLeft } from 'lucide-react';
 
@@ -71,26 +66,8 @@ export const ArticleDetailPage: React.FC = () => {
 
         <article className="prose prose-lg max-w-none">
           {article.content ? (
-            <div className="markdown-content">
-              <Markdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex, rehypeHighlight]}
-                components={{
-                  h1: ({ children }) => <h1 className="text-2xl font-bold text-black dark:text-white mt-8 mb-4 pb-2 border-b-[0.5px] border-gray-200 dark:border-gray-800">{children}</h1>,
-                  h2: ({ children }) => <h2 className="text-xl font-bold text-black dark:text-white mt-6 mb-3">{children}</h2>,
-                  h3: ({ children }) => <h3 className="text-lg font-bold text-black dark:text-white mt-4 mb-2">{children}</h3>,
-                  p: ({ children }) => <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">{children}</p>,
-                  code: ({ children, className }) => !className ? (
-                    <code className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-900 text-sm font-mono text-[#0047FF] rounded">{children}</code>
-                  ) : (
-                    <pre className="border-[0.5px] border-gray-200 dark:border-gray-800 p-4 overflow-x-auto mb-4"><code className={className}>{children}</code></pre>
-                  ),
-                  blockquote: ({ children }) => <blockquote className="border-l-2 border-[#0047FF] pl-4 italic text-gray-600 dark:text-gray-400 my-4">{children}</blockquote>,
-                  ul: ({ children }) => <ul className="list-disc list-outside mb-4 text-gray-700 dark:text-gray-300 pl-6">{children}</ul>,
-                  ol: ({ children }) => <ol className="list-decimal list-outside mb-4 text-gray-700 dark:text-gray-300 pl-6">{children}</ol>,
-                  li: ({ children }) => <li className="mb-1 leading-relaxed">{children}</li>,
-                  a: ({ children, href }) => <a href={href} className="text-[#0047FF] hover:underline" target={href?.startsWith('http') ? '_blank' : undefined} rel={href?.startsWith('http') ? 'noopener noreferrer' : undefined}>{children}</a>,
-                }}
-              >{article.content}</Markdown>
-            </div>
+            // content is pre-rendered HTML (Markdown + KaTeX are rendered in the admin app on save)
+            <div className="markdown-content" dangerouslySetInnerHTML={{ __html: article.content }} />
           ) : (
             <p className="text-gray-500 dark:text-gray-400 font-mono text-center py-12">NO CONTENT AVAILABLE</p>
           )}

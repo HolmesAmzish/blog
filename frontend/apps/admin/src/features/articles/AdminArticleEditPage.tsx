@@ -6,13 +6,14 @@ import {upsertArticleTranslation} from '../../api/articleTranslation';
 import {fetchCategories} from '../../api/category';
 import {fetchTags} from '../../api/tag';
 import {ARTICLES_QUERY} from '../../hooks/useArticles';
-import {useArticleTranslations, ARTICLE_TRANSLATIONS_QUERY} from '../../hooks/useArticleTranslations';
+import {useArticleTranslations, useTranslateArticle, ARTICLE_TRANSLATIONS_QUERY} from '../../hooks/useArticleTranslations';
+import {MarkdownView, renderMarkdownToHtml} from '../../lib/markdown';
 import type {Article, ArticleUpsertRequest, ArticleTranslationUpsertRequest, Language} from '@/types';
-import {Save, ArrowLeft, Eye, EyeOff} from 'lucide-react';
+import {Save, ArrowLeft, Eye, EyeOff, Languages, Loader2} from 'lucide-react';
 
-type TranslationForm = { title: string; summary: string; content: string; isAiTranslated: boolean };
+type TranslationForm = { title: string; summary: string; originalContent: string; isAiTranslated: boolean };
 const LANGUAGES: Language[] = ['EN', 'ZH'];
-const EMPTY_TRANSLATION: TranslationForm = {title: '', summary: '', content: '', isAiTranslated: false};
+const EMPTY_TRANSLATION: TranslationForm = {title: '', summary: '', originalContent: '', isAiTranslated: false};
 
 export function AdminArticleEditPage() {
     const {id} = useParams<{ id: string }>();
@@ -40,7 +41,7 @@ export function AdminArticleEditPage() {
         enabled: isEdit,
     });
     // Translations are decoupled from the article entity: loaded per article
-    // from /api/admin/articles/{id}/translations
+    // from /api/admin/articles/{id}/translations (markdown source only)
     const {data: articleTranslations} = useArticleTranslations(articleId);
     const {data: categories} = useQuery({queryKey: ['categories'], queryFn: () => fetchCategories()});
     const {data: tags} = useQuery({queryKey: ['tags'], queryFn: () => fetchTags()});
@@ -64,7 +65,7 @@ export function AdminArticleEditPage() {
             next[trans.language] = {
                 title: trans.title,
                 summary: trans.summary || '',
-                content: trans.content || '',
+                originalContent: trans.originalContent || '',
                 isAiTranslated: trans.isAiTranslated || false,
             };
             nextIds[trans.language] = trans.id;
@@ -77,14 +78,18 @@ export function AdminArticleEditPage() {
         mutationFn: async (data: ArticleUpsertRequest) => {
             const requestSlug = data.slug;
             const filledLanguages = LANGUAGES.filter((lang) => translations[lang].title.trim());
-            const translationRequests: Array<ArticleTranslationUpsertRequest> = filledLanguages.map((lang) => ({
-                id: translationIds[lang],
-                language: lang,
-                title: translations[lang].title,
-                summary: translations[lang].summary || null,
-                content: translations[lang].content || null,
-                isAiTranslated: translations[lang].isAiTranslated,
-            }));
+            // render markdown → HTML client-side; the backend stores both
+            const translationRequests: Array<ArticleTranslationUpsertRequest> = await Promise.all(
+                filledLanguages.map(async (lang) => ({
+                    id: translationIds[lang],
+                    language: lang,
+                    title: translations[lang].title,
+                    summary: translations[lang].summary || null,
+                    originalContent: translations[lang].originalContent,
+                    content: renderMarkdownToHtml(translations[lang].originalContent),
+                    isAiTranslated: translations[lang].isAiTranslated,
+                }))
+            );
 
             if (isEdit) {
                 // metadata and each translation are updated independently
@@ -107,8 +112,12 @@ export function AdminArticleEditPage() {
         },
     });
 
+    // AI translation: fill the editor with LLM output; saving (and therefore
+    // markdown → HTML rendering) stays a separate manual step
+    const translateMutation = useTranslateArticle();
+
     const generateSlug = (title: string) =>
-        title.toLowerCase().replace(/[^a-z0-9\u4e00-\u9fa5]+/g, '-').replace(/^-|-$/g, '');
+        title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -130,7 +139,32 @@ export function AdminArticleEditPage() {
     const handleTagToggle = (tagId: number) =>
         setTagIds((prev) => (prev.includes(tagId) ? prev.filter((t) => t !== tagId) : [...prev, tagId]));
 
+    const handleAiTranslate = () => {
+        if (articleId === null) return;
+        translateMutation.mutate(
+            {articleId, language: activeTab},
+            {
+                onSuccess: (result) => {
+                    setTranslations((prev) => ({
+                        ...prev,
+                        [activeTab]: {
+                            title: result.title,
+                            summary: result.summary || '',
+                            originalContent: result.content || '',
+                            isAiTranslated: true,
+                        },
+                    }));
+                },
+            }
+        );
+    };
+
     const currentTranslation = translations[activeTab];
+    // AI translate is offered for an empty translation only, and only when a
+    // saved human-written translation exists to translate from
+    const canAiTranslate = articleId !== null
+        && translationIds[activeTab] === null
+        && !!articleTranslations?.some((t) => t.language !== activeTab && !t.isAiTranslated);
 
     return (
         <div className="max-w-[1120px] mx-auto space-y-5 animate-fade-in">
@@ -161,19 +195,34 @@ export function AdminArticleEditPage() {
             <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-5 items-start">
                 <div className="space-y-5">
                     <div className="admin-card p-5">
-                        <div className="inline-flex p-1 rounded-full bg-muted border border-border/60 mb-5">
-                            {LANGUAGES.map((lang) => (
+                        <div className="flex items-center justify-between mb-5">
+                            <div className="inline-flex p-1 rounded-full bg-muted border border-border/60">
+                                {LANGUAGES.map((lang) => (
+                                    <button
+                                        key={lang}
+                                        type="button"
+                                        onClick={() => setActiveTab(lang)}
+                                        className={`px-4 py-1.5 rounded-full text-[12px] font-medium transition-colors ${
+                                            activeTab === lang ? 'bg-foreground text-white shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                                        }`}
+                                    >
+                                        {lang === 'ZH' ? '中文' : 'English'}
+                                    </button>
+                                ))}
+                            </div>
+                            {canAiTranslate && (
                                 <button
-                                    key={lang}
                                     type="button"
-                                    onClick={() => setActiveTab(lang)}
-                                    className={`px-4 py-1.5 rounded-full text-[12px] font-medium transition-colors ${
-                                        activeTab === lang ? 'bg-foreground text-white shadow-sm' : 'text-muted-foreground hover:text-foreground'
-                                    }`}
+                                    onClick={handleAiTranslate}
+                                    disabled={translateMutation.isPending}
+                                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-card border border-border text-[12px] font-medium text-foreground hover:bg-muted disabled:opacity-60 transition-colors"
                                 >
-                                    {lang === 'ZH' ? '中文' : 'English'}
+                                    {translateMutation.isPending
+                                        ? <Loader2 size={14} className="animate-spin"/>
+                                        : <Languages size={14}/>}
+                                    {translateMutation.isPending ? 'Translating…' : 'AI translate'}
                                 </button>
-                            ))}
+                            )}
                         </div>
 
                         <div className="space-y-4">
@@ -186,7 +235,7 @@ export function AdminArticleEditPage() {
                                     value={currentTranslation.title}
                                     onChange={(e) => handleTranslationChange('title', e.target.value)}
                                     className="w-full text-[18px] font-medium text-foreground placeholder:text-muted-foreground bg-transparent border-0 border-b border-border rounded-none px-0 py-2 focus:outline-none focus:border-primary"
-                                    placeholder={activeTab === 'ZH' ? 'Enter title…' : 'Enter title…'}
+                                    placeholder="Enter title…"
                                     required
                                 />
                             </div>
@@ -225,13 +274,15 @@ export function AdminArticleEditPage() {
                                 </div>
                                 {previewMode ? (
                                     <div
-                                        className="min-h-[420px] rounded-xl bg-muted border border-border p-4 text-[13px] leading-relaxed text-foreground whitespace-pre-wrap">
-                                        {currentTranslation.content || 'No content yet…'}
+                                        className="min-h-[420px] rounded-xl bg-muted border border-border p-4">
+                                        {currentTranslation.originalContent
+                                            ? <MarkdownView markdown={currentTranslation.originalContent}/>
+                                            : <span className="text-[13px] text-muted-foreground">No content yet…</span>}
                                     </div>
                                 ) : (
                                     <textarea
-                                        value={currentTranslation.content}
-                                        onChange={(e) => handleTranslationChange('content', e.target.value)}
+                                        value={currentTranslation.originalContent}
+                                        onChange={(e) => handleTranslationChange('originalContent', e.target.value)}
                                         rows={20}
                                         className="w-full text-[13px] leading-relaxed text-foreground placeholder:text-muted-foreground bg-card border border-border rounded-xl px-3 py-3 focus:outline-none focus:border-primary/40 focus:ring-4 focus:ring-primary/10 resize-y min-h-[420px] font-mono"
                                         placeholder="Write your article in Markdown…"
@@ -239,6 +290,9 @@ export function AdminArticleEditPage() {
                                 )}
                             </div>
                         </div>
+                        {translateMutation.isError && (
+                            <p className="text-[12px] text-red-600 mt-3">Translation failed. Check the LLM service and try again.</p>
+                        )}
                     </div>
                 </div>
 

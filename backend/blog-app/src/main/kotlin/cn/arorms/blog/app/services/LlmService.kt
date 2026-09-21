@@ -1,7 +1,7 @@
 package cn.arorms.blog.app.services
 
-import cn.arorms.blog.common.requests.ArticleTranslationRequest
-import cn.arorms.blog.common.responses.ArticleTranslationResult
+import cn.arorms.blog.common.requests.LlmArticleTranslationRequest
+import cn.arorms.blog.common.responses.LlmArticleTranslationResponse
 import reactor.core.publisher.Flux
 
 /**
@@ -15,5 +15,5 @@ interface LlmService {
     fun callWithoutThinking(prompt: String)
     fun stream(prompt: String): Flux<String>
     fun streamWithoutThinking(prompt: String): Flux<String>
-    fun translate(translationRequest: ArticleTranslationRequest): ArticleTranslationResult
+    fun translate(translationRequest: LlmArticleTranslationRequest): LlmArticleTranslationResponse
 }

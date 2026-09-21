@@ -1,9 +1,10 @@
 package cn.arorms.blog.app.controllers.admin
 
-import cn.arorms.blog.app.entities.ArticleTranslation
 import cn.arorms.blog.app.services.ArticleTranslationService
 import cn.arorms.blog.common.enums.Language
 import cn.arorms.blog.common.requests.ArticleTranslationUpsertRequest
+import cn.arorms.blog.common.responses.ArticleTranslationAdminVo
+import cn.arorms.blog.common.responses.LlmArticleTranslationResponse
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -18,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController
  * Fine-grained management of a single article translation,
  * decoupled from the article metadata endpoints
  * @author cacc
- * @version 1.2.0 2026-09-20
+ * @version 1.2.0 2026-09-21
  * @since 2026-09-20
  */
 @RestController
@@ -30,7 +31,7 @@ class ArticleTranslationAdminController(
      * List all translations of an article
      */
     @GetMapping
-    fun getTranslations(@PathVariable articleId: Long): ResponseEntity<List<ArticleTranslation>> =
+    fun getTranslations(@PathVariable articleId: Long): ResponseEntity<List<ArticleTranslationAdminVo>> =
         ResponseEntity.ok(articleTranslationService.getTranslations(articleId))
 
     /**
@@ -40,11 +41,13 @@ class ArticleTranslationAdminController(
     fun getTranslation(
         @PathVariable articleId: Long,
         @PathVariable language: Language
-    ): ResponseEntity<ArticleTranslation> =
+    ): ResponseEntity<ArticleTranslationAdminVo> =
         ResponseEntity.ok(articleTranslationService.getTranslation(articleId, language))
 
     /**
-     * Create or update a single translation (language is carried in the body)
+     * Create or update a single translation (language is carried in the body).
+     * The admin frontend renders originalContent (markdown) to HTML on save
+     * and passes both originalContent and content.
      */
     @PutMapping
     fun upsertTranslation(
@@ -66,4 +69,15 @@ class ArticleTranslationAdminController(
         articleTranslationService.deleteTranslation(articleId, language)
         return ResponseEntity.noContent().build()
     }
+
+    /**
+     * Translate the saved original (human-written) translation into the target
+     * language with LLM. Returns the translated markdown for the admin to review.
+     */
+    @PutMapping("/translate")
+    fun translate(
+        @PathVariable articleId: Long,
+        @RequestBody targetLanguage: Language
+    ): ResponseEntity<LlmArticleTranslationResponse> =
+        ResponseEntity.ok(articleTranslationService.translate(articleId, targetLanguage))
 }

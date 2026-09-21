@@ -6,15 +6,17 @@ import cn.arorms.blog.app.repositories.ArticleTranslationRepository
 import cn.arorms.blog.app.services.ArticleTranslationService
 import cn.arorms.blog.app.services.LlmService
 import cn.arorms.blog.common.enums.Language
-import cn.arorms.blog.common.requests.ArticleTranslationRequest
+import cn.arorms.blog.common.requests.LlmArticleTranslationRequest
 import cn.arorms.blog.common.requests.ArticleTranslationUpsertRequest
+import cn.arorms.blog.common.responses.ArticleTranslationAdminVo
+import cn.arorms.blog.common.responses.LlmArticleTranslationResponse
 import cn.arorms.framework.common.exception.ResourceNotFoundException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 /**
  * @author Sheng
- * @version 1.2.0 2026-09-18
+ * @version 1.2.0 2026-09-21
  * @since 2026-09-18
  */
 @Service
@@ -32,6 +34,7 @@ class ArticleTranslationServiceImpl (
             language = request.language,
             title = request.title,
             summary = request.summary,
+            originalContent = request.originalContent,
             content = request.content,
             isAiTranslated = request.isAiTranslated ?: false
         )
@@ -39,13 +42,14 @@ class ArticleTranslationServiceImpl (
     }
 
     @Transactional(readOnly = true)
-    override fun getTranslations(articleId: Long): List<ArticleTranslation> =
-        articleTranslationRepository.findByArticle_Id(articleId)
+    override fun getTranslations(articleId: Long): List<ArticleTranslationAdminVo> =
+        articleTranslationRepository.findByArticle_Id(articleId).map { it.toAdminVo() }
 
     @Transactional(readOnly = true)
-    override fun getTranslation(articleId: Long, language: Language): ArticleTranslation =
-        articleTranslationRepository.findByArticle_IdAndLanguage(articleId, language)
-            ?: throw ResourceNotFoundException("Translation not found for article $articleId in language $language")
+    override fun getTranslation(articleId: Long, language: Language): ArticleTranslationAdminVo =
+        (articleTranslationRepository.findByArticle_IdAndLanguage(articleId, language)
+            ?: throw ResourceNotFoundException("Translation not found for article $articleId in language $language"))
+            .toAdminVo()
 
     @Transactional
     override fun deleteTranslation(articleId: Long, language: Language) {
@@ -59,32 +63,26 @@ class ArticleTranslationServiceImpl (
      * Translate article by LLM
      */
     @Transactional
-    override fun translate(articleId: Long, targetLanguage: Language) {
+    override fun translate(articleId: Long, targetLanguage: Language): LlmArticleTranslationResponse {
         val originalArticleTranslation = articleTranslationRepository.getOriginalTranslation(articleId)
             ?: throw ResourceNotFoundException("No original translation found for article $articleId")
 
-        val articleTranslationRequest = ArticleTranslationRequest(
+        val articleTranslationRequest = LlmArticleTranslationRequest(
             title = originalArticleTranslation.title,
             summary = originalArticleTranslation.summary,
-            content = originalArticleTranslation.content,
+            content = originalArticleTranslation.originalContent,
             targetLanguage = targetLanguage
         )
 
-        val articleTranslationResult = llmService.translate(articleTranslationRequest)
-        val existing = articleTranslationRepository.findByArticle_IdAndLanguage(articleId, targetLanguage)
-
-        val articleTranslationUpsertRequest = ArticleTranslationUpsertRequest(
-            id = existing?.id,
-            language = targetLanguage,
-            title = articleTranslationResult.title,
-            summary = articleTranslationResult.summary,
-            content = articleTranslationResult.content,
-            isAiTranslated = true
-        )
-
-        upsertTranslation(
-            articleId,
-            articleTranslationUpsertRequest
-        )
+        return llmService.translate(articleTranslationRequest)
     }
+
+    private fun ArticleTranslation.toAdminVo() = ArticleTranslationAdminVo(
+        id = id,
+        language = language,
+        title = title,
+        summary = summary,
+        originalContent = originalContent,
+        isAiTranslated = isAiTranslated
+    )
 }

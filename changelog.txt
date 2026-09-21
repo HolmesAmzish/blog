@@ -1,5 +1,8 @@
 1.2.0
 1. adjust cloudflare statistics fetch time
+2. add LLM translation
+3. add markdown and katex render in admin page, now database store rendered html content
+4. remove markdown-vendor and katex to improve public performance
 
 1.1.2
 1. update default cloudflare graphql connect to Reactor Netty HttpClient
