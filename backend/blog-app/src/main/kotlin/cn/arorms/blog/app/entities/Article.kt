@@ -2,9 +2,9 @@ package cn.arorms.blog.app.entities
 
 import cn.arorms.blog.common.enums.ArticleStatus
 import cn.arorms.blog.common.enums.Language
+import cn.arorms.framework.common.domain.BaseEntity
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonIncludeProperties
-import java.time.LocalDateTime
 import jakarta.persistence.*
 
 /**
@@ -15,18 +15,9 @@ import jakarta.persistence.*
 @Entity
 @Table(name = "articles")
 class Article(
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long? = null,
 
-    @Column(name = "slug", unique = true, length = 255)
+    @Column(name = "slug", unique = true, length = 255, nullable = false)
     var slug: String,
-
-    @Column(name = "created_at")
-    val createdAt: LocalDateTime = LocalDateTime.now(),
-
-    @Column(name = "updated_at")
-    var updatedAt: LocalDateTime = LocalDateTime.now(),
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 20)
@@ -37,10 +28,11 @@ class Article(
     @JoinColumn(name = "category_id")
     var category: Category? = null,
 
-    @Column(name = "author_id", comment = "User UUID of the author")
+    @Column(name = "author_id", nullable = false, comment = "User UUID of the author")
     var authorId: String,
 
-    @JsonIgnore
+    // exposed in the admin API as the natural aggregate wrapper; the rendered
+    // HTML (content) stays @JsonIgnore'd on ArticleTranslation itself
     @OneToMany(mappedBy = "article", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
     @MapKeyEnumerated(EnumType.STRING)
     @MapKey(name = "language")
@@ -53,9 +45,5 @@ class Article(
         inverseJoinColumns = [JoinColumn(name = "tag_id")]
     )
     var tags: MutableSet<Tag> = mutableSetOf()
-) {
-    @PreUpdate
-    fun onUpdate() {
-        updatedAt = LocalDateTime.now()
-    }
+) : BaseEntity() {
 }

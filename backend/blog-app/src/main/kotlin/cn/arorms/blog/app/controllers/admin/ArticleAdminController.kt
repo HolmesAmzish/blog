@@ -31,8 +31,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/api/admin/articles")
 public class ArticleAdminController (
-    private val articleService: ArticleService,
-    private val articleTranslationService: ArticleTranslationService,
+    private val articleService: ArticleService
 ) {
     /**
      * Used for admin manage page
@@ -61,9 +60,9 @@ public class ArticleAdminController (
     fun createArticle(
         @AuthenticationPrincipal userPrincipal: UserPrincipal,
         @RequestBody request: ArticleUpsertRequest
-    ): ResponseEntity<Void> {
-        articleService.upsert(userPrincipal.id, request)
-        return ResponseEntity.status(HttpStatus.CREATED).build()
+    ): ResponseEntity<Long> {
+        val id = articleService.create(userPrincipal.id, request)
+        return ResponseEntity.status(HttpStatus.CREATED).body(id)
     }
 
     @PutMapping("/{id}")
@@ -72,7 +71,10 @@ public class ArticleAdminController (
         @AuthenticationPrincipal userPrincipal: UserPrincipal,
         @RequestBody request: ArticleUpsertRequest
     ): ResponseEntity<Void> {
-        articleService.upsert(userPrincipal.id, request)
+        if (request.id != id) {
+            throw IllegalArgumentException("Article id in path ($id) does not match request body (${request.id})")
+        }
+        articleService.update(userPrincipal.id, request)
         return ResponseEntity.noContent().build()
     }
 

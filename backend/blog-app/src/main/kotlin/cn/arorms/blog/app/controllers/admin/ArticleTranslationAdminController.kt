@@ -4,7 +4,7 @@ import cn.arorms.blog.app.services.ArticleTranslationService
 import cn.arorms.blog.common.enums.Language
 import cn.arorms.blog.common.requests.ArticleTranslationUpsertRequest
 import cn.arorms.blog.common.responses.ArticleTranslationAdminVo
-import cn.arorms.blog.common.responses.LlmArticleTranslationResponse
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import reactor.core.publisher.Flux
 
 /**
  * Admin ArticleTranslation Controller
@@ -71,13 +72,35 @@ class ArticleTranslationAdminController(
     }
 
     /**
-     * Translate the saved original (human-written) translation into the target
-     * language with LLM. Returns the translated markdown for the admin to review.
+     * Translate the saved original article title into the target language
+     * (non-streaming). Triggered together with summary/content by AI translate.
      */
-    @PutMapping("/translate")
-    fun translate(
+    @PutMapping("/translate/title", produces = [MediaType.TEXT_PLAIN_VALUE])
+    fun translateTitle(
         @PathVariable articleId: Long,
         @RequestBody targetLanguage: Language
-    ): ResponseEntity<LlmArticleTranslationResponse> =
-        ResponseEntity.ok(articleTranslationService.translate(articleId, targetLanguage))
+    ): ResponseEntity<String> =
+        ResponseEntity.ok(articleTranslationService.translateTitle(articleId, targetLanguage))
+
+    /**
+     * Translate the saved original article summary into the target language
+     * (non-streaming); empty body if the original has no summary
+     */
+    @PutMapping("/translate/summary", produces = [MediaType.TEXT_PLAIN_VALUE])
+    fun translateSummary(
+        @PathVariable articleId: Long,
+        @RequestBody targetLanguage: Language
+    ): ResponseEntity<String> =
+        ResponseEntity.ok(articleTranslationService.translateSummary(articleId, targetLanguage))
+
+    /**
+     * Translate the saved original article content into the target language,
+     * streaming translated markdown chunks as SSE for the editor
+     */
+    @PutMapping("/translate/content", produces = [MediaType.TEXT_EVENT_STREAM_VALUE])
+    fun translateContent(
+        @PathVariable articleId: Long,
+        @RequestBody targetLanguage: Language
+    ): Flux<String> =
+        articleTranslationService.translateContent(articleId, targetLanguage)
 }

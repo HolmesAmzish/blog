@@ -190,11 +190,11 @@ export const CategoryTree: React.FC<CategoryTreeProps> = ({ data, isDark, onNode
         <g transform={`translate(${transformX}, ${transformY})`}>
           {links.map(({ parent, child }) => {
             const midX = (parent.x + child.x) / 2;
-            const points = `${parent.x},${parent.y} ${midX},${parent.y} ${midX},${child.y} ${child.x},${child.y}`;
+            const d = `M ${parent.x},${parent.y} C ${midX},${parent.y} ${midX},${child.y} ${child.x},${child.y}`;
             return (
-              <polyline
+              <path
                 key={`link-${parent.id}-${child.id}`}
-                points={points}
+                d={d}
                 fill="none"
                 stroke={lineColor}
                 strokeWidth={1}

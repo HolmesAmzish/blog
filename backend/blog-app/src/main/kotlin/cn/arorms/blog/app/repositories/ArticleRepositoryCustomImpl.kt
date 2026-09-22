@@ -23,7 +23,6 @@ class ArticleRepositoryCustomImpl(
 
     override fun findArticlePage(pageable: Pageable, request: ArticleQueryRequest): Page<Article> {
         val builder = BooleanBuilder()
-        builder.and(articleTranslation.language.eq(request.language))
 
         if (request.categoryId != null) {
             builder.and(article.category.id.eq(request.categoryId))
@@ -43,8 +42,11 @@ class ArticleRepositoryCustomImpl(
             )
         }
 
+        // left join restricted to the requested language in the ON clause, so
+        // articles without any translation still appear (title falls back to "")
         val query = queryFactory.selectFrom(article)
-            .innerJoin(article.translations, articleTranslation)
+            .leftJoin(article.translations, articleTranslation)
+            .on(articleTranslation.language.eq(request.language))
             .where(builder)
             .offset(pageable.offset)
             .limit(pageable.pageSize.toLong())
@@ -55,7 +57,8 @@ class ArticleRepositoryCustomImpl(
 
         val countQuery = queryFactory.select(article.count())
             .from(article)
-            .innerJoin(article.translations, articleTranslation)
+            .leftJoin(article.translations, articleTranslation)
+            .on(articleTranslation.language.eq(request.language))
             .where(builder)
 
         return PageableExecutionUtils.getPage(content, pageable) {
@@ -66,10 +69,10 @@ class ArticleRepositoryCustomImpl(
     override fun findByCategoryId(categoryId: Long, language: Language, pageable: Pageable): Page<Article> {
         val builder = BooleanBuilder()
         builder.and(article.category.id.eq(categoryId))
-            .and(articleTranslation.language.eq(language))
 
         val query = queryFactory.selectFrom(article)
-            .innerJoin(article.translations, articleTranslation)
+            .leftJoin(article.translations, articleTranslation)
+            .on(articleTranslation.language.eq(language))
             .where(builder)
             .offset(pageable.offset)
             .limit(pageable.pageSize.toLong())
@@ -79,7 +82,8 @@ class ArticleRepositoryCustomImpl(
 
         val countQuery = queryFactory.select(article.count())
             .from(article)
-            .innerJoin(article.translations, articleTranslation)
+            .leftJoin(article.translations, articleTranslation)
+            .on(articleTranslation.language.eq(language))
             .where(builder)
 
         return PageableExecutionUtils.getPage(content, pageable) {

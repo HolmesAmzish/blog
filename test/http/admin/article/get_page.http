@@ -1,6 +1,5 @@
 ### GET admin article page (default pagination)
-GET /api/admin/article HTTP/1.1
-Host: {{host}}
+GET {{baseUrl}}/api/admin/articles
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 

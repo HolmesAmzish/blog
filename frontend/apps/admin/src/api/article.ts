@@ -12,8 +12,9 @@ export const fetchArticles = async (page = 0, size = 10): Promise<PageResponse<A
 export const fetchArticleById = async (id: number): Promise<Article> =>
     get<Article>(`/api/admin/articles/${id}`);
 
-export const createArticle = async (request: ArticleUpsertRequest): Promise<void> =>
-    post<void>('/api/admin/articles', request);
+/** Returns the id of the newly created article (needed to save its translations) */
+export const createArticle = async (request: ArticleUpsertRequest): Promise<number> =>
+    post<number>('/api/admin/articles', request);
 
 export const updateArticle = async (id: number, request: ArticleUpsertRequest): Promise<void> =>
     put<void>(`/api/admin/articles/${id}`, request);

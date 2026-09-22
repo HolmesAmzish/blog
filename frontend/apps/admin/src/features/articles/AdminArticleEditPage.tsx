@@ -1,12 +1,11 @@
 import {useState, useEffect, useRef} from 'react';
 import {useNavigate, useParams} from 'react-router-dom';
 import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
-import {fetchArticleById, fetchArticles, createArticle, updateArticle} from '../../api/article';
-import {upsertArticleTranslation} from '../../api/articleTranslation';
+import {fetchArticleById, createArticle, updateArticle} from '../../api/article';
+import {fetchArticleTranslations, upsertArticleTranslation, translateArticleTitle, translateArticleSummary, translateArticleContent} from '../../api/articleTranslation';
 import {fetchCategories} from '../../api/category';
 import {fetchTags} from '../../api/tag';
 import {ARTICLES_QUERY} from '../../hooks/useArticles';
-import {useArticleTranslations, useTranslateArticle, ARTICLE_TRANSLATIONS_QUERY} from '../../hooks/useArticleTranslations';
 import {MarkdownView, renderMarkdownToHtml} from '../../lib/markdown';
 import type {Article, ArticleUpsertRequest, ArticleTranslationUpsertRequest, Language} from '@/types';
 import {Save, ArrowLeft, Eye, EyeOff, Languages, Loader2} from 'lucide-react';
@@ -34,34 +33,30 @@ export function AdminArticleEditPage() {
     const [tagIds, setTagIds] = useState<number[]>([]);
     const [activeTab, setActiveTab] = useState<Language>('EN');
     const [previewMode, setPreviewMode] = useState(false);
+    // a lightweight save of the previous tab may still be in flight while the AI
+    // translate button on the new tab is already clickable — block it until done
+    const [autosavePending, setAutosavePending] = useState(false);
 
+    // one aggregate call: metadata + translations in a single article body
     const {data: article} = useQuery<Article | undefined>({
         queryKey: ['article', id],
         queryFn: () => fetchArticleById(Number(id)),
         enabled: isEdit,
     });
-    // Translations are decoupled from the article entity: loaded per article
-    // from /api/admin/articles/{id}/translations (markdown source only)
-    const {data: articleTranslations} = useArticleTranslations(articleId);
     const {data: categories} = useQuery({queryKey: ['categories'], queryFn: () => fetchCategories()});
     const {data: tags} = useQuery({queryKey: ['tags'], queryFn: () => fetchTags()});
 
     useEffect(() => {
-        if (article) {
-            setSlug(article.slug);
-            setStatus(article.status ?? 'DRAFT');
-            setCategoryId(article.category?.id ?? null);
-            setTagIds(article.tags?.map((t) => t.id as number) || []);
-        }
-    }, [article]);
-
-    useEffect(() => {
         // Hydrate once only: a background refetch must not clobber unsaved edits
-        if (!articleTranslations || translationsHydrated.current) return;
+        if (!article || translationsHydrated.current) return;
         translationsHydrated.current = true;
+        setSlug(article.slug);
+        setStatus(article.status ?? 'DRAFT');
+        setCategoryId(article.category?.id ?? null);
+        setTagIds(article.tags?.map((t) => t.id as number) || []);
         const next: Record<Language, TranslationForm> = {ZH: EMPTY_TRANSLATION, EN: EMPTY_TRANSLATION};
         const nextIds: Record<Language, number | null> = {ZH: null, EN: null};
-        articleTranslations.forEach((trans) => {
+        Object.values(article.translations ?? {}).forEach((trans) => {
             next[trans.language] = {
                 title: trans.title,
                 summary: trans.summary || '',
@@ -72,65 +67,126 @@ export function AdminArticleEditPage() {
         });
         setTranslations(next);
         setTranslationIds(nextIds);
-    }, [articleTranslations]);
-
-    const mutation = useMutation({
-        mutationFn: async (data: ArticleUpsertRequest) => {
-            const requestSlug = data.slug;
-            const filledLanguages = LANGUAGES.filter((lang) => translations[lang].title.trim());
-            // render markdown → HTML client-side; the backend stores both
-            const translationRequests: Array<ArticleTranslationUpsertRequest> = await Promise.all(
-                filledLanguages.map(async (lang) => ({
-                    id: translationIds[lang],
-                    language: lang,
-                    title: translations[lang].title,
-                    summary: translations[lang].summary || null,
-                    originalContent: translations[lang].originalContent,
-                    content: renderMarkdownToHtml(translations[lang].originalContent),
-                    isAiTranslated: translations[lang].isAiTranslated,
-                }))
-            );
-
-            if (isEdit) {
-                // metadata and each translation are updated independently
-                await updateArticle(Number(id), data);
-                await Promise.all(translationRequests.map((req) => upsertArticleTranslation(Number(id), req)));
-                return;
-            }
-
-            // create is metadata-only; the backend returns no id, so resolve it via the admin list
-            await createArticle(data);
-            const list = await fetchArticles(0, 100);
-            const created = list.content.find((a) => a.slug === requestSlug);
-            if (!created) throw new Error('Article created but could not be resolved by slug');
-            await Promise.all(translationRequests.map((req) => upsertArticleTranslation(created.id, req)));
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({queryKey: [ARTICLES_QUERY]});
-            if (isEdit) queryClient.invalidateQueries({queryKey: [ARTICLE_TRANSLATIONS_QUERY, articleId]});
-            navigate('/admin/articles');
-        },
-    });
-
-    // AI translation: fill the editor with LLM output; saving (and therefore
-    // markdown → HTML rendering) stays a separate manual step
-    const translateMutation = useTranslateArticle();
+    }, [article]);
 
     const generateSlug = (title: string) =>
         title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!LANGUAGES.some((lang) => translations[lang].title.trim())) return;
-        const requestSlug = slug || generateSlug(translations.EN.title) || generateSlug(translations[activeTab].title);
-        const request: ArticleUpsertRequest = {
-            id: isEdit ? Number(id) : null,
-            slug: requestSlug,
-            status,
-            categoryId,
-            tagIds,
-        };
-        mutation.mutate(request);
+    /** render: also produce the HTML (real save); false = lightweight autosave */
+    const buildTranslationRequest = (lang: Language, render: boolean): ArticleTranslationUpsertRequest => ({
+        id: translationIds[lang],
+        language: lang,
+        title: translations[lang].title,
+        summary: translations[lang].summary || null,
+        originalContent: translations[lang].originalContent,
+        content: render ? renderMarkdownToHtml(translations[lang].originalContent) : null,
+        isAiTranslated: translations[lang].isAiTranslated,
+    });
+
+    // after saving a translation whose id we did not know yet, reload the ids so
+    // the next save updates the same row instead of violating the
+    // (article_id, language) unique constraint
+    const refreshTranslationIds = async (targetId: number) => {
+        const list = await queryClient.fetchQuery({
+            queryKey: ['article-translation-ids', targetId],
+            queryFn: () => fetchArticleTranslations(targetId),
+        });
+        setTranslationIds((prev) => {
+            const next = {...prev};
+            list.forEach((t) => {
+                next[t.language] = t.id;
+            });
+            return next;
+        });
+    };
+
+    // One button, one call: metadata plus every translation that has content in
+    // a single request body; markdown → HTML rendering happens only here
+    const saveArticleMutation = useMutation({
+        mutationFn: async () => {
+            const requestSlug = slug || generateSlug(translations.EN.title) || generateSlug(translations[activeTab].title);
+            const request: ArticleUpsertRequest = {
+                id: isEdit ? Number(id) : null,
+                slug: requestSlug,
+                status,
+                categoryId,
+                tagIds,
+                translations: LANGUAGES
+                    .filter((lang) => translations[lang].title.trim() || translations[lang].originalContent.trim())
+                    .map((lang) => buildTranslationRequest(lang, true)),
+            };
+            if (isEdit) {
+                await updateArticle(Number(id), request);
+            } else {
+                await createArticle(request);
+            }
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({queryKey: [ARTICLES_QUERY]});
+            queryClient.invalidateQueries({queryKey: ['article', id]});
+            navigate('/admin/articles');
+        },
+    });
+
+    // Switching the language tab autosaves the tab being left (lightweight:
+    // original markdown only, no HTML rendering) so AI translate on the new tab
+    // can read the other language's original content from the server
+    const handleTabSwitch = (lang: Language) => {
+        if (lang === activeTab) return;
+        if (articleId !== null) {
+            const current = translations[activeTab];
+            if (current.title.trim() || current.originalContent.trim()) {
+                setAutosavePending(true);
+                upsertArticleTranslation(articleId, buildTranslationRequest(activeTab, false))
+                    .then(() => refreshTranslationIds(articleId))
+                    .catch(() => undefined) // stay silent; the real save persists everything
+                    .finally(() => setAutosavePending(false));
+            }
+        }
+        setActiveTab(lang);
+    };
+
+    // AI translation: title and summary are translated with two non-streaming
+    // calls, the content streams into the editor chunk by chunk; everything is
+    // persisted by the single save button (with rendering) at the end
+    const [isTranslating, setIsTranslating] = useState(false);
+    const [translateError, setTranslateError] = useState(false);
+    const contentEditorRef = useRef<HTMLTextAreaElement>(null);
+
+    // keep the editor scrolled to the bottom while the translation streams in
+    useEffect(() => {
+        if (isTranslating) {
+            const el = contentEditorRef.current;
+            if (el) el.scrollTop = el.scrollHeight;
+        }
+    }, [translations[activeTab].originalContent, isTranslating, activeTab]);
+
+    const handleSave = () => saveArticleMutation.mutate();
+
+    const handleAiTranslate = async () => {
+        if (articleId === null || isTranslating) return;
+        setIsTranslating(true);
+        setTranslateError(false);
+        // clear the editor: the translation streams in from scratch
+        setTranslations((prev) => ({...prev, [activeTab]: {...prev[activeTab], originalContent: ''}}));
+        try {
+            await Promise.all([
+                translateArticleTitle(articleId, activeTab).then((title) =>
+                    setTranslations((prev) => ({...prev, [activeTab]: {...prev[activeTab], title}}))),
+                translateArticleSummary(articleId, activeTab).then((summary) =>
+                    setTranslations((prev) => ({...prev, [activeTab]: {...prev[activeTab], summary}}))),
+                translateArticleContent(articleId, activeTab, (chunk) =>
+                    setTranslations((prev) => ({
+                        ...prev,
+                        [activeTab]: {...prev[activeTab], originalContent: prev[activeTab].originalContent + chunk},
+                    }))),
+            ]);
+            setTranslations((prev) => ({...prev, [activeTab]: {...prev[activeTab], isAiTranslated: true}}));
+        } catch {
+            setTranslateError(true);
+        } finally {
+            setIsTranslating(false);
+        }
     };
 
     const handleTranslationChange = (field: keyof TranslationForm, value: string) =>
@@ -139,32 +195,18 @@ export function AdminArticleEditPage() {
     const handleTagToggle = (tagId: number) =>
         setTagIds((prev) => (prev.includes(tagId) ? prev.filter((t) => t !== tagId) : [...prev, tagId]));
 
-    const handleAiTranslate = () => {
-        if (articleId === null) return;
-        translateMutation.mutate(
-            {articleId, language: activeTab},
-            {
-                onSuccess: (result) => {
-                    setTranslations((prev) => ({
-                        ...prev,
-                        [activeTab]: {
-                            title: result.title,
-                            summary: result.summary || '',
-                            originalContent: result.content || '',
-                            isAiTranslated: true,
-                        },
-                    }));
-                },
-            }
-        );
-    };
-
     const currentTranslation = translations[activeTab];
-    // AI translate is offered for an empty translation only, and only when a
-    // saved human-written translation exists to translate from
-    const canAiTranslate = articleId !== null
-        && translationIds[activeTab] === null
-        && !!articleTranslations?.some((t) => t.language !== activeTab && !t.isAiTranslated);
+    // no translation-state gating here: the backend resolves the original
+    // translation and fails the request if none exists — surfacing the error
+    // is more reliable than second-guessing the autosave state client-side
+
+    const handleAiTranslateClick = () => {
+        const hasContent = currentTranslation.title.trim() || currentTranslation.originalContent.trim();
+        if (hasContent && !confirm(`AI translate will replace the current ${activeTab} content in the editor. Continue?`)) {
+            return;
+        }
+        void handleAiTranslate();
+    };
 
     return (
         <div className="max-w-[1120px] mx-auto space-y-5 animate-fade-in">
@@ -192,108 +234,111 @@ export function AdminArticleEditPage() {
                 </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-5 items-start">
-                <div className="space-y-5">
-                    <div className="admin-card p-5">
-                        <div className="flex items-center justify-between mb-5">
-                            <div className="inline-flex p-1 rounded-full bg-muted border border-border/60">
-                                {LANGUAGES.map((lang) => (
-                                    <button
-                                        key={lang}
-                                        type="button"
-                                        onClick={() => setActiveTab(lang)}
-                                        className={`px-4 py-1.5 rounded-full text-[12px] font-medium transition-colors ${
-                                            activeTab === lang ? 'bg-foreground text-white shadow-sm' : 'text-muted-foreground hover:text-foreground'
-                                        }`}
-                                    >
-                                        {lang === 'ZH' ? '中文' : 'English'}
-                                    </button>
-                                ))}
-                            </div>
-                            {canAiTranslate && (
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-5 items-start">
+                <div
+                    className="admin-card p-5 flex flex-col lg:h-[calc(100vh-170px)]">
+                    <div className="flex items-center justify-between mb-5">
+                        <div className="inline-flex p-1 rounded-full bg-muted border border-border/60">
+                            {LANGUAGES.map((lang) => (
                                 <button
+                                    key={lang}
                                     type="button"
-                                    onClick={handleAiTranslate}
-                                    disabled={translateMutation.isPending}
-                                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-card border border-border text-[12px] font-medium text-foreground hover:bg-muted disabled:opacity-60 transition-colors"
+                                    onClick={() => handleTabSwitch(lang)}
+                                    className={`px-4 py-1.5 rounded-full text-[12px] font-medium transition-colors ${
+                                        activeTab === lang ? 'bg-foreground text-background shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                                    }`}
                                 >
-                                    {translateMutation.isPending
-                                        ? <Loader2 size={14} className="animate-spin"/>
-                                        : <Languages size={14}/>}
-                                    {translateMutation.isPending ? 'Translating…' : 'AI translate'}
+                                    {lang === 'ZH' ? '中文' : 'English'}
                                 </button>
+                            ))}
+                        </div>
+                        <button
+                            type="button"
+                            onClick={handleAiTranslateClick}
+                            disabled={isTranslating || autosavePending || articleId === null}
+                            title={articleId === null ? 'Save the article first' : undefined}
+                            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-card border border-border text-[12px] font-medium text-foreground hover:bg-muted disabled:opacity-60 transition-colors"
+                        >
+                            {isTranslating
+                                ? <Loader2 size={14} className="animate-spin"/>
+                                : <Languages size={14}/>}
+                            {isTranslating ? 'Translating…' : 'AI translate'}
+                        </button>
+                    </div>
+
+                    <div className="space-y-4 flex-1 min-h-0 flex flex-col">
+                        <div>
+                            <label
+                                className="block text-[11px] font-medium tracking-wide text-muted-foreground mb-2">Title
+                                · {activeTab}</label>
+                            <input
+                                type="text"
+                                value={currentTranslation.title}
+                                onChange={(e) => handleTranslationChange('title', e.target.value)}
+                                className="w-full text-[18px] font-medium text-foreground placeholder:text-muted-foreground bg-transparent border-0 border-b border-border rounded-none px-0 py-2 focus:outline-none focus:border-primary"
+                                placeholder="Enter title…"
+                            />
+                        </div>
+
+                        <div>
+                            <label
+                                className="block text-[11px] font-medium tracking-wide text-muted-foreground mb-2">Summary</label>
+                            <textarea
+                                value={currentTranslation.summary}
+                                onChange={(e) => handleTranslationChange('summary', e.target.value)}
+                                rows={2}
+                                className="w-full text-[13px] text-foreground placeholder:text-muted-foreground bg-muted border border-transparent focus:bg-card focus:border-border rounded-xl px-3 py-2.5 focus:outline-none resize-none"
+                                placeholder="One-line summary…"
+                            />
+                        </div>
+
+                        <div className="flex-1 min-h-[320px] lg:min-h-0 flex flex-col">
+                            <div className="flex items-center justify-between mb-2">
+                                <label className="text-[11px] font-medium tracking-wide text-muted-foreground">Content
+                                    · Markdown</label>
+                                <label
+                                    className="inline-flex items-center gap-2 text-[11px] text-muted-foreground cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={currentTranslation.isAiTranslated}
+                                        onChange={(e) =>
+                                            setTranslations((prev) => ({
+                                                ...prev,
+                                                [activeTab]: {...prev[activeTab], isAiTranslated: e.target.checked}
+                                            }))
+                                        }
+                                        className="w-3.5 h-3.5 rounded border-border text-primary focus:ring-primary/20"
+                                    />
+                                    AI translated
+                                </label>
+                            </div>
+                            {previewMode ? (
+                                <div
+                                    className="flex-1 min-h-[320px] lg:min-h-0 overflow-auto rounded-xl bg-muted border border-border p-4">
+                                    {currentTranslation.originalContent
+                                        ? <MarkdownView markdown={currentTranslation.originalContent}/>
+                                        : <span className="text-[13px] text-muted-foreground">No content yet…</span>}
+                                </div>
+                            ) : (
+                                <textarea
+                                    ref={contentEditorRef}
+                                    value={currentTranslation.originalContent}
+                                    onChange={(e) => handleTranslationChange('originalContent', e.target.value)}
+                                    disabled={isTranslating}
+                                    className="flex-1 w-full min-h-[320px] lg:min-h-0 text-[13px] leading-relaxed text-foreground placeholder:text-muted-foreground bg-card border border-border rounded-xl px-3 py-3 focus:outline-none focus:border-primary/40 focus:ring-4 focus:ring-primary/10 resize-none font-mono disabled:opacity-70"
+                                    placeholder="Write your article in Markdown…"
+                                />
                             )}
                         </div>
-
-                        <div className="space-y-4">
-                            <div>
-                                <label
-                                    className="block text-[11px] font-medium tracking-wide text-muted-foreground mb-2">Title
-                                    · {activeTab}</label>
-                                <input
-                                    type="text"
-                                    value={currentTranslation.title}
-                                    onChange={(e) => handleTranslationChange('title', e.target.value)}
-                                    className="w-full text-[18px] font-medium text-foreground placeholder:text-muted-foreground bg-transparent border-0 border-b border-border rounded-none px-0 py-2 focus:outline-none focus:border-primary"
-                                    placeholder="Enter title…"
-                                    required
-                                />
-                            </div>
-
-                            <div>
-                                <label
-                                    className="block text-[11px] font-medium tracking-wide text-muted-foreground mb-2">Summary</label>
-                                <textarea
-                                    value={currentTranslation.summary}
-                                    onChange={(e) => handleTranslationChange('summary', e.target.value)}
-                                    rows={2}
-                                    className="w-full text-[13px] text-foreground placeholder:text-muted-foreground bg-muted border border-transparent focus:bg-card focus:border-border rounded-xl px-3 py-2.5 focus:outline-none resize-none"
-                                    placeholder="One-line summary…"
-                                />
-                            </div>
-
-                            <div>
-                                <div className="flex items-center justify-between mb-2">
-                                    <label className="text-[11px] font-medium tracking-wide text-muted-foreground">Content
-                                        · Markdown</label>
-                                    <label
-                                        className="inline-flex items-center gap-2 text-[11px] text-muted-foreground cursor-pointer">
-                                        <input
-                                            type="checkbox"
-                                            checked={currentTranslation.isAiTranslated}
-                                            onChange={(e) =>
-                                                setTranslations((prev) => ({
-                                                    ...prev,
-                                                    [activeTab]: {...prev[activeTab], isAiTranslated: e.target.checked}
-                                                }))
-                                            }
-                                            className="w-3.5 h-3.5 rounded border-border text-primary focus:ring-primary/20"
-                                        />
-                                        AI translated
-                                    </label>
-                                </div>
-                                {previewMode ? (
-                                    <div
-                                        className="min-h-[420px] rounded-xl bg-muted border border-border p-4">
-                                        {currentTranslation.originalContent
-                                            ? <MarkdownView markdown={currentTranslation.originalContent}/>
-                                            : <span className="text-[13px] text-muted-foreground">No content yet…</span>}
-                                    </div>
-                                ) : (
-                                    <textarea
-                                        value={currentTranslation.originalContent}
-                                        onChange={(e) => handleTranslationChange('originalContent', e.target.value)}
-                                        rows={20}
-                                        className="w-full text-[13px] leading-relaxed text-foreground placeholder:text-muted-foreground bg-card border border-border rounded-xl px-3 py-3 focus:outline-none focus:border-primary/40 focus:ring-4 focus:ring-primary/10 resize-y min-h-[420px] font-mono"
-                                        placeholder="Write your article in Markdown…"
-                                    />
-                                )}
-                            </div>
-                        </div>
-                        {translateMutation.isError && (
-                            <p className="text-[12px] text-red-600 mt-3">Translation failed. Check the LLM service and try again.</p>
-                        )}
                     </div>
+                    {translateError && (
+                        <p className="text-[12px] text-red-600 mt-3">Translation failed. Check the LLM service and try again.</p>
+                    )}
+                    {saveArticleMutation.isError && (
+                        <p className="text-[12px] text-red-600 mt-3">
+                            {(saveArticleMutation.error as Error).message || 'Failed to save article.'}
+                        </p>
+                    )}
                 </div>
 
                 <div className="space-y-4 lg:sticky lg:top-[76px]">
@@ -365,17 +410,16 @@ export function AdminArticleEditPage() {
                     </div>
 
                     <button
-                        type="submit"
-                        disabled={mutation.isPending || !LANGUAGES.some((l) => translations[l].title.trim())}
+                        type="button"
+                        onClick={handleSave}
+                        disabled={saveArticleMutation.isPending}
                         className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-primary text-white text-[13px] font-medium rounded-full hover:bg-primary disabled:opacity-40 disabled:cursor-not-allowed transition-colors shadow-sm"
                     >
-                        <Save size={14}/>
-                        {mutation.isPending ? 'Saving…' : isEdit ? 'Update article' : 'Create article'}
+                        {saveArticleMutation.isPending ? <Loader2 size={14} className="animate-spin"/> : <Save size={14}/>}
+                        {saveArticleMutation.isPending ? 'Saving…' : isEdit ? 'Update article' : 'Create article'}
                     </button>
-                    {mutation.isError &&
-                        <p className="text-[12px] text-red-600 text-center">Failed to save. Check required fields.</p>}
                 </div>
-            </form>
+            </div>
         </div>
     );
 }

@@ -1,7 +1,6 @@
 package cn.arorms.blog.app.controllers
 
 import cn.arorms.blog.common.responses.CountryTrafficMap
-import cn.arorms.blog.app.entities.SiteStatistics
 import cn.arorms.blog.app.services.CloudflareStatisticsService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping

@@ -16,4 +16,5 @@ interface ArticleRepository :
     ArticleRepositoryCustom {
     fun findBySlug(slug: String): Article?
     fun existsBySlug(slug: String): Boolean
+    fun existsBySlugAndIdNot(slug: String, id: Long): Boolean
 }

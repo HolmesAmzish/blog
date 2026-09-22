@@ -3,11 +3,11 @@ package cn.arorms.blog.app.services
 import cn.arorms.blog.common.enums.Language
 import cn.arorms.blog.common.requests.ArticleTranslationUpsertRequest
 import cn.arorms.blog.common.responses.ArticleTranslationAdminVo
-import cn.arorms.blog.common.responses.LlmArticleTranslationResponse
+import reactor.core.publisher.Flux
 
 /**
  * @author Sheng
- * @version 1.2.0 2026-09-21
+ * @version 1.2.0 2026-09-22
  * @since 2026-09-18
  */
 interface ArticleTranslationService {
@@ -32,7 +32,19 @@ interface ArticleTranslationService {
     fun deleteTranslation(articleId: Long, language: Language)
 
     /**
-     * Translate article with LLM
+     * Translate the saved original article title into the target language (non-streaming)
      */
-    fun translate(articleId: Long, targetLanguage: Language): LlmArticleTranslationResponse
+    fun translateTitle(articleId: Long, targetLanguage: Language): String
+
+    /**
+     * Translate the saved original article summary into the target language
+     * (non-streaming); empty string if the original has no summary
+     */
+    fun translateSummary(articleId: Long, targetLanguage: Language): String
+
+    /**
+     * Translate the saved original article content into the target language,
+     * streaming translated markdown chunks
+     */
+    fun translateContent(articleId: Long, targetLanguage: Language): Flux<String>
 }

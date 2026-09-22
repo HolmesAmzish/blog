@@ -6,17 +6,16 @@ import cn.arorms.blog.app.repositories.ArticleTranslationRepository
 import cn.arorms.blog.app.services.ArticleTranslationService
 import cn.arorms.blog.app.services.LlmService
 import cn.arorms.blog.common.enums.Language
-import cn.arorms.blog.common.requests.LlmArticleTranslationRequest
 import cn.arorms.blog.common.requests.ArticleTranslationUpsertRequest
 import cn.arorms.blog.common.responses.ArticleTranslationAdminVo
-import cn.arorms.blog.common.responses.LlmArticleTranslationResponse
 import cn.arorms.framework.common.exception.ResourceNotFoundException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import reactor.core.publisher.Flux
 
 /**
  * @author Sheng
- * @version 1.2.0 2026-09-21
+ * @version 1.2.0 2026-09-22
  * @since 2026-09-18
  */
 @Service
@@ -28,6 +27,16 @@ class ArticleTranslationServiceImpl (
 
     @Transactional
     override fun upsertTranslation(articleId: Long, request: ArticleTranslationUpsertRequest) {
+        // Lightweight save (e.g. autosave on language switch) leaves content null:
+        // keep the previously rendered HTML instead of wiping it
+        val translationId = request.id
+        val existingContent = if (request.content == null && translationId != null) {
+            articleTranslationRepository.findById(translationId)
+                .map { it.content }
+                .orElse("")
+        } else {
+            null
+        }
         val articleTranslation = ArticleTranslation (
             id = request.id,
             article = articleRepository.getReferenceById(articleId),
@@ -35,7 +44,7 @@ class ArticleTranslationServiceImpl (
             title = request.title,
             summary = request.summary,
             originalContent = request.originalContent,
-            content = request.content,
+            content = request.content ?: existingContent ?: "",
             isAiTranslated = request.isAiTranslated ?: false
         )
         articleTranslationRepository.save(articleTranslation)
@@ -60,22 +69,28 @@ class ArticleTranslationServiceImpl (
     }
 
     /**
-     * Translate article by LLM
+     * Translate article title by LLM (non-streaming)
      */
-    @Transactional
-    override fun translate(articleId: Long, targetLanguage: Language): LlmArticleTranslationResponse {
-        val originalArticleTranslation = articleTranslationRepository.getOriginalTranslation(articleId)
-            ?: throw ResourceNotFoundException("No original translation found for article $articleId")
+    override fun translateTitle(articleId: Long, targetLanguage: Language): String =
+        llmService.translate(getOriginalTranslation(articleId).title, targetLanguage)
 
-        val articleTranslationRequest = LlmArticleTranslationRequest(
-            title = originalArticleTranslation.title,
-            summary = originalArticleTranslation.summary,
-            content = originalArticleTranslation.originalContent,
-            targetLanguage = targetLanguage
-        )
-
-        return llmService.translate(articleTranslationRequest)
+    /**
+     * Translate article summary by LLM (non-streaming)
+     */
+    override fun translateSummary(articleId: Long, targetLanguage: Language): String {
+        val summary = getOriginalTranslation(articleId).summary
+        return if (summary.isNullOrBlank()) "" else llmService.translate(summary, targetLanguage)
     }
+
+    /**
+     * Translate article content by LLM, streaming translated chunks
+     */
+    override fun translateContent(articleId: Long, targetLanguage: Language): Flux<String> =
+        llmService.translateStream(getOriginalTranslation(articleId).originalContent, targetLanguage)
+
+    private fun getOriginalTranslation(articleId: Long): ArticleTranslation =
+        articleTranslationRepository.getOriginalTranslation(articleId)
+            ?: throw ResourceNotFoundException("No original translation found for article $articleId")
 
     private fun ArticleTranslation.toAdminVo() = ArticleTranslationAdminVo(
         id = id,

@@ -37,8 +37,10 @@ class ArticleTranslation(
     var originalContent: String,
 
     /**
-     * HTML content
+     * HTML content; write-only — never serialized back to the admin client,
+     * which re-renders markdown to HTML on save
      */
+    @JsonIgnore
     @Column(columnDefinition = "TEXT")
     var content: String,
 

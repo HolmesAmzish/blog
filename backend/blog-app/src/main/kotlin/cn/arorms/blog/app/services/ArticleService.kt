@@ -26,9 +26,15 @@ interface ArticleService {
     fun getById(id: Long): Article
 
     /**
-     * Upsert article metadata
+     * Create article (metadata + translations in one transaction),
+     * returns the id of the new article
      */
-    fun upsert(authorId: String, request: ArticleUpsertRequest)
+    fun create(authorId: String, request: ArticleUpsertRequest): Long
+
+    /**
+     * Update article metadata and upsert its translations in one transaction
+     */
+    fun update(authorId: String, request: ArticleUpsertRequest)
 
     fun delete(id: Long)
 }

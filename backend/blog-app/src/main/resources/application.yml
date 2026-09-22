@@ -38,8 +38,8 @@ spring:
       base-url: ${OPENAI_BASEURL}
       timeout: 100s
       chat:
-        options:
-          model: ${OPENAI_MODEL}
+        model: ${OPENAI_MODEL}
+        max-tokens: 16384
 
   data:
     redis:

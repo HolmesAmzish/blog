@@ -4,8 +4,8 @@ import cn.arorms.blog.common.enums.ArticleStatus
 
 /**
  * Request object for creating/updating an article with multilingual support
- * Full data of article
- * @version 1.2.0 2026-09-11
+ * Full data of article: metadata plus all translations, saved in one call
+ * @version 1.2.0 2026-09-22
  * @since 2026-05-02
  */
 data class ArticleUpsertRequest(
@@ -14,5 +14,5 @@ data class ArticleUpsertRequest(
     val status: ArticleStatus,
     val categoryId: Long?,
     val tagIds: List<Long> = emptyList(),
-//    val translations: List<ArticleTranslationUpsertRequest>
+    val translations: List<ArticleTranslationUpsertRequest> = emptyList(),
 )

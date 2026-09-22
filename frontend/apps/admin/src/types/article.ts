@@ -18,27 +18,23 @@ export interface ArticleTranslation {
     isAiTranslated: boolean;
 }
 
-/** Mirrors backend ArticleTranslationUpsertRequest: admin renders markdown → HTML on save and sends both */
+/** Mirrors backend ArticleTranslationUpsertRequest: content is the rendered HTML —
+ * send it on the real save; send null for lightweight autosaves (e.g. language-switch)
+ * to keep the previously rendered HTML server-side */
 export interface ArticleTranslationUpsertRequest {
     id: number | null;
     language: Language | null;
     title: string;
     summary: string | null;
     originalContent: string;
-    content: string;
+    content: string | null;
     isAiTranslated: boolean;
 }
 
-/** Mirrors backend LlmArticleTranslationResponse: translated markdown returned by the LLM */
-export interface LlmArticleTranslationResponse {
-    title: string;
-    summary: string;
-    content: string;
-}
-
-// --- Article metadata entity (admin detail, mirrors backend Article) ---
-// translations are @JsonIgnore'd on the backend; fetch them via the
-// dedicated /api/admin/articles/{id}/translations endpoints instead
+// --- Article entity (admin detail, mirrors backend Article) ---
+// the backend exposes translations as a language-keyed map on the entity
+// (rendered HTML stays server-side); the rendered `content` field never
+// travels back to the client
 
 export interface Article {
     id: number | null;
@@ -49,6 +45,7 @@ export interface Article {
     category: CategoryVo | null;
     authorId: string;
     tags: TagVo[];
+    translations: Partial<Record<Language, ArticleTranslation>>;
 }
 
 // --- List/summary item (mirrors backend ArticleSummaryVo) ---
@@ -65,7 +62,8 @@ export interface ArticleSummaryVo {
     tags: Array<TagVo> | null;
 }
 
-// --- Mutation request (metadata only; create: id null, update: id set; mirrors backend ArticleUpsertRequest) ---
+// --- Mutation request (metadata + translations in one body; create: id null,
+// update: id set; mirrors backend ArticleUpsertRequest) ---
 
 export interface ArticleUpsertRequest {
     id: number | null;
@@ -73,4 +71,5 @@ export interface ArticleUpsertRequest {
     status: ArticleStatus;
     categoryId: number | null;
     tagIds: number[];
+    translations: ArticleTranslationUpsertRequest[];
 }
