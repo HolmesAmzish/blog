@@ -11,11 +11,11 @@ export const LanguageSwitcher: React.FC<{ className?: string }> = ({ className =
   return (
     <div className={`relative ${className}`}>
       <button onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-2 py-1 text-[10px] font-mono uppercase tracking-wider border-[0.5px] border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-black dark:hover:border-white hover:text-black dark:hover:text-white transition-all duration-200"
+        className="flex h-9 w-9 items-center justify-center gap-2 p-0 text-[10px] font-mono uppercase tracking-wider border-[0.5px] border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-black dark:hover:border-white hover:text-black dark:hover:text-white transition-all duration-200 md:h-auto md:w-auto md:px-2 md:py-1"
         aria-label={t('nav.toggleMenu')}>
         <Globe className="w-3 h-3" />
-        <span>{LANGUAGE_CONFIG[language].label}</span>
-        <ChevronDown className="w-2 h-2" />
+        <span className="hidden md:inline">{LANGUAGE_CONFIG[language].label}</span>
+        <ChevronDown className="hidden md:block w-2 h-2" />
       </button>
       {isOpen && (
         <>

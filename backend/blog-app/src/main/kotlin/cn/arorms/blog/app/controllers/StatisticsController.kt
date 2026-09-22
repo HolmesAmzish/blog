@@ -10,7 +10,8 @@ import org.springframework.web.bind.annotation.RestController
 
 /**
  * REST Controller for Site Statistics
- * @version 1.2.0 2026-09-08
+ * @author Sheng
+ * @version 1.2.1 2026-09-22
  * @since 2026-05-10
  */
 @RestController
@@ -18,6 +19,9 @@ import org.springframework.web.bind.annotation.RestController
 class StatisticsController(
     private val cloudflareStatisticsService: CloudflareStatisticsService,
 ) {
+    /**
+     * Get Country traffic map, grouped by country code
+     */
     @GetMapping("/country-traffic")
     fun getCountryTraffic(
         @RequestParam timeRange: Int

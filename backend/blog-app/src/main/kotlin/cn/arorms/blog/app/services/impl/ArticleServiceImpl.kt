@@ -66,7 +66,7 @@ class ArticleServiceImpl(
     }
 
     override fun getBySlug(language: Language, slug: String): ArticleVo {
-        val article = articleRepository.findBySlug(slug)
+        val article = articleRepository.findBySlugAndStatus(slug, ArticleStatus.PUBLISHED)
                 ?: throw ResourceNotFoundException("Article not found with slug: $slug")
         return article.toVo(language)
     }

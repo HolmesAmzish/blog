@@ -53,7 +53,7 @@ dependencies {
     implementation("net.coobird:thumbnailator:0.4.20")
 
     // ===== Framework =====
-    implementation("cn.arorms.framework:arorms-security:1.0.0")
+    implementation("cn.arorms.framework:arorms-security:1.0.1")
 
     implementation("io.github.resilience4j:resilience4j-spring-boot4:2.4.0")
 

@@ -1,11 +1,19 @@
+1.2.1 2026-09-22
+1. add nav dropout in narrow screen window
+2. change oauth callback url to admin.blog.arorms.cn
+3. add article status filter in find by slug avoiding get draft article
+4. add admin role validation in admin page
+5. remove article number statistics fetch in home page
+
 1.2.0
-1. adjust cloudflare statistics fetch time
+1. adjust Cloudflare statistics fetch time
 2. add LLM translation
-3. add markdown and katex render in admin page, now database store rendered html content
+3. add Markdown and katex render in admin page, now database store rendered html content
 4. remove markdown-vendor and katex to improve public performance
+5. refactor LLM translation for title and content stream translate
 
 1.1.2
-1. update default cloudflare graphql connect to Reactor Netty HttpClient
+1. update default Cloudflare graphql connect to Reactor Netty HttpClient
 2. remove article view count
 
 1.1.0

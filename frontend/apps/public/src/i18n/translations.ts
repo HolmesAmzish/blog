@@ -12,7 +12,6 @@ export const en = {
     readArticles: 'READ ARTICLES', viewArchive: 'VIEW ARCHIVE',
     latestArticles: 'LATEST ARTICLES', viewAll: 'VIEW ALL',
     trafficDistribution: 'TRAFFIC DISTRIBUTION',
-    stats: { articles: 'ARTICLES', categories: 'CATEGORIES', tags: 'TAGS', views: 'VIEWS' },
   },
   articles: {
     allArticles: 'ALL ARTICLES', search: 'SEARCH', filterByCategory: 'FILTER BY CATEGORY',
@@ -49,7 +48,6 @@ export const zh = {
     readArticles: '阅读文章', viewArchive: '查看归档',
     latestArticles: '最新文章', viewAll: '查看全部',
     trafficDistribution: '流量分布',
-    stats: { articles: '文章', categories: '分类', tags: '标签', views: '浏览量' },
   },
   articles: {
     allArticles: '所有文章', search: '搜索', filterByCategory: '按分类筛选',

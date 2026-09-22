@@ -3,6 +3,6 @@ POST https://auth.arorms.cn/realms/arorms/protocol/openid-connect/token
 Content-Type: application/x-www-form-urlencoded
 
 grant_type = password &
-client_id = blog-react-admin &
+client_id = blog &
 username = {{username}} &
 password = {{password}}

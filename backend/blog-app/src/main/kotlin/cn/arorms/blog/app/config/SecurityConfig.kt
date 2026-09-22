@@ -11,7 +11,9 @@ import org.springframework.security.web.SecurityFilterChain
 
 /**
  * Spring Security configuration for JWT authentication
- * @version 0.9.0 2026-07-29
+ * @author Sheng
+ * @version 1.2.1 2026-09-22
+ * @since 2026-07-22
  */
 @Configuration
 @EnableWebSecurity
@@ -21,7 +23,8 @@ class SecurityConfig {
     @Bean
     fun securityFilterChain(http: HttpSecurity, converter: KeycloakAuthenticationConverter<*>): SecurityFilterChain {
         return http.csrf { it.disable() }.authorizeHttpRequests { auth ->
-            auth.requestMatchers("/api/admin/**").authenticated()
+            auth.requestMatchers("/api/admin/auth/me").authenticated()
+                .requestMatchers("/api/admin/**").hasRole("admin")
                 .anyRequest().permitAll()
         }.oauth2ResourceServer { oauth2 ->
             oauth2.jwt { jwt ->
