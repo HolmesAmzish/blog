@@ -6,31 +6,57 @@
  * `content` column, so the public app can inject pre-rendered HTML directly
  * without shipping the markdown vendor (react-markdown/remark/rehype/katex JS).
  *
- * - renderMarkdownToHtml: react-markdown WITHOUT component overrides, rendered
- *   to a static markup string. Output is clean semantic HTML whose only
- *   classes are the ones the public stylesheet targets (language-*, hljs-*,
- *   katex, etc.).
- * - MarkdownView: the same react-markdown pipeline WITH styled component
- *   overrides, used for the in-app editing preview. KaTeX CSS is imported
- *   here so both paths display math correctly.
+ * - renderMarkdownToHtml: serializes the Markdown AST directly to HTML so
+ *   KaTeX's inline layout styles are preserved.
+ * - MarkdownView: uses react-markdown for the in-app editing preview and
+ *   restores the raw HAST styles that React would otherwise discard.
  */
 import Markdown from 'react-markdown';
-import { renderToStaticMarkup } from 'react-dom/server';
+import { unified } from 'unified';
+import remarkParse from 'remark-parse';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
+import remarkRehype from 'remark-rehype';
 import rehypeKatex from 'rehype-katex';
 import rehypeHighlight from 'rehype-highlight';
+import rehypeStringify from 'rehype-stringify';
 import 'katex/dist/katex.min.css';
 
 const REMARK_PLUGINS = [remarkGfm, remarkMath];
 const REHYPE_PLUGINS = [rehypeKatex, rehypeHighlight];
 
+const markdownProcessor = unified()
+    .use(remarkParse)
+    .use(remarkGfm)
+    .use(remarkMath)
+    .use(remarkRehype)
+    .use(rehypeKatex)
+    .use(rehypeHighlight)
+    .use(rehypeStringify);
+
+const parseInlineStyle = (style: unknown): React.CSSProperties | undefined => {
+    if (typeof style !== 'string') return undefined;
+
+    const parsed: Record<string, string> = {};
+    for (const declaration of style.split(';')) {
+        const separator = declaration.indexOf(':');
+        if (separator === -1) continue;
+
+        const property = declaration.slice(0, separator).trim();
+        const value = declaration.slice(separator + 1).trim();
+        if (!property || !value) continue;
+
+        const key = property.startsWith('--')
+            ? property
+            : property.replace(/-([a-z])/g, (_, letter: string) => letter.toUpperCase());
+        parsed[key] = value;
+    }
+
+    return parsed as React.CSSProperties;
+};
+
 export const renderMarkdownToHtml = (markdown: string): string =>
-    renderToStaticMarkup(
-        <Markdown remarkPlugins={REMARK_PLUGINS} rehypePlugins={REHYPE_PLUGINS}>
-            {markdown}
-        </Markdown>
-    );
+    String(markdownProcessor.processSync(markdown));
 
 export const MarkdownView: React.FC<{ markdown: string }> = ({markdown}) => (
     <div className="markdown-content text-[13px] leading-relaxed text-foreground">
@@ -38,6 +64,11 @@ export const MarkdownView: React.FC<{ markdown: string }> = ({markdown}) => (
             remarkPlugins={REMARK_PLUGINS}
             rehypePlugins={REHYPE_PLUGINS}
             components={{
+                span: ({node, children, style: _style, ...props}) => (
+                    <span {...props} style={parseInlineStyle(node?.properties?.style)}>
+                        {children}
+                    </span>
+                ),
                 h1: ({children}) => <h1 className="text-xl font-bold mt-6 mb-3">{children}</h1>,
                 h2: ({children}) => <h2 className="text-lg font-bold mt-5 mb-2">{children}</h2>,
                 h3: ({children}) => <h3 className="text-base font-semibold mt-4 mb-2">{children}</h3>,

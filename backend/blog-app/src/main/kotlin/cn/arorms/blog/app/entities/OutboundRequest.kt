@@ -11,7 +11,7 @@ import java.time.Instant
  * @version 1.2.0 2026-09-08
  * @since 2026-09-08
  */
-@Entity @Table(name = "tasks")
+@Entity @Table(name = "outbound_requests")
 class OutboundRequest (
 //    val method: String,
 

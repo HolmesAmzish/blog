@@ -77,8 +77,8 @@ class CloudflareStatisticsServiceImpl (
     }
 
     fun getHttpRequestsStatisticsByDate(date: LocalDate) {
-        val endTime = date.atStartOfDay(ZoneOffset.UTC).toInstant()
-        val startTime = endTime.minus(1, ChronoUnit.DAYS)
+        val startTime = date.atStartOfDay(ZoneOffset.UTC).toInstant()
+        val endTime = startTime.plus(1, ChronoUnit.DAYS)
 
         val groups = getHttpRequestsStatistics(startTime, endTime, "blog.arorms.cn")
 
@@ -99,7 +99,7 @@ class CloudflareStatisticsServiceImpl (
     @Retry(name = "fetchCloudflareStatistics", fallbackMethod = "reportSyncFailure")
     override fun syncStatistics(date: LocalDate) = getHttpRequestsStatisticsByDate(date)
 
-    fun reportSyncFailure(e: Throwable, date: LocalDate) {
+    fun reportSyncFailure(date: LocalDate, e: Throwable) {
         val payload = jacksonObjectMapper().writeValueAsString(date.toString())
         outboundRequestRepository.save(
             OutboundRequest(
